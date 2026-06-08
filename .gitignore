@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+.env
+*.egg-info/
+dist/
+build/
+
+# uv
+uv.lock
+.uv/
+
+# Testing / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Docker
+.dockerignore
+
+# Logs
+*.log
+logs/
+
+# Data (no commitear datos sensibles)
+data/
+*.xlsx
+*.csv
+*.pdf
+*.docx
+
+# Secrets
+.env
+*.key
+*.pem

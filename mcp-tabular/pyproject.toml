@@ -1,0 +1,38 @@
+[project]
+name = "mcp-tabular"
+version = "1.0.0"
+description = "MCP server for reading tabular files (Excel, CSV, ODS, TSV)"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp[cli]>=1.9",
+    "pandas>=2.2",
+    "openpyxl>=3.1",
+    "xlrd>=2.0",
+    "odfpy>=1.4",
+    "chardet>=5.2",
+    "pyarrow>=16.0",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "structlog>=24.1",
+    "rich>=13.7",
+    "mcp-shared",
+]
+
+[tool.uv.sources]
+mcp-shared = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_tabular"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*", "*/test_*"]

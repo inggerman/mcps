@@ -1,0 +1,96 @@
+{
+  "mcpServers": {
+    "mcp-tabular": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-tabular",
+        "run",
+        "python",
+        "-m",
+        "mcp_tabular.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console"
+      }
+    },
+    "mcp-documents": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-documents",
+        "run",
+        "python",
+        "-m",
+        "mcp_documents.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "TESSERACT_CMD": "tesseract"
+      }
+    },
+    "mcp-calendar": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-calendar",
+        "run",
+        "python",
+        "-m",
+        "mcp_calendar.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "DEFAULT_COUNTRY": "MX"
+      }
+    },
+    "mcp-markdown": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-markdown",
+        "run",
+        "python",
+        "-m",
+        "mcp_markdown.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console"
+      }
+    },
+    "mcp-prompt-engineer": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-prompt-engineer",
+        "run",
+        "python",
+        "-m",
+        "mcp_prompt_engineer.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console"
+      }
+    },
+    "mcp-utils": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-utils",
+        "run",
+        "python",
+        "-m",
+        "mcp_utils.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console"
+      }
+    }
+  }
+}

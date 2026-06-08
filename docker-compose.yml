@@ -1,0 +1,129 @@
+services:
+
+  # ---------------------------------------------------------------------------
+  # MCP: Tabular (Excel, CSV, ODS)
+  # ---------------------------------------------------------------------------
+  mcp-tabular:
+    build:
+      context: ./mcp-tabular
+      dockerfile: Dockerfile
+      target: runtime
+    image: mcp-tabular:latest
+    container_name: mcp-tabular
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - mcp-data:/data:ro          # Archivos a procesar (read-only)
+    healthcheck:
+      test: ["CMD", "python", "-c", "import mcp_tabular; print('ok')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "mcp.server=tabular"
+      - "mcp.version=1.0.0"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Documents (PDF, Word, PPT, ODT)
+  # ---------------------------------------------------------------------------
+  mcp-documents:
+    build:
+      context: ./mcp-documents
+      dockerfile: Dockerfile
+      target: runtime
+    image: mcp-documents:latest
+    container_name: mcp-documents
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - mcp-data:/data:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import mcp_documents; print('ok')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # MCP: Calendar (Días hábiles + Divisas)
+  # ---------------------------------------------------------------------------
+  mcp-calendar:
+    build:
+      context: ./mcp-calendar
+      dockerfile: Dockerfile
+      target: runtime
+    image: mcp-calendar:latest
+    container_name: mcp-calendar
+    restart: unless-stopped
+    env_file: .env
+    healthcheck:
+      test: ["CMD", "python", "-c", "import mcp_calendar; print('ok')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # MCP: Markdown
+  # ---------------------------------------------------------------------------
+  mcp-markdown:
+    build:
+      context: ./mcp-markdown
+      dockerfile: Dockerfile
+      target: runtime
+    image: mcp-markdown:latest
+    container_name: mcp-markdown
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - mcp-data:/data:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import mcp_markdown; print('ok')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # MCP: Prompt Engineer
+  # ---------------------------------------------------------------------------
+  mcp-prompt-engineer:
+    build:
+      context: ./mcp-prompt-engineer
+      dockerfile: Dockerfile
+      target: runtime
+    image: mcp-prompt-engineer:latest
+    container_name: mcp-prompt-engineer
+    restart: unless-stopped
+    env_file: .env
+    healthcheck:
+      test: ["CMD", "python", "-c", "import mcp_prompt_engineer; print('ok')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # MCP: Utils
+  # ---------------------------------------------------------------------------
+  mcp-utils:
+    build:
+      context: ./mcp-utils
+      dockerfile: Dockerfile
+      target: runtime
+    image: mcp-utils:latest
+    container_name: mcp-utils
+    restart: unless-stopped
+    env_file: .env
+    healthcheck:
+      test: ["CMD", "python", "-c", "import mcp_utils; print('ok')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# ---------------------------------------------------------------------------
+# Volumes
+# ---------------------------------------------------------------------------
+volumes:
+  mcp-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${MCP_DATA_DIR:-./data}  # Carpeta local montada
