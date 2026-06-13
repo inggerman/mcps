@@ -65,7 +65,7 @@ def _handle(fn: Any, *args: Any, **kwargs: Any) -> Any:
         raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
     except Exception as exc:
         logger.exception("Error inesperado", tool=fn.__name__, exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message=f"Error interno: {exc}")) from exc
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
 
 
 # ---------------------------------------------------------------------------

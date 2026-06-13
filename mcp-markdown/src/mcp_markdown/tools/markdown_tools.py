@@ -30,6 +30,15 @@ from mcp_markdown.config import settings
 # ---------------------------------------------------------------------------
 
 
+def _ensure_allowed_path(path: Path) -> None:
+    if settings.allowed_root is None:
+        return
+    allowed_root = settings.allowed_root.expanduser().resolve()
+    if not path.is_relative_to(allowed_root):
+        msg = f"La ruta debe estar dentro del directorio permitido: {allowed_root}"
+        raise PermissionError(msg)
+
+
 def _read_file(path: str | Path) -> tuple[str, Path]:
     """
     Lee un archivo Markdown y retorna (contenido, Path resuelto).
@@ -40,6 +49,7 @@ def _read_file(path: str | Path) -> tuple[str, Path]:
         PermissionError: Si no hay permisos de lectura.
     """
     resolved = Path(path).resolve()
+    _ensure_allowed_path(resolved)
     if not resolved.exists():
         msg = f"Archivo no encontrado: {resolved}"
         raise FileNotFoundError(msg)
@@ -629,6 +639,7 @@ def list_markdown_files(directory: str, recursive: bool = True) -> list[dict[str
         - frontmatter (dict): metadatos del frontmatter
     """
     base = Path(directory).resolve()
+    _ensure_allowed_path(base)
     if not base.exists():
         msg = f"Directorio no encontrado: {base}"
         raise FileNotFoundError(msg)

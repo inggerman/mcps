@@ -19,8 +19,6 @@ class CalendarSettings(BaseMcpSettings):
 
     Variables de entorno disponibles (sin prefijo):
         DEFAULT_COUNTRY: Código ISO 3166-1 alpha-2 del país por defecto.
-        EXCHANGE_RATE_PROVIDER: Proveedor de tasas de cambio.
-        EXCHANGE_RATE_API_KEY: API key para exchangerate-api.com.
         EXCHANGE_CACHE_TTL_SECONDS: TTL del caché de tasas en segundos.
     """
 
@@ -42,22 +40,6 @@ class CalendarSettings(BaseMcpSettings):
     )
 
     # --- Divisas ---
-    exchange_rate_provider: str = Field(
-        default="frankfurter",
-        description=(
-            "Proveedor de tasas de cambio a utilizar. "
-            "Opciones: 'frankfurter' (gratuito, sin key) | 'exchangerate-api' (requiere key). "
-            "Variable de entorno: EXCHANGE_RATE_PROVIDER."
-        ),
-    )
-    exchange_rate_api_key: str = Field(
-        default="",
-        description=(
-            "API key para exchangerate-api.com. "
-            "Solo requerida cuando EXCHANGE_RATE_PROVIDER=exchangerate-api. "
-            "Variable de entorno: EXCHANGE_RATE_API_KEY."
-        ),
-    )
     exchange_cache_ttl_seconds: int = Field(
         default=3600,
         ge=60,
@@ -81,9 +63,7 @@ class CalendarSettings(BaseMcpSettings):
         ctx.update(
             {
                 "default_country": self.default_country,
-                "exchange_rate_provider": self.exchange_rate_provider,
                 "exchange_cache_ttl_seconds": self.exchange_cache_ttl_seconds,
-                "has_api_key": bool(self.exchange_rate_api_key),
             }
         )
         return ctx

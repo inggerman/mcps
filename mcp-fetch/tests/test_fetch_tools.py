@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from mcp_fetch.tools.fetch_tools import (
     _navigate_path,
+    _validate_url,
     extract_text,
     fetch_json,
     fetch_post,
@@ -23,6 +24,15 @@ from mcp_shared.errors import (
 # ---------------------------------------------------------------------------
 # Helpers para mock
 # ---------------------------------------------------------------------------
+
+
+@pytest.fixture(autouse=True)
+def public_dns() -> None:
+    with patch(
+        "mcp_fetch.tools.fetch_tools.socket.getaddrinfo",
+        return_value=[(2, 1, 6, "", ("93.184.216.34", 443))],
+    ):
+        yield
 
 
 def _mock_response(
@@ -92,6 +102,29 @@ class TestFetchUrl:
     def test_ftp_url_raises(self) -> None:
         with pytest.raises(ValidationError):
             fetch_url("ftp://example.com/file")
+
+    @pytest.mark.parametrize(
+        ("url", "address"),
+        [
+            ("http://localhost", "127.0.0.1"),
+            ("http://metadata.internal", "169.254.169.254"),
+            ("http://internal.example", "10.0.0.5"),
+            ("http://ipv6.internal", "::1"),
+        ],
+    )
+    def test_private_destinations_are_blocked(self, url: str, address: str) -> None:
+        with (
+            patch(
+                "mcp_fetch.tools.fetch_tools.socket.getaddrinfo",
+                return_value=[(2, 1, 6, "", (address, 80))],
+            ),
+            pytest.raises(ValidationError),
+        ):
+            _validate_url(url)
+
+    def test_embedded_credentials_are_blocked(self) -> None:
+        with pytest.raises(ValidationError):
+            _validate_url("https://user:secret@example.com")
 
     @patch("mcp_fetch.tools.fetch_tools.httpx.Client")
     def test_successful_get(self, mock_client_cls: MagicMock) -> None:

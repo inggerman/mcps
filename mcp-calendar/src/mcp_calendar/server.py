@@ -67,7 +67,6 @@ async def lifespan(server: FastMCP) -> AsyncIterator[None]:
     logger.info(
         "Servidor mcp-calendar iniciando",
         default_country=settings.default_country,
-        exchange_rate_provider=settings.exchange_rate_provider,
         exchange_cache_ttl_seconds=settings.exchange_cache_ttl_seconds,
         log_level=settings.log_level,
         log_format=settings.log_format,
@@ -135,7 +134,7 @@ def _handle_unexpected_error(tool_name: str, exc: Exception) -> None:
         error_type=type(exc).__name__,
         error=str(exc),
     )
-    raise SdkMcpError(ErrorData(code=-32603, message=f"Error interno: {exc}"))
+    raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor."))
 
 
 # ---------------------------------------------------------------------------
@@ -181,7 +180,7 @@ def tool_get_holidays(
 def tool_calculate_business_days(
     start_date: str,
     end_date: str,
-    country: str = "MX",
+    country: str = settings.default_country,
 ) -> dict[str, Any]:
     """Calcula días hábiles entre dos fechas."""
     try:
@@ -211,7 +210,7 @@ def tool_calculate_business_days(
 def tool_add_business_days(
     start_date: str,
     n_days: int,
-    country: str = "MX",
+    country: str = settings.default_country,
 ) -> str:
     """Suma N días hábiles a una fecha."""
     try:
@@ -238,7 +237,7 @@ def tool_add_business_days(
 )
 def tool_is_business_day(
     check_date: str,
-    country: str = "MX",
+    country: str = settings.default_country,
 ) -> dict[str, Any]:
     """Verifica si una fecha es día hábil."""
     try:
@@ -261,7 +260,7 @@ def tool_is_business_day(
 )
 def tool_next_business_day(
     check_date: str,
-    country: str = "MX",
+    country: str = settings.default_country,
 ) -> str:
     """Retorna el siguiente día hábil."""
     try:
@@ -284,7 +283,7 @@ def tool_next_business_day(
 )
 def tool_previous_business_day(
     check_date: str,
-    country: str = "MX",
+    country: str = settings.default_country,
 ) -> str:
     """Retorna el día hábil anterior."""
     try:
@@ -308,7 +307,7 @@ def tool_previous_business_day(
 def tool_business_days_in_month(
     year: int,
     month: int,
-    country: str = "MX",
+    country: str = settings.default_country,
 ) -> dict[str, Any]:
     """Calcula días hábiles de un mes completo."""
     try:
@@ -379,7 +378,7 @@ def tool_get_country_list() -> list[dict[str, Any]]:
 async def tool_get_exchange_rate(
     from_currency: str,
     to_currency: str,
-    ttl_seconds: int = 3600,
+    ttl_seconds: int = settings.exchange_cache_ttl_seconds,
 ) -> dict[str, Any]:
     """Obtiene la tasa de cambio actual."""
     try:
@@ -408,7 +407,7 @@ async def tool_convert_currency(
     amount: float,
     from_currency: str,
     to_currency: str,
-    ttl_seconds: int = 3600,
+    ttl_seconds: int = settings.exchange_cache_ttl_seconds,
 ) -> dict[str, Any]:
     """Convierte un monto entre divisas."""
     try:
@@ -466,7 +465,7 @@ async def tool_get_historical_rate(
 )
 async def tool_get_mx_rates(
     base: str = "MXN",
-    ttl_seconds: int = 3600,
+    ttl_seconds: int = settings.exchange_cache_ttl_seconds,
 ) -> dict[str, Any]:
     """Obtiene tasas MXN vs principales divisas mundiales."""
     try:

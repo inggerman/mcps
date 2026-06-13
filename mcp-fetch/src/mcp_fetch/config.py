@@ -34,8 +34,18 @@ class FetchSettings(BaseMcpSettings):
         description="User-Agent enviado en peticiones. Variable: MCP_FETCH_USER_AGENT.",
     )
     follow_redirects: bool = Field(
-        default=True,
-        description="Seguir redirecciones HTTP. Variable: MCP_FETCH_FOLLOW_REDIRECTS.",
+        default=False,
+        description=(
+            "Seguir redirecciones HTTP. Desactivado por defecto para reducir riesgo SSRF. "
+            "Variable: MCP_FETCH_FOLLOW_REDIRECTS."
+        ),
+    )
+    allow_private_networks: bool = Field(
+        default=False,
+        description=(
+            "Permitir destinos loopback, privados, link-local o reservados. "
+            "Variable: MCP_FETCH_ALLOW_PRIVATE_NETWORKS."
+        ),
     )
     verify_ssl: bool = Field(
         default=True,
@@ -46,6 +56,7 @@ class FetchSettings(BaseMcpSettings):
         base = super().to_log_context()
         base["default_timeout"] = self.default_timeout
         base["max_content_length"] = self.max_content_length
+        base["allow_private_networks"] = self.allow_private_networks
         return base
 
 

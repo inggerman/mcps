@@ -83,13 +83,13 @@ def tool_invoke_structured(
     prompt: str,
     schema: dict[str, Any],
     schema_name: str = "response",
-    provider: str = "bedrock-converse",
-    model_id: str = "amazon.nova-pro-v1:0",
+    provider: str = settings.default_provider,
+    model_id: str = settings.default_model_id,
     system_prompt: str | None = None,
-    max_tokens: int = 2048,
-    temperature: float = 0.0,
-    region: str | None = None,
-    base_url: str | None = None,
+    max_tokens: int = settings.default_max_tokens,
+    temperature: float = settings.default_temperature,
+    region: str | None = settings.aws_region,
+    base_url: str | None = settings.openai_base_url,
 ) -> dict[str, Any]:
     logger.info(
         "invoke_structured llamado",
@@ -122,7 +122,7 @@ def tool_invoke_structured(
         raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
     except Exception as exc:
         logger.exception("Error inesperado en invoke_structured", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message=f"Error interno: {exc}")) from exc
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
 
 
 # ---------------------------------------------------------------------------
@@ -155,7 +155,7 @@ def tool_validate_schema(schema: dict[str, Any]) -> dict[str, Any]:
         raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
     except Exception as exc:
         logger.exception("Error inesperado en validate_schema", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message=f"Error interno: {exc}")) from exc
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
 
 
 # ---------------------------------------------------------------------------
@@ -197,7 +197,7 @@ def tool_generate_schema(
         raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
     except Exception as exc:
         logger.exception("Error inesperado en generate_schema", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message=f"Error interno: {exc}")) from exc
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
 
 
 # ---------------------------------------------------------------------------
@@ -231,7 +231,7 @@ def tool_sanitize_schema(schema: dict[str, Any]) -> dict[str, Any]:
         raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
     except Exception as exc:
         logger.exception("Error inesperado en sanitize_schema", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message=f"Error interno: {exc}")) from exc
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
 
 
 # ---------------------------------------------------------------------------

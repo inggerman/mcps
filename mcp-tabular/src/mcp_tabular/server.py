@@ -21,7 +21,7 @@ from mcp_shared.errors import McpError
 from mcp_shared.logging import get_logger, setup_logging
 
 from mcp_tabular import __version__
-from mcp_tabular.config import TabularSettings
+from mcp_tabular.config import settings
 from mcp_tabular.tools.tabular_reader import (
     convert_to_csv,
     filter_rows,
@@ -36,8 +36,6 @@ from mcp_tabular.tools.tabular_reader import (
 # ---------------------------------------------------------------------------
 # Configuración
 # ---------------------------------------------------------------------------
-
-settings = TabularSettings()
 
 setup_logging(
     log_level=settings.log_level,
@@ -151,7 +149,7 @@ def _handle_unexpected_error(tool_name: str, exc: Exception) -> None:
         error_type=type(exc).__name__,
         error=str(exc),
     )
-    raise SdkMcpError(ErrorData(code=-32603, message=f"Error interno: {exc}"))
+    raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor."))
 
 
 # ---------------------------------------------------------------------------

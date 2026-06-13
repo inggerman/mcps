@@ -14,7 +14,10 @@ from __future__ import annotations
 import json
 from typing import Any
 
+import jsonschema
 from mcp_shared.errors import ApiError, NetworkError, ParseError, ValidationError
+
+from mcp_structured_output.config import settings
 
 _BOTO3_MISSING = "boto3 no está instalado. Ejecuta: pip install boto3"
 _APP_JSON = "application/json"
@@ -130,12 +133,12 @@ def _invoke_bedrock_converse(
             reason=_BOTO3_MISSING,
         ) from exc
 
-    kwargs: dict[str, Any] = {}
-    if region:
-        kwargs["region_name"] = region
-
     try:
-        client = boto3.client("bedrock-runtime", **kwargs)
+        session = boto3.Session(
+            profile_name=settings.aws_profile,
+            region_name=region or settings.aws_region,
+        )
+        client = session.client("bedrock-runtime")
 
         messages: list[dict[str, Any]] = [{"role": "user", "content": [{"text": prompt}]}]
 
@@ -188,6 +191,7 @@ def _invoke_bedrock_converse(
         model_id=model_id,
         input_tokens=usage.get("inputTokens", 0),
         output_tokens=usage.get("outputTokens", 0),
+        schema=schema,
     )
 
 
@@ -217,12 +221,12 @@ def _invoke_bedrock_claude(
             reason=_BOTO3_MISSING,
         ) from exc
 
-    kwargs: dict[str, Any] = {}
-    if region:
-        kwargs["region_name"] = region
-
     try:
-        client = boto3.client("bedrock-runtime", **kwargs)
+        session = boto3.Session(
+            profile_name=settings.aws_profile,
+            region_name=region or settings.aws_region,
+        )
+        client = session.client("bedrock-runtime")
 
         body: dict[str, Any] = {
             "anthropic_version": "bedrock-2023-05-31",
@@ -271,6 +275,7 @@ def _invoke_bedrock_claude(
         model_id=model_id,
         input_tokens=usage.get("input_tokens", 0),
         output_tokens=usage.get("output_tokens", 0),
+        schema=schema,
     )
 
 
@@ -300,12 +305,12 @@ def _invoke_bedrock_openweight(
             reason=_BOTO3_MISSING,
         ) from exc
 
-    kwargs: dict[str, Any] = {}
-    if region:
-        kwargs["region_name"] = region
-
     try:
-        client = boto3.client("bedrock-runtime", **kwargs)
+        session = boto3.Session(
+            profile_name=settings.aws_profile,
+            region_name=region or settings.aws_region,
+        )
+        client = session.client("bedrock-runtime")
 
         messages: list[dict[str, str]] = []
         if system_prompt:
@@ -367,6 +372,7 @@ def _invoke_bedrock_openweight(
         model_id=model_id,
         input_tokens=usage.get("prompt_tokens", usage.get("input_tokens", 0)),
         output_tokens=usage.get("completion_tokens", usage.get("output_tokens", 0)),
+        schema=schema,
     )
 
 
@@ -394,8 +400,6 @@ def _invoke_openai_compatible(
             url="openai-compatible",
             reason="openai no está instalado. Ejecuta: pip install openai",
         ) from exc
-
-    from mcp_structured_output.config import settings
 
     api_key = settings.openai_api_key or "no-key"
     resolved_base_url = base_url or settings.openai_base_url
@@ -453,6 +457,7 @@ def _invoke_openai_compatible(
         model_id=model_id,
         input_tokens=input_tokens,
         output_tokens=output_tokens,
+        schema=schema,
     )
 
 
@@ -467,6 +472,7 @@ def _build_result(
     model_id: str,
     input_tokens: int,
     output_tokens: int,
+    schema: dict[str, Any],
 ) -> dict[str, Any]:
     """Parsea el texto de respuesta como JSON y construye el dict de retorno."""
     try:
@@ -482,6 +488,20 @@ def _build_result(
             source=provider,
             reason=f"Se esperaba dict, se recibió {type(result).__name__}. Respuesta: {raw_text[:200]!r}",
         )
+
+    try:
+        jsonschema.validate(instance=result, schema=schema)
+    except jsonschema.SchemaError as exc:
+        raise ValidationError(
+            field="schema",
+            message=f"El JSON Schema no es válido: {exc.message}",
+        ) from exc
+    except jsonschema.ValidationError as exc:
+        path = ".".join(str(part) for part in exc.absolute_path) or "$"
+        raise ParseError(
+            source=provider,
+            reason=f"La respuesta no cumple el JSON Schema en {path}: {exc.message}",
+        ) from exc
 
     return {
         "result": result,

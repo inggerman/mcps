@@ -6,8 +6,11 @@ Todas las operaciones son síncronas (httpx sync client).
 
 from __future__ import annotations
 
+import ipaddress
 import json
+import socket
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
 from bs4 import BeautifulSoup
@@ -76,6 +79,7 @@ def fetch_url(
     except httpx.RequestError as exc:
         raise NetworkError(url=url, reason=str(exc)) from exc
 
+    _validate_url(str(response.url))
     return _build_response(response, resolved_max)
 
 
@@ -138,6 +142,7 @@ def fetch_post(
     except httpx.RequestError as exc:
         raise NetworkError(url=url, reason=str(exc)) from exc
 
+    _validate_url(str(response.url))
     return _build_response(response, resolved_max)
 
 
@@ -289,11 +294,41 @@ def fetch_json(
 
 
 def _validate_url(url: str) -> None:
-    if not url.startswith(("http://", "https://")):
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
         raise ValidationError(
             field="url",
             message=f"La URL debe comenzar con http:// o https://. Recibido: {url!r}",
         )
+    if parsed.username or parsed.password:
+        raise ValidationError(
+            field="url",
+            message="No se permiten credenciales embebidas en la URL.",
+        )
+    if settings.allow_private_networks:
+        return
+
+    try:
+        addresses = {
+            item[4][0]
+            for item in socket.getaddrinfo(
+                parsed.hostname,
+                parsed.port or (443 if parsed.scheme == "https" else 80),
+                type=socket.SOCK_STREAM,
+            )
+        }
+    except socket.gaierror as exc:
+        raise ValidationError(
+            field="url",
+            message=f"No se pudo resolver el host {parsed.hostname!r}.",
+        ) from exc
+
+    for address in addresses:
+        if not ipaddress.ip_address(address).is_global:
+            raise ValidationError(
+                field="url",
+                message=f"El destino {parsed.hostname!r} resuelve a una red no pública.",
+            )
 
 
 def _build_response(response: httpx.Response, max_bytes: int) -> dict[str, Any]:

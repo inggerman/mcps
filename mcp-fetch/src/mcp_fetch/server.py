@@ -94,7 +94,7 @@ def tool_fetch_url(
         raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
     except Exception as exc:
         logger.exception("Error inesperado en fetch_url", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message=f"Error interno: {exc}")) from exc
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
 
 
 # ---------------------------------------------------------------------------
@@ -141,7 +141,7 @@ def tool_fetch_post(
         raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
     except Exception as exc:
         logger.exception("Error inesperado en fetch_post", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message=f"Error interno: {exc}")) from exc
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
 
 
 # ---------------------------------------------------------------------------
@@ -186,7 +186,7 @@ def tool_extract_text(
         raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
     except Exception as exc:
         logger.exception("Error inesperado en extract_text", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message=f"Error interno: {exc}")) from exc
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
 
 
 # ---------------------------------------------------------------------------
@@ -221,7 +221,7 @@ def tool_fetch_json(
         raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
     except Exception as exc:
         logger.exception("Error inesperado en fetch_json", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message=f"Error interno: {exc}")) from exc
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
 
 
 # ---------------------------------------------------------------------------

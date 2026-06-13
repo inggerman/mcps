@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 from mcp_shared.errors import InvalidValueError, ValidationError
+from mcp_tabular.config import settings
 from mcp_tabular.tools.tabular_reader import (
     filter_rows,
     get_column_stats,
@@ -48,3 +49,16 @@ def test_invalid_operator(sample_csv: str) -> None:
 def test_missing_column(sample_csv: str) -> None:
     with pytest.raises(ValidationError):
         get_column_stats(sample_csv, "missing")
+
+
+def test_allowed_root_blocks_files_outside_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    allowed = tmp_path / "allowed"
+    allowed.mkdir()
+    outside = tmp_path / "outside.csv"
+    outside.write_text("value\n1\n", encoding="utf-8")
+    monkeypatch.setattr(settings, "allowed_root", allowed)
+
+    with pytest.raises(ValidationError, match="directorio permitido"):
+        read_tabular_file(str(outside))

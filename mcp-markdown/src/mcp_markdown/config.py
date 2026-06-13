@@ -68,6 +68,13 @@ class Settings(BaseSettings):
         default=False,
         description="Si True, valida que los enlaces externos respondan (requiere red).",
     )
+    allowed_root: Path | None = Field(
+        default=None,
+        description=(
+            "Directorio raíz opcional al que se restringe el acceso a archivos. "
+            "Variable: MCP_MARKDOWN_ALLOWED_ROOT."
+        ),
+    )
 
     # --- Transport ---
     mcp_transport: str = Field(

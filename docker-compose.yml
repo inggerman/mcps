@@ -36,8 +36,9 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8001"
+      TABULAR_ALLOWED_ROOT: /data
     ports:
-      - "8001:8001"
+      - "127.0.0.1:8001:8001"
     volumes:
       - mcp-data:/data:ro
     healthcheck:
@@ -70,7 +71,7 @@ services:
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8002"
     ports:
-      - "8002:8002"
+      - "127.0.0.1:8002:8002"
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8002), timeout=5)"]
       interval: 30s
@@ -100,8 +101,9 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8003"
+      MCP_MARKDOWN_ALLOWED_ROOT: /data
     ports:
-      - "8003:8003"
+      - "127.0.0.1:8003:8003"
     volumes:
       - mcp-data:/data:ro
     healthcheck:
@@ -134,7 +136,7 @@ services:
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8004"
     ports:
-      - "8004:8004"
+      - "127.0.0.1:8004:8004"
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8004), timeout=5)"]
       interval: 30s
@@ -165,7 +167,7 @@ services:
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8006"
     ports:
-      - "8006:8006"
+      - "127.0.0.1:8006:8006"
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8006), timeout=5)"]
       interval: 30s
@@ -196,7 +198,7 @@ services:
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8008"
     ports:
-      - "8008:8008"
+      - "127.0.0.1:8008:8008"
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8008), timeout=5)"]
       interval: 30s
@@ -212,6 +214,7 @@ services:
   # MCP: Docker (containers, images, logs, exec)
   # ---------------------------------------------------------------------------
   mcp-docker:
+    profiles: ["privileged-tools"]
     build:
       context: .
       dockerfile: mcp-docker/Dockerfile
@@ -227,7 +230,7 @@ services:
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8007"
     ports:
-      - "8007:8007"
+      - "127.0.0.1:8007:8007"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     healthcheck:
@@ -261,7 +264,7 @@ services:
       MCP_PORT: "8005"
       MCP_SO_AWS_REGION: ${MCP_SO_AWS_REGION:-us-east-1}
     ports:
-      - "8005:8005"
+      - "127.0.0.1:8005:8005"
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8005), timeout=5)"]
       interval: 30s

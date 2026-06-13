@@ -26,6 +26,7 @@ def _get_client() -> Any:
         kwargs: dict[str, Any] = {}
         if settings.docker_host:
             kwargs["base_url"] = settings.docker_host
+        kwargs["timeout"] = settings.exec_timeout
         client = docker.from_env(**kwargs)
         client.ping()
         return client

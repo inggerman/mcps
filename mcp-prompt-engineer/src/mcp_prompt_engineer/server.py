@@ -111,7 +111,7 @@ def _handle_unexpected_error(tool_name: str, exc: Exception) -> None:
         error_type=type(exc).__name__,
         error=str(exc),
     )
-    raise SdkMcpError(ErrorData(code=-32603, message=f"Error interno: {exc}"))
+    raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor."))
 
 
 # ---------------------------------------------------------------------------

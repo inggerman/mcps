@@ -8,6 +8,8 @@ con el prefijo TABULAR_ (ej: TABULAR_MAX_ROWS_PREVIEW=500).
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from mcp_shared.config import BaseMcpSettings
 from pydantic import Field
 from pydantic_settings import SettingsConfigDict
@@ -89,6 +91,13 @@ class TabularSettings(BaseMcpSettings):
             "Variable de entorno: TABULAR_CHARDET_CONFIDENCE_THRESHOLD."
         ),
     )
+    allowed_root: Path | None = Field(
+        default=None,
+        description=(
+            "Directorio raíz opcional al que se restringe el acceso a archivos. "
+            "Variable de entorno: TABULAR_ALLOWED_ROOT."
+        ),
+    )
 
     @property
     def max_file_size_bytes(self) -> int:
@@ -106,3 +115,6 @@ class TabularSettings(BaseMcpSettings):
             }
         )
         return base
+
+
+settings = TabularSettings()

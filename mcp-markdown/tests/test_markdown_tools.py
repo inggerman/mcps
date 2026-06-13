@@ -11,6 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from mcp_markdown.config import settings
 from mcp_markdown.tools.markdown_tools import (
     extract_code_blocks,
     extract_headings,
@@ -32,6 +33,20 @@ from mcp_markdown.tools.markdown_tools import (
 
 
 class TestReadMarkdown:
+    def test_allowed_root_blocks_files_outside_root(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        allowed = tmp_path / "allowed"
+        allowed.mkdir()
+        outside = tmp_path / "outside.md"
+        outside.write_text("# Outside\n", encoding="utf-8")
+        monkeypatch.setattr(settings, "allowed_root", allowed)
+
+        with pytest.raises(PermissionError, match="directorio permitido"):
+            read_markdown(str(outside))
+
     def test_returns_content(self, simple_md_file: str) -> None:
         result = read_markdown(simple_md_file)
         assert "content" in result

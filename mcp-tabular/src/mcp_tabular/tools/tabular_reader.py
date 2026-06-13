@@ -27,6 +27,8 @@ from mcp_shared.errors import (
 )
 from mcp_shared.logging import get_logger
 
+from mcp_tabular.config import settings
+
 logger = get_logger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -72,6 +74,13 @@ def _resolve_path(path: str) -> Path:
         raise ValidationError(field="path", message="La ruta del archivo no puede estar vacía.")
 
     resolved = Path(path).expanduser().resolve()
+    if settings.allowed_root is not None:
+        allowed_root = settings.allowed_root.expanduser().resolve()
+        if not resolved.is_relative_to(allowed_root):
+            raise ValidationError(
+                field="path",
+                message=f"La ruta debe estar dentro del directorio permitido: '{allowed_root}'",
+            )
 
     if not resolved.exists():
         from mcp_shared.errors import FileNotFoundError as McpFileNotFoundError
