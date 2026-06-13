@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 from typing import Any, AsyncIterator
 
 import structlog
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 from mcp.shared.exceptions import McpError as SdkMcpError
 from mcp.types import ErrorData
 
@@ -405,4 +405,7 @@ def tool_get_column_stats(
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    mcp.run(transport="stdio")
+    if settings.mcp_transport == "streamable-http":
+        mcp.run(transport="streamable-http", host=settings.mcp_host, port=settings.mcp_port)
+    else:
+        mcp.run(transport="stdio")

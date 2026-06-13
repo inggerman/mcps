@@ -1,76 +1,51 @@
-# =============================================================================
-# mcp-markdown — Multi-stage Dockerfile (production-grade, non-root)
-# =============================================================================
-# Stage 1: builder  — instala dependencias con uv en un entorno aislado
-# Stage 2: runtime  — imagen mínima sin herramientas de compilación
-# =============================================================================
+FROM python:3.12-slim AS builder
 
-# ---- Stage 1: builder -------------------------------------------------------
-FROM python:3.11-slim AS builder
-
-# Instalar uv (gestor de paquetes rápido)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# Variables de entorno para uv
-ENV UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy \
-    UV_PROJECT_ENVIRONMENT=/app/.venv \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+WORKDIR /build
+
+COPY mcp-markdown/pyproject.toml ./
+COPY shared /workspace/shared
+
+RUN uv pip install --system --no-cache \
+    "fastmcp>=2.3" \
+    "mistune>=3.0" \
+    "python-frontmatter>=1.1" \
+    "mdformat>=0.7" \
+    "markdown>=3.6" \
+    "pydantic>=2.7" \
+    "pydantic-settings>=2.3" \
+    "structlog>=24.1" \
+    "rich>=13.7" && \
+    uv pip install --system --no-cache /workspace/shared
+
+FROM python:3.12-slim AS runtime
+
+LABEL org.opencontainers.image.title="mcp-markdown" \
+      org.opencontainers.image.description="MCP server for Markdown files" \
+      org.opencontainers.image.version="1.0.0"
+
+RUN groupadd --gid 1001 mcpgroup && \
+    useradd --uid 1001 --gid mcpgroup --shell /bin/bash --create-home mcpuser
+
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
 WORKDIR /app
+COPY --chown=mcpuser:mcpgroup mcp-markdown/src/ ./src/
 
-# Copiar solo los archivos de dependencias primero (cache layer)
-COPY pyproject.toml ./
-
-# Copiar el paquete compartido (workspace)
-COPY ../shared ./shared
-
-# Instalar dependencias sin el propio paquete (para cache eficiente)
-RUN uv sync --no-install-project --no-dev
-
-# Copiar el código fuente
-COPY src/ ./src/
-
-# Instalar el paquete completo
-RUN uv sync --no-dev
-
-
-# ---- Stage 2: runtime -------------------------------------------------------
-FROM python:3.11-slim AS runtime
-
-# Metadatos OCI
-LABEL org.opencontainers.image.title="mcp-markdown" \
-      org.opencontainers.image.description="MCP server for reading and processing Markdown files" \
-      org.opencontainers.image.version="1.0.0" \
-      org.opencontainers.image.source="https://github.com/example/mcp-framework"
-
-# Variables de entorno de producción
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PATH="/app/.venv/bin:$PATH" \
-    MCP_MARKDOWN_LOG_FORMAT=json \
-    MCP_MARKDOWN_LOG_LEVEL=INFO
+    PYTHONPATH=/app/src \
+    LOG_LEVEL=INFO \
+    LOG_FORMAT=json \
+    MCP_SERVER_NAME=mcp-markdown \
+    MCP_TRANSPORT=stdio \
+    MCP_PORT=8003
 
-# Crear usuario no-root para seguridad
-RUN groupadd --gid 1001 appgroup && \
-    useradd --uid 1001 --gid appgroup --shell /bin/bash --create-home appuser
+USER mcpuser
 
-WORKDIR /app
-
-# Copiar el entorno virtual y el código desde el builder
-COPY --from=builder --chown=appuser:appgroup /app/.venv /app/.venv
-COPY --from=builder --chown=appuser:appgroup /app/src /app/src
-
-# Crear directorio de datos con permisos correctos
-RUN mkdir -p /data && chown appuser:appgroup /data
-
-# Cambiar al usuario no-root
-USER appuser
-
-# Healthcheck: verificar que el módulo es importable
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import mcp_markdown; print('ok')" || exit 1
 
-# Ejecutar el servidor MCP via stdio (protocolo MCP estándar)
 CMD ["python", "-m", "mcp_markdown.server"]

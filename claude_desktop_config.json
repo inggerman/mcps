@@ -15,22 +15,6 @@
         "LOG_FORMAT": "console"
       }
     },
-    "mcp-documents": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "C:/Users/germa/Documents/IA/mcps/mcp-documents",
-        "run",
-        "python",
-        "-m",
-        "mcp_documents.server"
-      ],
-      "env": {
-        "LOG_LEVEL": "INFO",
-        "LOG_FORMAT": "console",
-        "TESSERACT_CMD": "tesseract"
-      }
-    },
     "mcp-calendar": {
       "command": "uv",
       "args": [
@@ -77,19 +61,66 @@
         "LOG_FORMAT": "console"
       }
     },
-    "mcp-utils": {
+    "mcp-kafka": {
       "command": "uv",
       "args": [
         "--directory",
-        "C:/Users/germa/Documents/IA/mcps/mcp-utils",
+        "C:/Users/germa/Documents/IA/mcps/mcp-kafka",
         "run",
         "python",
         "-m",
-        "mcp_utils.server"
+        "mcp_kafka.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "MCP_KAFKA_BOOTSTRAP_SERVERS": "localhost:9092"
+      }
+    },
+    "mcp-docker": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-docker",
+        "run",
+        "python",
+        "-m",
+        "mcp_docker.server"
       ],
       "env": {
         "LOG_LEVEL": "INFO",
         "LOG_FORMAT": "console"
+      }
+    },
+    "mcp-fetch": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-fetch",
+        "run",
+        "python",
+        "-m",
+        "mcp_fetch.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console"
+      }
+    },
+    "mcp-structured-output": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-structured-output",
+        "run",
+        "python",
+        "-m",
+        "mcp_structured_output.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "MCP_SO_AWS_REGION": "us-east-1"
       }
     }
   }

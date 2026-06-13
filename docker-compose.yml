@@ -1,121 +1,277 @@
+# =============================================================================
+# MCP Framework — docker-compose (HTTP / Streamable-HTTP mode)
+#
+# Todos los servidores corren con MCP_TRANSPORT=streamable-http y exponen
+# un puerto HTTP. Para uso local con stdio (Claude Desktop / Cursor) usa
+# `uv run python -m mcp_X.server` directamente o `docker run --rm -i`.
+#
+# Puertos:
+#   8001 — mcp-tabular
+#   8002 — mcp-calendar
+#   8003 — mcp-markdown
+#   8004 — mcp-prompt-engineer
+#   8005 — mcp-structured-output
+#   8006 — mcp-fetch
+#   8007 — mcp-docker
+#   8008 — mcp-kafka
+# =============================================================================
+
 services:
 
   # ---------------------------------------------------------------------------
-  # MCP: Tabular (Excel, CSV, ODS)
+  # MCP: Tabular (Excel, CSV, ODS, TSV, Parquet)
   # ---------------------------------------------------------------------------
   mcp-tabular:
     build:
-      context: ./mcp-tabular
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: mcp-tabular/Dockerfile
       target: runtime
     image: mcp-tabular:latest
     container_name: mcp-tabular
     restart: unless-stopped
-    env_file: .env
-    volumes:
-      - mcp-data:/data:ro          # Archivos a procesar (read-only)
-    healthcheck:
-      test: ["CMD", "python", "-c", "import mcp_tabular; print('ok')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    labels:
-      - "mcp.server=tabular"
-      - "mcp.version=1.0.0"
-
-  # ---------------------------------------------------------------------------
-  # MCP: Documents (PDF, Word, PPT, ODT)
-  # ---------------------------------------------------------------------------
-  mcp-documents:
-    build:
-      context: ./mcp-documents
-      dockerfile: Dockerfile
-      target: runtime
-    image: mcp-documents:latest
-    container_name: mcp-documents
-    restart: unless-stopped
-    env_file: .env
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8001"
+    ports:
+      - "8001:8001"
     volumes:
       - mcp-data:/data:ro
     healthcheck:
-      test: ["CMD", "python", "-c", "import mcp_documents; print('ok')"]
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8001), timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=tabular"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Calendar (Días hábiles + Divisas)
+  # MCP: Calendar (Días hábiles + Divisas via Frankfurter API)
   # ---------------------------------------------------------------------------
   mcp-calendar:
     build:
-      context: ./mcp-calendar
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: mcp-calendar/Dockerfile
       target: runtime
     image: mcp-calendar:latest
     container_name: mcp-calendar
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8002"
+    ports:
+      - "8002:8002"
     healthcheck:
-      test: ["CMD", "python", "-c", "import mcp_calendar; print('ok')"]
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8002), timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=calendar"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
   # MCP: Markdown
   # ---------------------------------------------------------------------------
   mcp-markdown:
     build:
-      context: ./mcp-markdown
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: mcp-markdown/Dockerfile
       target: runtime
     image: mcp-markdown:latest
     container_name: mcp-markdown
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8003"
+    ports:
+      - "8003:8003"
     volumes:
       - mcp-data:/data:ro
     healthcheck:
-      test: ["CMD", "python", "-c", "import mcp_markdown; print('ok')"]
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8003), timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=markdown"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
   # MCP: Prompt Engineer
   # ---------------------------------------------------------------------------
   mcp-prompt-engineer:
     build:
-      context: ./mcp-prompt-engineer
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: mcp-prompt-engineer/Dockerfile
       target: runtime
     image: mcp-prompt-engineer:latest
     container_name: mcp-prompt-engineer
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8004"
+    ports:
+      - "8004:8004"
     healthcheck:
-      test: ["CMD", "python", "-c", "import mcp_prompt_engineer; print('ok')"]
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8004), timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=prompt-engineer"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Utils
+  # MCP: Fetch (HTTP GET, POST, HTML extraction, JSON parsing)
   # ---------------------------------------------------------------------------
-  mcp-utils:
+  mcp-fetch:
     build:
-      context: ./mcp-utils
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: mcp-fetch/Dockerfile
       target: runtime
-    image: mcp-utils:latest
-    container_name: mcp-utils
+    image: mcp-fetch:latest
+    container_name: mcp-fetch
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8006"
+    ports:
+      - "8006:8006"
     healthcheck:
-      test: ["CMD", "python", "-c", "import mcp_utils; print('ok')"]
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8006), timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=fetch"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Kafka (topics, consumer groups, produce, consume)
+  # ---------------------------------------------------------------------------
+  mcp-kafka:
+    build:
+      context: .
+      dockerfile: mcp-kafka/Dockerfile
+      target: runtime
+    image: mcp-kafka:latest
+    container_name: mcp-kafka
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8008"
+    ports:
+      - "8008:8008"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8008), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=kafka"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Docker (containers, images, logs, exec)
+  # ---------------------------------------------------------------------------
+  mcp-docker:
+    build:
+      context: .
+      dockerfile: mcp-docker/Dockerfile
+      target: runtime
+    image: mcp-docker:latest
+    container_name: mcp-docker
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8007"
+    ports:
+      - "8007:8007"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8007), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=docker"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Structured Output (Bedrock + OpenAI-compatible)
+  # ---------------------------------------------------------------------------
+  mcp-structured-output:
+    build:
+      context: .
+      dockerfile: mcp-structured-output/Dockerfile
+      target: runtime
+    image: mcp-structured-output:latest
+    container_name: mcp-structured-output
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8005"
+      MCP_SO_AWS_REGION: ${MCP_SO_AWS_REGION:-us-east-1}
+    ports:
+      - "8005:8005"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8005), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=structured-output"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
 
 # ---------------------------------------------------------------------------
 # Volumes
@@ -126,4 +282,4 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ${MCP_DATA_DIR:-./data}  # Carpeta local montada
+      device: ${MCP_DATA_DIR:-./data}

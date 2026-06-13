@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -67,6 +67,23 @@ class Settings(BaseSettings):
     validate_external_links: bool = Field(
         default=False,
         description="Si True, valida que los enlaces externos respondan (requiere red).",
+    )
+
+    # --- Transport ---
+    mcp_transport: str = Field(
+        default="stdio",
+        validation_alias=AliasChoices("MCP_TRANSPORT", "MCP_MARKDOWN_MCP_TRANSPORT"),
+        description="Protocolo de transporte: 'stdio' | 'streamable-http'. Variable: MCP_TRANSPORT.",
+    )
+    mcp_host: str = Field(
+        default="0.0.0.0",
+        validation_alias=AliasChoices("MCP_HOST", "MCP_MARKDOWN_MCP_HOST"),
+        description="Host del servidor HTTP (solo usado con mcp_transport=streamable-http).",
+    )
+    mcp_port: int = Field(
+        default=8000,
+        validation_alias=AliasChoices("MCP_PORT", "MCP_MARKDOWN_MCP_PORT"),
+        description="Puerto del servidor HTTP (solo usado con mcp_transport=streamable-http).",
     )
 
     @property

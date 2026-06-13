@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "MCP server for reading and processing Markdown files"
 requires-python = ">=3.11"
 dependencies = [
-    "mcp[cli]>=1.9",
+    "fastmcp>=2.3",
     "mistune>=3.0",
     "python-frontmatter>=1.1",
     "mdformat>=0.7",

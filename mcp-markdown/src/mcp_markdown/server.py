@@ -7,14 +7,14 @@ el servidor con lifespan, logging estructurado e instrucciones.
 
 from __future__ import annotations
 
-import sys
 from contextlib import asynccontextmanager
 from typing import Any
 
 import structlog
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 
 from mcp_markdown.config import settings
+from mcp_shared.logging import setup_logging
 from mcp_markdown.tools.markdown_tools import (
     extract_code_blocks,
     extract_headings,
@@ -34,27 +34,10 @@ from mcp_markdown.tools.markdown_tools import (
 # Logging estructurado
 # ---------------------------------------------------------------------------
 
-_processors: list[Any] = [
-    structlog.contextvars.merge_contextvars,
-    structlog.stdlib.add_log_level,
-    structlog.stdlib.add_logger_name,
-    structlog.processors.TimeStamper(fmt="iso"),
-    structlog.processors.StackInfoRenderer(),
-]
-
-if settings.log_format == "json":
-    _processors.append(structlog.processors.JSONRenderer())
-else:
-    _processors.append(structlog.dev.ConsoleRenderer(colors=True))
-
-structlog.configure(
-    processors=_processors,
-    wrapper_class=structlog.make_filtering_bound_logger(
-        getattr(__import__("logging"), settings.log_level.upper(), 20)
-    ),
-    context_class=dict,
-    logger_factory=structlog.PrintLoggerFactory(file=sys.stderr),
-    cache_logger_on_first_use=True,
+setup_logging(
+    log_level=settings.log_level,
+    log_format=settings.log_format,
+    server_name=settings.server_name,
 )
 
 log = structlog.get_logger(__name__)
@@ -332,7 +315,10 @@ def tool_list_markdown_files(
 
 def main() -> None:
     """Punto de entrada principal del servidor."""
-    mcp.run()
+    if settings.mcp_transport == "streamable-http":
+        mcp.run(transport="streamable-http", host=settings.mcp_host, port=settings.mcp_port)
+    else:
+        mcp.run(transport="stdio")
 
 
 if __name__ == "__main__":

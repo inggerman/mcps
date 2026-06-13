@@ -7,7 +7,7 @@ de variables de entorno en todo el framework MCP.
 
 from __future__ import annotations
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -87,12 +87,23 @@ class Settings(BaseSettings):
         description="Versión del servidor MCP.",
     )
 
-    model_config = SettingsConfigDict(
-        env_prefix="",
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="ignore",
+    # -------------------------------------------------------------------------
+    # Transport
+    # -------------------------------------------------------------------------
+    mcp_transport: str = Field(
+        default="stdio",
+        validation_alias=AliasChoices("MCP_TRANSPORT", "MCP_PE_MCP_TRANSPORT"),
+        description="Protocolo de transporte: 'stdio' | 'streamable-http'. Variable: MCP_TRANSPORT.",
+    )
+    mcp_host: str = Field(
+        default="0.0.0.0",
+        validation_alias=AliasChoices("MCP_HOST", "MCP_PE_MCP_HOST"),
+        description="Host del servidor HTTP (solo usado con mcp_transport=streamable-http).",
+    )
+    mcp_port: int = Field(
+        default=8000,
+        validation_alias=AliasChoices("MCP_PORT", "MCP_PE_MCP_PORT"),
+        description="Puerto del servidor HTTP (solo usado con mcp_transport=streamable-http).",
     )
 
 

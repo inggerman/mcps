@@ -2,11 +2,13 @@
 members = [
     "shared",
     "mcp-tabular",
-    "mcp-documents",
     "mcp-calendar",
     "mcp-markdown",
     "mcp-prompt-engineer",
-    "mcp-utils",
+    "mcp-structured-output",
+    "mcp-fetch",
+    "mcp-docker",
+    "mcp-kafka",
 ]
 
 [tool.ruff]
@@ -43,7 +45,7 @@ warn_unused_ignores = true
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-addopts = "-v --tb=short"
+addopts = "-v --tb=short --import-mode=importlib"
 
 [tool.coverage.run]
 source = ["src"]
@@ -52,3 +54,14 @@ omit = ["*/tests/*", "*/test_*"]
 [tool.coverage.report]
 show_missing = true
 fail_under = 80
+
+[dependency-groups]
+dev = [
+    "mypy>=1.10",
+    "pre-commit>=3.7",
+    "pytest>=9.0.3",
+    "pytest-anyio>=0.0.0",
+    "pytest-asyncio>=1.0",
+    "pytest-cov>=6.0",
+    "ruff>=0.11",
+]

@@ -9,6 +9,8 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Any, Generic, Literal, TypeVar
 
+_Date = date
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # Variable de tipo genérica para StandardResponse
@@ -291,7 +293,7 @@ class Holiday(BaseModel):
     Representa un día no laborable con su fecha, nombre y contexto geográfico.
     """
 
-    date: date = Field(..., description="Fecha del feriado en formato ISO 8601.")
+    date: _Date = Field(..., description="Fecha del feriado en formato ISO 8601.")
     name: str = Field(..., description="Nombre oficial del feriado.")
     country: str = Field(
         ...,

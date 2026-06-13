@@ -10,7 +10,7 @@ YELLOW := \033[0;33m
 CYAN   := \033[0;36m
 RESET  := \033[0m
 
-SERVERS := mcp-tabular mcp-documents mcp-calendar mcp-markdown mcp-prompt-engineer mcp-utils
+SERVERS := mcp-tabular mcp-calendar mcp-markdown mcp-prompt-engineer mcp-structured-output mcp-fetch mcp-docker mcp-kafka
 
 ##@ Setup
 

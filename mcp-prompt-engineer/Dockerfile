@@ -9,21 +9,21 @@ FROM python:3.11-slim AS builder
 
 WORKDIR /build
 
-# Install uv
-RUN pip install --no-cache-dir uv
+# Instalar uv usando la imagen oficial
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 # Copy workspace root pyproject.toml and shared package first (for caching)
-COPY ../pyproject.toml /workspace/pyproject.toml
-COPY ../shared /workspace/shared
+COPY pyproject.toml /workspace/pyproject.toml
+COPY shared /workspace/shared
 
 # Copy this server's source
-COPY . /workspace/mcp-prompt-engineer
+COPY mcp-prompt-engineer /workspace/mcp-prompt-engineer
 
 WORKDIR /workspace
 
 # Install all dependencies into the system Python (no venv needed in Docker)
 RUN uv pip install --system --no-cache \
-    "mcp[cli]>=1.9" \
+    "fastmcp>=2.3" \
     "tiktoken>=0.7" \
     "langdetect>=1.0.9" \
     "jinja2>=3.1" \
@@ -65,7 +65,9 @@ USER mcp
 ENV LOG_LEVEL=INFO \
     LOG_FORMAT=json \
     PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+    PYTHONDONTWRITEBYTECODE=1 \
+    MCP_TRANSPORT=stdio \
+    MCP_PORT=8000
 
 # Health check: import the package
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import Field, field_validator
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -50,6 +50,7 @@ class BaseMcpSettings(BaseSettings):
     # --- Logging ---
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
         default="INFO",
+        validation_alias=AliasChoices("LOG_LEVEL", "log_level"),
         description=(
             "Nivel mínimo de log. "
             "Valores válidos: DEBUG, INFO, WARNING, ERROR, CRITICAL. "
@@ -58,6 +59,7 @@ class BaseMcpSettings(BaseSettings):
     )
     log_format: Literal["json", "console"] = Field(
         default="json",
+        validation_alias=AliasChoices("LOG_FORMAT", "log_format"),
         description=(
             "Formato de salida del log. "
             "'json' para producción (ELK, Datadog), 'console' para desarrollo. "
@@ -68,6 +70,7 @@ class BaseMcpSettings(BaseSettings):
     # --- Servidor MCP ---
     mcp_host: str = Field(
         default="0.0.0.0",
+        validation_alias=AliasChoices("MCP_HOST", "mcp_host"),
         description=(
             "Dirección IP en la que el servidor MCP escuchará conexiones. "
             "Use '0.0.0.0' para todas las interfaces o '127.0.0.1' para solo localhost. "
@@ -76,6 +79,7 @@ class BaseMcpSettings(BaseSettings):
     )
     mcp_port: int = Field(
         default=8000,
+        validation_alias=AliasChoices("MCP_PORT", "mcp_port"),
         ge=1024,
         le=65535,
         description=(
@@ -86,6 +90,7 @@ class BaseMcpSettings(BaseSettings):
     )
     mcp_server_name: str = Field(
         default="mcp-server",
+        validation_alias=AliasChoices("MCP_SERVER_NAME", "mcp_server_name"),
         description=(
             "Nombre identificador del servidor MCP. "
             "Se incluye en los logs y metadatos de respuesta. "
@@ -94,6 +99,7 @@ class BaseMcpSettings(BaseSettings):
     )
     mcp_debug: bool = Field(
         default=False,
+        validation_alias=AliasChoices("MCP_DEBUG", "mcp_debug"),
         description=(
             "Activa el modo de depuración del servidor. "
             "En modo debug se pueden exponer más detalles de errores internos. "
@@ -102,11 +108,22 @@ class BaseMcpSettings(BaseSettings):
     )
     mcp_workers: int = Field(
         default=1,
+        validation_alias=AliasChoices("MCP_WORKERS", "mcp_workers"),
         ge=1,
         le=64,
         description=(
             "Número de workers del servidor MCP. "
             "Variable de entorno: MCP_WORKERS."
+        ),
+    )
+    mcp_transport: Literal["stdio", "streamable-http"] = Field(
+        default="stdio",
+        validation_alias=AliasChoices("MCP_TRANSPORT", "mcp_transport"),
+        description=(
+            "Protocolo de transporte del servidor MCP. "
+            "'stdio' para uso local (Claude Desktop, Cursor, Windsurf). "
+            "'streamable-http' para despliegue remoto en producción. "
+            "Variable de entorno: MCP_TRANSPORT."
         ),
     )
 
@@ -156,4 +173,5 @@ class BaseMcpSettings(BaseSettings):
             "log_format": self.log_format,
             "debug": self.mcp_debug,
             "workers": self.mcp_workers,
+            "transport": self.mcp_transport,
         }
