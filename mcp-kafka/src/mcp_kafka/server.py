@@ -2,21 +2,22 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator
+from typing import Any
 
 import structlog
 from fastmcp import FastMCP
 from mcp.shared.exceptions import McpError as SdkMcpError
 from mcp.types import ErrorData
-
 from mcp_shared.errors import McpError
 from mcp_shared.logging import get_logger, setup_logging
+
 from mcp_kafka.config import settings
 from mcp_kafka.tools import (
+    consume_messages,
     consumer_group_offsets,
     consumer_groups_list,
-    consume_messages,
     produce_message,
     topic_describe,
     topics_list,
@@ -32,7 +33,7 @@ logger = get_logger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(server: FastMCP) -> AsyncIterator[None]:  # noqa: ARG001
+async def lifespan(server: FastMCP) -> AsyncIterator[None]:
     structlog.contextvars.bind_contextvars(server_name="mcp-kafka")
     logger.info("Servidor iniciando", **settings.to_log_context())
     yield
@@ -131,7 +132,9 @@ def tool_consumer_group_offsets(
 ) -> dict[str, Any]:
     logger.info("consumer_group_offsets llamado", group_id=group_id)
     result = _handle(consumer_group_offsets, group_id=group_id, topics=topics)
-    logger.info("consumer_group_offsets completado", group_id=group_id, partitions=result["partition_count"])
+    logger.info(
+        "consumer_group_offsets completado", group_id=group_id, partitions=result["partition_count"]
+    )
     return result
 
 
@@ -152,7 +155,9 @@ def tool_produce_message(
     headers: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     logger.info("produce_message llamado", topic=topic, key=key)
-    result = _handle(produce_message, topic=topic, value=value, key=key, partition=partition, headers=headers)
+    result = _handle(
+        produce_message, topic=topic, value=value, key=key, partition=partition, headers=headers
+    )
     logger.info("produce_message completado", topic=topic, offset=result["offset"])
     return result
 
@@ -175,7 +180,9 @@ def tool_consume_messages(
     timeout: float | None = None,
     parse_json: bool = True,
 ) -> dict[str, Any]:
-    logger.info("consume_messages llamado", topic=topic, group_id=group_id, from_beginning=from_beginning)
+    logger.info(
+        "consume_messages llamado", topic=topic, group_id=group_id, from_beginning=from_beginning
+    )
     result = _handle(
         consume_messages,
         topic=topic,

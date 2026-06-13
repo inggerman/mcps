@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-
 # ---------------------------------------------------------------------------
 # Códigos de error
 # ---------------------------------------------------------------------------
@@ -226,7 +225,9 @@ class FilePermissionError(McpError):
     Se lanza cuando la operación es rechazada por el sistema operativo.
     """
 
-    def __init__(self, file_path: str, operation: str = "acceder", context: dict | None = None) -> None:
+    def __init__(
+        self, file_path: str, operation: str = "acceder", context: dict | None = None
+    ) -> None:
         """
         Inicializa el error con la ruta del archivo y la operación denegada.
 
@@ -396,7 +397,9 @@ class NetworkTimeoutError(NetworkError):
     Se lanza cuando una operación de red no responde dentro del tiempo configurado.
     """
 
-    def __init__(self, url: str, timeout_seconds: float | None = None, context: dict | None = None) -> None:
+    def __init__(
+        self, url: str, timeout_seconds: float | None = None, context: dict | None = None
+    ) -> None:
         """
         Inicializa el error de timeout con la URL y el tiempo límite.
 
@@ -405,7 +408,9 @@ class NetworkTimeoutError(NetworkError):
             timeout_seconds: Tiempo límite configurado en segundos.
             context: Información adicional del contexto.
         """
-        reason = f"timeout después de {timeout_seconds}s" if timeout_seconds is not None else "timeout"
+        reason = (
+            f"timeout después de {timeout_seconds}s" if timeout_seconds is not None else "timeout"
+        )
         super().__init__(url=url, reason=reason, context=context)
         self.error_code = ErrorCode.NETWORK_TIMEOUT
         self.timeout_seconds = timeout_seconds
@@ -434,7 +439,7 @@ class ApiError(NetworkError):
             response_body: Cuerpo de la respuesta de error de la API.
             context: Información adicional del contexto.
         """
-        reason = f"respuesta de error de la API"
+        reason = "respuesta de error de la API"
         if response_body:
             reason += f": {response_body[:200]}"  # Limitar a 200 chars
         super().__init__(url=url, reason=reason, status_code=status_code, context=context)

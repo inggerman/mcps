@@ -9,16 +9,17 @@ Transporte: configurable mediante MCP_TRANSPORT (stdio | streamable-http).
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator
+from typing import Any
 
 import structlog
 from fastmcp import FastMCP
 from mcp.shared.exceptions import McpError as SdkMcpError
 from mcp.types import ErrorData
-
 from mcp_shared.errors import McpError
 from mcp_shared.logging import get_logger, setup_logging
+
 from mcp_calendar.config import CalendarSettings
 from mcp_calendar.tools.business_days import (
     add_business_days,

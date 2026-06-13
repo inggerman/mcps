@@ -11,7 +11,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from mcp_markdown.tools.markdown_tools import (
     extract_code_blocks,
     extract_headings,
@@ -26,7 +25,6 @@ from mcp_markdown.tools.markdown_tools import (
     search_in_markdown,
     validate_markdown,
 )
-
 
 # ===========================================================================
 # read_markdown

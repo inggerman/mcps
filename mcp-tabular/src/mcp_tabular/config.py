@@ -8,10 +8,9 @@ con el prefijo TABULAR_ (ej: TABULAR_MAX_ROWS_PREVIEW=500).
 
 from __future__ import annotations
 
+from mcp_shared.config import BaseMcpSettings
 from pydantic import Field
 from pydantic_settings import SettingsConfigDict
-
-from mcp_shared.config import BaseMcpSettings
 
 
 class TabularSettings(BaseMcpSettings):

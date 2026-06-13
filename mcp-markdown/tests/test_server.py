@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import pytest
-from mcp.server.fastmcp import FastMCP
+import asyncio
 
+from fastmcp import FastMCP
 from mcp_markdown.server import mcp
 
 
@@ -17,7 +17,7 @@ class TestServer:
 
     def test_tools_registered(self) -> None:
         """Verifica que todas las herramientas esperadas están registradas."""
-        tools = mcp._tool_manager.list_tools()
+        tools = asyncio.run(mcp.list_tools())
         tool_names = {t.name for t in tools}
         expected = {
             "read_markdown",
@@ -33,10 +33,8 @@ class TestServer:
             "get_frontmatter",
             "list_markdown_files",
         }
-        assert expected.issubset(tool_names), (
-            f"Tools faltantes: {expected - tool_names}"
-        )
+        assert expected.issubset(tool_names), f"Tools faltantes: {expected - tool_names}"
 
     def test_tool_count(self) -> None:
-        tools = mcp._tool_manager.list_tools()
+        tools = asyncio.run(mcp.list_tools())
         assert len(tools) >= 12

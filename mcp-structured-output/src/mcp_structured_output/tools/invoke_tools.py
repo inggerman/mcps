@@ -74,8 +74,7 @@ def invoke_structured(
         raise ValidationError(
             field="provider",
             message=(
-                f"Provider '{provider}' no válido. "
-                f"Opciones: {', '.join(sorted(_VALID_PROVIDERS))}."
+                f"Provider '{provider}' no válido. Opciones: {', '.join(sorted(_VALID_PROVIDERS))}."
             ),
         )
 
@@ -119,7 +118,7 @@ def _invoke_bedrock_converse(
     max_tokens: int,
     temperature: float,
     region: str | None,
-    base_url: str | None,  # noqa: ARG001
+    base_url: str | None,
 ) -> dict[str, Any]:
     """Llama a Bedrock Converse API con outputConfig.textFormat (json_schema)."""
     try:
@@ -138,9 +137,7 @@ def _invoke_bedrock_converse(
     try:
         client = boto3.client("bedrock-runtime", **kwargs)
 
-        messages: list[dict[str, Any]] = [
-            {"role": "user", "content": [{"text": prompt}]}
-        ]
+        messages: list[dict[str, Any]] = [{"role": "user", "content": [{"text": prompt}]}]
 
         request: dict[str, Any] = {
             "modelId": model_id,
@@ -202,13 +199,13 @@ def _invoke_bedrock_converse(
 def _invoke_bedrock_claude(
     prompt: str,
     schema: dict[str, Any],
-    schema_name: str,  # noqa: ARG001
+    schema_name: str,
     model_id: str,
     system_prompt: str | None,
     max_tokens: int,
     temperature: float,
     region: str | None,
-    base_url: str | None,  # noqa: ARG001
+    base_url: str | None,
 ) -> dict[str, Any]:
     """Llama a Bedrock InvokeModel con Anthropic Claude (output_config.format)."""
     try:
@@ -229,9 +226,7 @@ def _invoke_bedrock_claude(
 
         body: dict[str, Any] = {
             "anthropic_version": "bedrock-2023-05-31",
-            "messages": [
-                {"role": "user", "content": [{"type": "text", "text": prompt}]}
-            ],
+            "messages": [{"role": "user", "content": [{"type": "text", "text": prompt}]}],
             "max_tokens": max_tokens,
             "temperature": temperature,
             "output_config": {
@@ -293,7 +288,7 @@ def _invoke_bedrock_openweight(
     max_tokens: int,
     temperature: float,
     region: str | None,
-    base_url: str | None,  # noqa: ARG001
+    base_url: str | None,
 ) -> dict[str, Any]:
     """Llama a Bedrock InvokeModel con modelos open-weight (response_format)."""
     try:
@@ -388,7 +383,7 @@ def _invoke_openai_compatible(
     system_prompt: str | None,
     max_tokens: int,
     temperature: float,
-    region: str | None,  # noqa: ARG001
+    region: str | None,
     base_url: str | None,
 ) -> dict[str, Any]:
     """Llama a cualquier endpoint OpenAI-compatible con response_format json_schema."""
@@ -426,9 +421,9 @@ def _invoke_openai_compatible(
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
-        response = client.chat.completions.create(
+        response = client.chat.completions.create(  # type: ignore[call-overload]
             model=model_id,
-            messages=messages,  # type: ignore[arg-type]
+            messages=messages,
             response_format={
                 "type": "json_schema",
                 "json_schema": {

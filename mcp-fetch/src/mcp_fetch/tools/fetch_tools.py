@@ -11,8 +11,14 @@ from typing import Any
 
 import httpx
 from bs4 import BeautifulSoup
+from mcp_shared.errors import (
+    ApiError,
+    NetworkError,
+    NetworkTimeoutError,
+    ParseError,
+    ValidationError,
+)
 
-from mcp_shared.errors import ApiError, NetworkError, NetworkTimeoutError, ParseError, ValidationError
 from mcp_fetch.config import settings
 
 _TRUNCATION_NOTE = "[contenido truncado a {limit} bytes]"
@@ -210,7 +216,7 @@ def extract_text(
     if include_links:
         links = []
         for a_tag in soup.find_all("a", href=True):
-            href = a_tag["href"]
+            href = str(a_tag["href"])
             if href.startswith(("http://", "https://")):
                 links.append({"href": href, "text": a_tag.get_text(strip=True)[:100]})
         result["links"] = links[:50]
@@ -311,9 +317,14 @@ def _build_response(response: httpx.Response, max_bytes: int) -> dict[str, Any]:
     relevant_headers = {
         k: v
         for k, v in response.headers.items()
-        if k.lower() in (
-            "content-type", "content-length", "last-modified",
-            "cache-control", "server", "x-powered-by",
+        if k.lower()
+        in (
+            "content-type",
+            "content-length",
+            "last-modified",
+            "cache-control",
+            "server",
+            "x-powered-by",
         )
     }
 

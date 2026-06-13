@@ -11,10 +11,8 @@ import calendar
 from datetime import date, timedelta
 
 import holidays
-
 from mcp_shared.errors import InvalidValueError, ValidationError
 from mcp_shared.models import BusinessDaysResult, Holiday
-
 
 # ---------------------------------------------------------------------------
 # Descripciones en español de feriados mexicanos
@@ -234,9 +232,7 @@ def calculate_business_days(
         if is_weekend:
             weekend_days_count += 1
         elif is_holiday:
-            holidays_excluded.append(
-                _holiday_to_model(current, all_holidays[current], country)
-            )
+            holidays_excluded.append(_holiday_to_model(current, all_holidays[current], country))
         else:
             business_days_count += 1
 
@@ -343,7 +339,9 @@ def is_business_day(
         "is_weekend": is_weekend,
         "is_holiday": is_holiday,
         "holiday_name": holiday_name,
-        "holiday_description": _MX_HOLIDAY_DESCRIPTIONS.get(holiday_name, None) if holiday_name and country.upper() == "MX" else None,
+        "holiday_description": _MX_HOLIDAY_DESCRIPTIONS.get(holiday_name, None)
+        if holiday_name and country.upper() == "MX"
+        else None,
         "day_of_week": d.strftime("%A"),
         "day_of_week_number": d.weekday(),  # 0=lunes, 6=domingo
         "country": country.upper(),
@@ -499,20 +497,19 @@ def get_mexico_holidays(year: int) -> list[dict]:
     for h_date, h_name in sorted(mx_holidays.items()):
         description = _MX_HOLIDAY_DESCRIPTIONS.get(h_name, h_name)
         # Los feriados "observados" en lunes son los móviles (ej: Día de la Constitución)
-        is_fixed = not any(
-            keyword in h_name.lower()
-            for keyword in ["observed", "day off"]
+        is_fixed = not any(keyword in h_name.lower() for keyword in ["observed", "day off"])
+        result.append(
+            {
+                "date": h_date.isoformat(),
+                "name": h_name,
+                "description": description,
+                "is_fixed": is_fixed,
+                "day_of_week": h_date.strftime("%A"),
+                "country": "MX",
+                "region": None,
+                "legal_basis": "Ley Federal del Trabajo, Art. 74",
+            }
         )
-        result.append({
-            "date": h_date.isoformat(),
-            "name": h_name,
-            "description": description,
-            "is_fixed": is_fixed,
-            "day_of_week": h_date.strftime("%A"),
-            "country": "MX",
-            "region": None,
-            "legal_basis": "Ley Federal del Trabajo, Art. 74",
-        })
 
     return result
 
@@ -539,11 +536,13 @@ def get_country_list() -> list[dict]:
         country_cls = getattr(holidays, code, None)
         name = getattr(country_cls, "country", code) if country_cls else code
 
-        result.append({
-            "code": code,
-            "name": name,
-            "has_subdivisions": bool(subdivisions),
-            "subdivisions": sorted(subdivisions) if subdivisions else [],
-        })
+        result.append(
+            {
+                "code": code,
+                "name": name,
+                "has_subdivisions": bool(subdivisions),
+                "subdivisions": sorted(subdivisions) if subdivisions else [],
+            }
+        )
 
     return result

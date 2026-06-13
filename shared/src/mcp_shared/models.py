@@ -9,9 +9,9 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Any, Generic, Literal, TypeVar
 
-_Date = date
-
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+_Date = date
 
 # Variable de tipo genérica para StandardResponse
 T = TypeVar("T")
@@ -54,7 +54,7 @@ class StandardResponse(BaseModel, Generic[T]):
     )
 
     @classmethod
-    def success(cls, data: T, metadata: dict[str, Any] | None = None) -> "StandardResponse[T]":
+    def success(cls, data: T, metadata: dict[str, Any] | None = None) -> StandardResponse[T]:
         """Crea una respuesta exitosa con los datos y metadatos opcionales."""
         return cls(status="success", data=data, metadata=metadata or {})
 
@@ -64,7 +64,7 @@ class StandardResponse(BaseModel, Generic[T]):
         error: str,
         error_code: str | None = None,
         metadata: dict[str, Any] | None = None,
-    ) -> "StandardResponse[T]":
+    ) -> StandardResponse[T]:
         """Crea una respuesta de error con el mensaje y código de error opcionales."""
         return cls(
             status="error",

@@ -9,15 +9,14 @@ Transporte: configurable mediante MCP_TRANSPORT (stdio | streamable-http).
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator
+from typing import Any
 
 import structlog
 from fastmcp import FastMCP
 from mcp.shared.exceptions import McpError as SdkMcpError
 from mcp.types import ErrorData
-
-from mcp_shared.logging import get_logger, setup_logging
 from mcp_prompt_engineer.config import settings
 from mcp_prompt_engineer.tools.analyzer import analyze_prompt, classify_prompt
 from mcp_prompt_engineer.tools.improver import (
@@ -28,6 +27,7 @@ from mcp_prompt_engineer.tools.improver import (
     get_prompt_template,
     improve_prompt,
 )
+from mcp_shared.logging import get_logger, setup_logging
 
 # ---------------------------------------------------------------------------
 # Configuración de logging
@@ -138,14 +138,16 @@ def tool_analyze_prompt(
     """Análisis exhaustivo de un prompt."""
     try:
         if len(prompt) > settings.max_prompt_length:
-            raise SdkMcpError(ErrorData(
-                code=-32000,
-                message=(
-                    f"El prompt excede la longitud máxima de "
-                    f"{settings.max_prompt_length:,} caracteres "
-                    f"(actual: {len(prompt):,})."
-                ),
-            ))
+            raise SdkMcpError(
+                ErrorData(
+                    code=-32000,
+                    message=(
+                        f"El prompt excede la longitud máxima de "
+                        f"{settings.max_prompt_length:,} caracteres "
+                        f"(actual: {len(prompt):,})."
+                    ),
+                )
+            )
         return analyze_prompt(prompt=prompt, target_model=target_model)
     except SdkMcpError:
         raise
@@ -219,13 +221,15 @@ def tool_improve_prompt(
     """Mejora automática de un prompt con diff de cambios."""
     try:
         if len(prompt) > settings.max_prompt_length:
-            raise SdkMcpError(ErrorData(
-                code=-32000,
-                message=(
-                    f"El prompt excede la longitud máxima de "
-                    f"{settings.max_prompt_length:,} caracteres."
-                ),
-            ))
+            raise SdkMcpError(
+                ErrorData(
+                    code=-32000,
+                    message=(
+                        f"El prompt excede la longitud máxima de "
+                        f"{settings.max_prompt_length:,} caracteres."
+                    ),
+                )
+            )
         return improve_prompt(
             prompt=prompt,
             goal=goal,

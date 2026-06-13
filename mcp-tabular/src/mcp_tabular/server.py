@@ -9,16 +9,17 @@ Transporte: stdio (compatible con Claude Desktop, Cursor, Cline).
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator
+from typing import Any
 
 import structlog
 from fastmcp import FastMCP
 from mcp.shared.exceptions import McpError as SdkMcpError
 from mcp.types import ErrorData
-
 from mcp_shared.errors import McpError
 from mcp_shared.logging import get_logger, setup_logging
+
 from mcp_tabular import __version__
 from mcp_tabular.config import TabularSettings
 from mcp_tabular.tools.tabular_reader import (

@@ -4,10 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from mcp_shared.config import BaseMcpSettings
 from pydantic import Field
 from pydantic_settings import SettingsConfigDict
-
-from mcp_shared.config import BaseMcpSettings
 
 
 class StructuredOutputSettings(BaseMcpSettings):

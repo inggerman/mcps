@@ -13,13 +13,11 @@ Todas las funciones retornan tipos serializables a JSON o raise McpError.
 from __future__ import annotations
 
 import io
-import os
 from pathlib import Path
 from typing import Any, Literal
 
 import chardet
 import pandas as pd
-
 from mcp_shared.errors import (
     FileReadError,
     InvalidValueError,
@@ -28,7 +26,6 @@ from mcp_shared.errors import (
     ValidationError,
 )
 from mcp_shared.logging import get_logger
-from mcp_shared.models import StandardTableResponse
 
 logger = get_logger(__name__)
 
@@ -78,6 +75,7 @@ def _resolve_path(path: str) -> Path:
 
     if not resolved.exists():
         from mcp_shared.errors import FileNotFoundError as McpFileNotFoundError
+
         raise McpFileNotFoundError(file_path=str(resolved))
 
     if not resolved.is_file():
@@ -239,7 +237,7 @@ def _read_dataframe(
 
     except UnsupportedFormatError:
         raise
-    except (OSError, IOError) as exc:
+    except OSError as exc:
         raise FileReadError(
             file_path=str(path),
             reason=str(exc),
@@ -282,7 +280,9 @@ def _df_to_records(df: pd.DataFrame) -> list[dict[str, Any]]:
     return records
 
 
-def _build_column_info(df: pd.DataFrame, sample_count: int = _SAMPLE_VALUES_COUNT) -> list[dict[str, Any]]:
+def _build_column_info(
+    df: pd.DataFrame, sample_count: int = _SAMPLE_VALUES_COUNT
+) -> list[dict[str, Any]]:
     """
     Construye metadatos de columnas del DataFrame.
 
@@ -473,8 +473,10 @@ def get_sheet_names(path: str) -> list[str]:
         )
 
     try:
-        engine = "odf" if fmt == "ods" else (
-            "openpyxl" if resolved.suffix.lower() == ".xlsx" else "xlrd"
+        engine = (
+            "odf"
+            if fmt == "ods"
+            else ("openpyxl" if resolved.suffix.lower() == ".xlsx" else "xlrd")
         )
         xl = pd.ExcelFile(resolved, engine=engine)
         sheet_names = xl.sheet_names
@@ -533,8 +535,7 @@ def get_file_summary(
         # Convertir numpy types a Python natives
         for col, stats in desc.items():
             numeric_describe[str(col)] = {
-                k: (v.item() if hasattr(v, "item") else v)
-                for k, v in stats.items()
+                k: (v.item() if hasattr(v, "item") else v) for k, v in stats.items()
             }
 
     size_bytes = resolved.stat().st_size
@@ -962,8 +963,12 @@ def get_column_stats(
                 "p50": float(desc["50%"]),
                 "p75": float(desc["75%"]),
                 "sum": float(non_null_series.sum()),
-                "skewness": round(float(non_null_series.skew()), 6) if len(non_null_series) >= 3 else None,
-                "kurtosis": round(float(non_null_series.kurtosis()), 6) if len(non_null_series) >= 4 else None,
+                "skewness": round(float(non_null_series.skew()), 6)
+                if len(non_null_series) >= 3
+                else None,
+                "kurtosis": round(float(non_null_series.kurtosis()), 6)
+                if len(non_null_series) >= 4
+                else None,
             }
         except Exception as exc:
             logger.warning("No se pudieron calcular stats numéricas", column=column, error=str(exc))
@@ -976,7 +981,9 @@ def get_column_stats(
             stats["datetime"] = {
                 "min_date": min_dt.isoformat() if pd.notna(min_dt) else None,
                 "max_date": max_dt.isoformat() if pd.notna(max_dt) else None,
-                "date_range_days": int((max_dt - min_dt).days) if pd.notna(min_dt) and pd.notna(max_dt) else None,
+                "date_range_days": int((max_dt - min_dt).days)
+                if pd.notna(min_dt) and pd.notna(max_dt)
+                else None,
             }
     else:
         # Estadísticas de texto / categórico
@@ -986,7 +993,9 @@ def get_column_stats(
             "most_frequent": value_counts.index[0] if not value_counts.empty else None,
             "most_frequent_count": int(value_counts.iloc[0]) if not value_counts.empty else 0,
             "top_10_values": {k: int(v) for k, v in value_counts.items()},
-            "avg_length": round(float(str_series.str.len().mean()), 2) if not str_series.empty else 0.0,
+            "avg_length": round(float(str_series.str.len().mean()), 2)
+            if not str_series.empty
+            else 0.0,
             "min_length": int(str_series.str.len().min()) if not str_series.empty else 0,
             "max_length": int(str_series.str.len().max()) if not str_series.empty else 0,
         }

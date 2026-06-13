@@ -11,14 +11,12 @@ from __future__ import annotations
 
 import asyncio
 import time
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from typing import Any
 
 import httpx
-
 from mcp_shared.errors import ApiError, InvalidValueError, NetworkTimeoutError
 from mcp_shared.models import ConversionResult, ExchangeRate
-
 
 # ---------------------------------------------------------------------------
 # Constantes
@@ -108,13 +106,13 @@ def _parse_exchange_rate(
         )
 
     # Parsear la fecha de la respuesta
-    date_str = data.get("date", datetime.now(tz=timezone.utc).date().isoformat())
+    date_str = data.get("date", datetime.now(tz=UTC).date().isoformat())
     rate_date = date.fromisoformat(date_str)
     timestamp = datetime(
         rate_date.year,
         rate_date.month,
         rate_date.day,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
 
     return ExchangeRate(
@@ -161,6 +159,7 @@ async def _frankfurter_get(
         raise NetworkTimeoutError(url=url, timeout_seconds=timeout) from exc
     except httpx.RequestError as exc:
         from mcp_shared.errors import NetworkError
+
         raise NetworkError(url=url, reason=str(exc)) from exc
 
 
@@ -323,7 +322,7 @@ async def get_historical_rate(
         )
 
     cache_key = _cache_key("hist", from_upper, to_upper, rate_date)
-    cached = await _get_cached(cache_key, ttl_seconds=86400)  # Hist = 24h cache
+    cached = await _get_cached(cache_key, ttl=86400)  # Hist = 24h cache
     if cached is not None:
         return cached
 
@@ -415,16 +414,13 @@ async def list_supported_currencies() -> list[dict]:
         [{"code": "AUD", "name": "Australian Dollar"}, {"code": "EUR", "name": "Euro"}, ...]
     """
     cache_key = _cache_key("currencies")
-    cached = await _get_cached(cache_key, ttl_seconds=86400)
+    cached = await _get_cached(cache_key, ttl=86400)
     if cached is not None:
         return cached
 
     data = await _frankfurter_get("/currencies")
 
-    result: list[dict] = [
-        {"code": code, "name": name}
-        for code, name in sorted(data.items())
-    ]
+    result: list[dict] = [{"code": code, "name": name} for code, name in sorted(data.items())]
     await _set_cached(cache_key, result)
     return result
 
@@ -494,7 +490,7 @@ async def get_rate_history(
         )
 
     cache_key = _cache_key("history", from_upper, to_upper, start_date, end_date)
-    cached = await _get_cached(cache_key, ttl_seconds=86400)
+    cached = await _get_cached(cache_key, ttl=86400)
     if cached is not None:
         return cached
 
@@ -514,7 +510,7 @@ async def get_rate_history(
             rate_date.year,
             rate_date.month,
             rate_date.day,
-            tzinfo=timezone.utc,
+            tzinfo=UTC,
         )
         exchange_rate = ExchangeRate(
             base_currency=from_upper,

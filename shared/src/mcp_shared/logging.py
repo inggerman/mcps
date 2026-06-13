@@ -15,7 +15,6 @@ from typing import Any, Literal
 import structlog
 from structlog.types import EventDict, Processor
 
-
 # ---------------------------------------------------------------------------
 # Tipos
 # ---------------------------------------------------------------------------
@@ -146,30 +145,14 @@ def setup_logging(
     root_logger.addHandler(handler)
     root_logger.setLevel(numeric_level)
 
-    # Processors para structlog nativo
-    structlog_processors: list[Processor] = [
-        structlog.contextvars.merge_contextvars,
-        structlog.stdlib.add_logger_name,
-        structlog.stdlib.add_log_level,
-        structlog.stdlib.PositionalArgumentsFormatter(),
-        structlog.processors.TimeStamper(fmt="iso", utc=True),
-        structlog.processors.StackInfoRenderer(),
-        _drop_color_message_key,
-    ]
-
-    if log_format == "json":
-        structlog_processors.extend([
-            structlog.processors.dict_tracebacks,
-            structlog.processors.JSONRenderer(),
-        ])
-    else:
-        structlog_processors.append(structlog.dev.ConsoleRenderer(colors=True))
-
     structlog.configure(
-        processors=structlog_processors,
-        wrapper_class=structlog.make_filtering_bound_logger(numeric_level),
+        processors=[
+            *shared_processors,
+            structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+        ],
+        wrapper_class=structlog.stdlib.BoundLogger,
         context_class=dict,
-        logger_factory=structlog.PrintLoggerFactory(file=sys.stdout),
+        logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,
     )
 

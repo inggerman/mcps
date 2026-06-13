@@ -8,10 +8,9 @@ o el archivo .env en el directorio raíz del workspace.
 
 from __future__ import annotations
 
+from mcp_shared.config import BaseMcpSettings
 from pydantic import Field
 from pydantic_settings import SettingsConfigDict
-
-from mcp_shared.config import BaseMcpSettings
 
 
 class CalendarSettings(BaseMcpSettings):
@@ -79,10 +78,12 @@ class CalendarSettings(BaseMcpSettings):
     def to_log_context(self) -> dict:
         """Retorna contexto de log sin exponer la API key."""
         ctx = super().to_log_context()
-        ctx.update({
-            "default_country": self.default_country,
-            "exchange_rate_provider": self.exchange_rate_provider,
-            "exchange_cache_ttl_seconds": self.exchange_cache_ttl_seconds,
-            "has_api_key": bool(self.exchange_rate_api_key),
-        })
+        ctx.update(
+            {
+                "default_country": self.default_country,
+                "exchange_rate_provider": self.exchange_rate_provider,
+                "exchange_cache_ttl_seconds": self.exchange_cache_ttl_seconds,
+                "has_api_key": bool(self.exchange_rate_api_key),
+            }
+        )
         return ctx

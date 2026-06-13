@@ -17,8 +17,8 @@ from typing import Any
 
 # langdetect puede fallar con textos muy cortos; lo manejamos con try/except
 try:
-    from langdetect import detect as _detect_lang
     from langdetect import LangDetectException
+    from langdetect import detect as _detect_lang
 
     def _safe_detect(text: str) -> str:
         try:
@@ -40,19 +40,50 @@ except ImportError:
 # Palabras de vaguedad en español e inglés
 _VAGUE_WORDS_ES: frozenset[str] = frozenset(
     {
-        "algo", "algunas", "algunos", "tal vez", "quizás", "quizas",
-        "posiblemente", "probablemente", "más o menos", "aproximadamente",
-        "etc", "etcétera", "entre otras", "entre otros", "cosas",
-        "temas", "aspectos", "elementos", "características",
+        "algo",
+        "algunas",
+        "algunos",
+        "tal vez",
+        "quizás",
+        "quizas",
+        "posiblemente",
+        "probablemente",
+        "más o menos",
+        "aproximadamente",
+        "etc",
+        "etcétera",
+        "entre otras",
+        "entre otros",
+        "cosas",
+        "temas",
+        "aspectos",
+        "elementos",
+        "características",
     }
 )
 
 _VAGUE_WORDS_EN: frozenset[str] = frozenset(
     {
-        "something", "somehow", "maybe", "perhaps", "possibly", "probably",
-        "around", "approximately", "etc", "etcetera", "things", "stuff",
-        "aspects", "elements", "features", "various", "several",
-        "some kind of", "sort of", "kind of",
+        "something",
+        "somehow",
+        "maybe",
+        "perhaps",
+        "possibly",
+        "probably",
+        "around",
+        "approximately",
+        "etc",
+        "etcetera",
+        "things",
+        "stuff",
+        "aspects",
+        "elements",
+        "features",
+        "various",
+        "several",
+        "some kind of",
+        "sort of",
+        "kind of",
     }
 )
 
@@ -179,10 +210,7 @@ def _is_closed_question(text: str) -> bool:
         re.IGNORECASE,
     )
     first_word = text.strip().lstrip("¿").split()[0] if text.strip() else ""
-    return bool(
-        closed_starters_es.match(text.strip())
-        or closed_starters_en.match(first_word)
-    )
+    return bool(closed_starters_es.match(text.strip()) or closed_starters_en.match(first_word))
 
 
 def _detect_vague_words(text: str) -> list[str]:
@@ -243,9 +271,28 @@ def classify_prompt(prompt: str) -> dict[str, Any]:
     # Imperative mood heuristic: starts with a verb
     first_word = prompt.strip().split()[0].lower() if prompt.strip() else ""
     imperative_words = {
-        "resume", "traduce", "clasifica", "extrae", "escribe", "crea", "genera",
-        "summarize", "translate", "classify", "extract", "write", "create", "generate",
-        "list", "describe", "explain", "analyze", "compare", "find", "fix", "debug",
+        "resume",
+        "traduce",
+        "clasifica",
+        "extrae",
+        "escribe",
+        "crea",
+        "genera",
+        "summarize",
+        "translate",
+        "classify",
+        "extract",
+        "write",
+        "create",
+        "generate",
+        "list",
+        "describe",
+        "explain",
+        "analyze",
+        "compare",
+        "find",
+        "fix",
+        "debug",
     }
     if first_word in imperative_words:
         scores["instruction"] += 0.3
@@ -399,85 +446,100 @@ def analyze_prompt(
     issues: list[dict[str, Any]] = []
 
     if word_count < 10:
-        issues.append({
-            "severity": "critical",
-            "code": "TOO_SHORT",
-            "message": (
-                f"El prompt es muy corto ({word_count} palabras). "
-                "Los prompts con menos de 10 palabras suelen ser ambiguos."
-            ),
-        })
+        issues.append(
+            {
+                "severity": "critical",
+                "code": "TOO_SHORT",
+                "message": (
+                    f"El prompt es muy corto ({word_count} palabras). "
+                    "Los prompts con menos de 10 palabras suelen ser ambiguos."
+                ),
+            }
+        )
     elif word_count < 20:
-        issues.append({
-            "severity": "warning",
-            "code": "SHORT_PROMPT",
-            "message": (
-                f"El prompt es corto ({word_count} palabras). "
-                "Considera añadir más contexto."
-            ),
-        })
+        issues.append(
+            {
+                "severity": "warning",
+                "code": "SHORT_PROMPT",
+                "message": (
+                    f"El prompt es corto ({word_count} palabras). Considera añadir más contexto."
+                ),
+            }
+        )
 
     if vague_words:
-        issues.append({
-            "severity": "warning",
-            "code": "VAGUE_LANGUAGE",
-            "message": (
-                f"Lenguaje vago detectado: {', '.join(repr(w) for w in vague_words[:5])}. "
-                "Estos términos pueden llevar a respuestas ambiguas."
-            ),
-            "affected_words": vague_words,
-        })
+        issues.append(
+            {
+                "severity": "warning",
+                "code": "VAGUE_LANGUAGE",
+                "message": (
+                    f"Lenguaje vago detectado: {', '.join(repr(w) for w in vague_words[:5])}. "
+                    "Estos términos pueden llevar a respuestas ambiguas."
+                ),
+                "affected_words": vague_words,
+            }
+        )
 
     if is_closed_q:
-        issues.append({
-            "severity": "info",
-            "code": "CLOSED_QUESTION",
-            "message": (
-                "La pregunta parece ser cerrada (respuesta sí/no). "
-                "Reformula como pregunta abierta para obtener respuestas más detalladas."
-            ),
-        })
+        issues.append(
+            {
+                "severity": "info",
+                "code": "CLOSED_QUESTION",
+                "message": (
+                    "La pregunta parece ser cerrada (respuesta sí/no). "
+                    "Reformula como pregunta abierta para obtener respuestas más detalladas."
+                ),
+            }
+        )
 
     if contradictions:
         for w1, w2 in contradictions:
-            issues.append({
-                "severity": "warning",
-                "code": "CONTRADICTION",
-                "message": (
-                    f"Posible contradicción: '{w1}' y '{w2}' aparecen juntos. "
-                    "Verifica que las instrucciones sean coherentes."
-                ),
-            })
+            issues.append(
+                {
+                    "severity": "warning",
+                    "code": "CONTRADICTION",
+                    "message": (
+                        f"Posible contradicción: '{w1}' y '{w2}' aparecen juntos. "
+                        "Verifica que las instrucciones sean coherentes."
+                    ),
+                }
+            )
 
     if not has_role and prompt_type in {"analytical", "instruction"} and word_count > 30:
-        issues.append({
-            "severity": "info",
-            "code": "NO_ROLE",
-            "message": (
-                "No se detectó definición de rol o persona. "
-                "Añadir contexto de rol mejora la precisión de las respuestas."
-            ),
-        })
+        issues.append(
+            {
+                "severity": "info",
+                "code": "NO_ROLE",
+                "message": (
+                    "No se detectó definición de rol o persona. "
+                    "Añadir contexto de rol mejora la precisión de las respuestas."
+                ),
+            }
+        )
 
     if not has_format and word_count > 50:
-        issues.append({
-            "severity": "info",
-            "code": "NO_FORMAT",
-            "message": (
-                "No se especificó el formato de salida. "
-                "Define el formato esperado (JSON, lista, párrafo, etc.)."
-            ),
-        })
+        issues.append(
+            {
+                "severity": "info",
+                "code": "NO_FORMAT",
+                "message": (
+                    "No se especificó el formato de salida. "
+                    "Define el formato esperado (JSON, lista, párrafo, etc.)."
+                ),
+            }
+        )
 
     if word_count > 2000:
-        issues.append({
-            "severity": "warning",
-            "code": "TOO_LONG",
-            "message": (
-                f"El prompt es muy largo ({word_count} palabras ≈ {token_count} tokens). "
-                "Prompts excesivamente largos pueden reducir la calidad de la respuesta."
-            ),
-        })
+        issues.append(
+            {
+                "severity": "warning",
+                "code": "TOO_LONG",
+                "message": (
+                    f"El prompt es muy largo ({word_count} palabras ≈ {token_count} tokens). "
+                    "Prompts excesivamente largos pueden reducir la calidad de la respuesta."
+                ),
+            }
+        )
 
     # Detectar si hay múltiples tareas sin separación clara
     task_connectors = re.findall(
@@ -486,14 +548,16 @@ def analyze_prompt(
         re.IGNORECASE,
     )
     if len(task_connectors) >= 3:
-        issues.append({
-            "severity": "info",
-            "code": "MULTIPLE_TASKS",
-            "message": (
-                "El prompt parece contener múltiples tareas encadenadas. "
-                "Considera descomponerlo en prompts separados o numerados."
-            ),
-        })
+        issues.append(
+            {
+                "severity": "info",
+                "code": "MULTIPLE_TASKS",
+                "message": (
+                    "El prompt parece contener múltiples tareas encadenadas. "
+                    "Considera descomponerlo en prompts separados o numerados."
+                ),
+            }
+        )
 
     # --- Fortalezas detectadas ---
     strengths: list[str] = []
@@ -538,9 +602,7 @@ def analyze_prompt(
             "Ej: '¿Es bueno X?' → '¿Cuáles son las ventajas y desventajas de X?'"
         )
     if not has_role and word_count > 30:
-        suggestions.append(
-            "Agrega un rol: 'Eres un experto en [dominio]. Tu tarea es...'"
-        )
+        suggestions.append("Agrega un rol: 'Eres un experto en [dominio]. Tu tarea es...'")
     if not has_format and word_count > 50:
         suggestions.append(
             "Especifica el formato de salida: 'Responde en formato JSON', "

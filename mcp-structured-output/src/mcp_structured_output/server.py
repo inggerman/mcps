@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator
+from typing import Any
 
 import structlog
 from fastmcp import FastMCP
 from mcp.shared.exceptions import McpError as SdkMcpError
 from mcp.types import ErrorData
-
 from mcp_shared.errors import McpError
 from mcp_shared.logging import get_logger, setup_logging
+
 from mcp_structured_output.config import settings
 from mcp_structured_output.tools import (
     generate_schema,
@@ -38,7 +39,7 @@ logger = get_logger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(server: FastMCP) -> AsyncIterator[None]:  # noqa: ARG001
+async def lifespan(server: FastMCP) -> AsyncIterator[None]:
     structlog.contextvars.bind_contextvars(server_name="mcp-structured-output")
     logger.info("Servidor iniciando", **settings.to_log_context())
     yield

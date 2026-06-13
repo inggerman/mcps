@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator
+from typing import Any
 
 import structlog
 from fastmcp import FastMCP
 from mcp.shared.exceptions import McpError as SdkMcpError
 from mcp.types import ErrorData
-
 from mcp_shared.errors import McpError
 from mcp_shared.logging import get_logger, setup_logging
+
 from mcp_docker.config import settings
 from mcp_docker.tools import (
     container_exec,
@@ -34,7 +35,7 @@ logger = get_logger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(server: FastMCP) -> AsyncIterator[None]:  # noqa: ARG001
+async def lifespan(server: FastMCP) -> AsyncIterator[None]:
     structlog.contextvars.bind_contextvars(server_name="mcp-docker")
     logger.info("Servidor iniciando", **settings.to_log_context())
     yield
@@ -77,7 +78,7 @@ def _handle(fn: Any, *args: Any, **kwargs: Any) -> Any:
     description=(
         "Lista contenedores Docker. "
         "Parámetros: all_containers (bool, default false = solo running), "
-        "filters (dict opcional, ej: {\"name\": \"web\", \"status\": \"running\"}). "
+        'filters (dict opcional, ej: {"name": "web", "status": "running"}). '
         "Retorna: containers[], count, showing."
     ),
 )
@@ -124,7 +125,9 @@ def tool_container_logs(
     timestamps: bool = False,
 ) -> dict[str, Any]:
     logger.info("container_logs llamado", container_id=container_id, lines=lines)
-    result = _handle(container_logs, container_id=container_id, lines=lines, since=since, timestamps=timestamps)
+    result = _handle(
+        container_logs, container_id=container_id, lines=lines, since=since, timestamps=timestamps
+    )
     logger.info("container_logs completado", container_id=container_id)
     return result
 
@@ -155,7 +158,9 @@ def tool_container_exec(
         user=user,
         environment=environment,
     )
-    logger.info("container_exec completado", container_id=container_id, exit_code=result["exit_code"])
+    logger.info(
+        "container_exec completado", container_id=container_id, exit_code=result["exit_code"]
+    )
     return result
 
 

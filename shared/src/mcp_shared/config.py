@@ -111,10 +111,7 @@ class BaseMcpSettings(BaseSettings):
         validation_alias=AliasChoices("MCP_WORKERS", "mcp_workers"),
         ge=1,
         le=64,
-        description=(
-            "Número de workers del servidor MCP. "
-            "Variable de entorno: MCP_WORKERS."
-        ),
+        description=("Número de workers del servidor MCP. Variable de entorno: MCP_WORKERS."),
     )
     mcp_transport: Literal["stdio", "streamable-http"] = Field(
         default="stdio",

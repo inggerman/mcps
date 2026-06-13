@@ -270,9 +270,7 @@ def generate_schema(
         ValidationError: Si ``example`` no es un dict.
     """
     if not isinstance(example, dict):
-        raise ValidationError(
-            field="example", message="El ejemplo debe ser un objeto JSON (dict)."
-        )
+        raise ValidationError(field="example", message="El ejemplo debe ser un objeto JSON (dict).")
 
     warnings: list[str] = []
     schema = _infer_schema(example, warnings=warnings, strict=strict)
@@ -310,9 +308,7 @@ def _infer_schema(value: Any, warnings: list[str], strict: bool) -> dict[str, An
     return {"type": "string"}
 
 
-def _infer_array_schema(
-    value: list[Any], warnings: list[str], strict: bool
-) -> dict[str, Any]:
+def _infer_array_schema(value: list[Any], warnings: list[str], strict: bool) -> dict[str, Any]:
     """Infiere schema de array a partir del primer elemento."""
     schema: dict[str, Any] = {"type": "array"}
     if value:

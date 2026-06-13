@@ -9,4 +9,4 @@ from mcp_fetch.tools.fetch_tools import (
     fetch_url,
 )
 
-__all__ = ["fetch_url", "fetch_post", "extract_text", "fetch_json"]
+__all__ = ["extract_text", "fetch_json", "fetch_post", "fetch_url"]

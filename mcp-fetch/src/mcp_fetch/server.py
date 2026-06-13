@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator
+from typing import Any
 
 import structlog
 from fastmcp import FastMCP
 from mcp.shared.exceptions import McpError as SdkMcpError
 from mcp.types import ErrorData
-
 from mcp_shared.errors import McpError
 from mcp_shared.logging import get_logger, setup_logging
+
 from mcp_fetch.config import settings
 from mcp_fetch.tools import extract_text, fetch_json, fetch_post, fetch_url
 
@@ -33,7 +34,7 @@ logger = get_logger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(server: FastMCP) -> AsyncIterator[None]:  # noqa: ARG001
+async def lifespan(server: FastMCP) -> AsyncIterator[None]:
     structlog.contextvars.bind_contextvars(server_name="mcp-fetch")
     logger.info("Servidor iniciando", **settings.to_log_context())
     yield
@@ -119,7 +120,12 @@ def tool_fetch_post(
     timeout: float | None = None,
     max_bytes: int | None = None,
 ) -> dict[str, Any]:
-    logger.info("fetch_post llamado", url=url, has_json=json_body is not None, has_form=form_data is not None)
+    logger.info(
+        "fetch_post llamado",
+        url=url,
+        has_json=json_body is not None,
+        has_form=form_data is not None,
+    )
     try:
         result = fetch_post(
             url=url,

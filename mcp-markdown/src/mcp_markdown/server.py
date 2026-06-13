@@ -7,14 +7,15 @@ el servidor con lifespan, logging estructurado e instrucciones.
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any
 
 import structlog
 from fastmcp import FastMCP
+from mcp_shared.logging import setup_logging
 
 from mcp_markdown.config import settings
-from mcp_shared.logging import setup_logging
 from mcp_markdown.tools.markdown_tools import (
     extract_code_blocks,
     extract_headings,
@@ -49,7 +50,7 @@ log = structlog.get_logger(__name__)
 
 
 @asynccontextmanager
-async def _lifespan(server: FastMCP):  # type: ignore[type-arg]  # noqa: ANN001
+async def _lifespan(server: FastMCP) -> AsyncIterator[None]:
     """Ciclo de vida del servidor: startup y shutdown."""
     log.info(
         "mcp-markdown iniciando",
@@ -68,7 +69,7 @@ async def _lifespan(server: FastMCP):  # type: ignore[type-arg]  # noqa: ANN001
 
 mcp = FastMCP(
     name=settings.server_name,
-    instructions="""
+    instructions=f"""
 Servidor MCP especializado en lectura, análisis, transformación y validación
 de archivos Markdown (.md, .markdown, .mdx, .mdown, .mkd).
 
@@ -98,8 +99,8 @@ de archivos Markdown (.md, .markdown, .mdx, .mdown, .mkd).
 .md · .markdown · .mdx · .mdown · .mkd
 
 ## Límites
-- Tamaño máximo de archivo: {max_mb} MB
-""".format(max_mb=settings.max_file_size_mb),
+- Tamaño máximo de archivo: {settings.max_file_size_mb} MB
+""",
     lifespan=_lifespan,
 )
 

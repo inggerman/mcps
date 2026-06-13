@@ -63,7 +63,17 @@ run-%: ## Ejecuta directamente un servidor MCP  [Ej: make run-mcp-calendar]
 .PHONY: test
 test: ## Ejecuta todos los tests
 	@echo "$(CYAN)→ Ejecutando tests...$(RESET)"
-	uv run pytest --cov=. --cov-report=term-missing
+	uv run pytest \
+		--cov=mcp_shared \
+		--cov=mcp_calendar \
+		--cov=mcp_docker \
+		--cov=mcp_fetch \
+		--cov=mcp_kafka \
+		--cov=mcp_markdown \
+		--cov=mcp_prompt_engineer \
+		--cov=mcp_structured_output \
+		--cov=mcp_tabular \
+		--cov-report=term-missing
 
 .PHONY: test-%
 test-%: ## Tests de un servidor específico  [Ej: make test-mcp-tabular]

@@ -8,8 +8,8 @@ __version__ = "1.0.0"
 __author__ = "MCP Framework Team"
 
 __all__ = [
-    "__version__",
     "CalendarSettings",
+    "__version__",
     "create_server",
 ]
 

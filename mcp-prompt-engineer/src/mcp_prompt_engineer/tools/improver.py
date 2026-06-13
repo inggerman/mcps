@@ -17,17 +17,8 @@ import re
 from typing import Any
 
 from .analyzer import (
-    analyze_prompt,
-    classify_prompt,
-    _has_examples,
-    _has_format_spec,
-    _has_role,
-    _is_closed_question,
-    _detect_vague_words,
-    _compute_clarity_score,
-    _detect_contradictions,
     _count_words,
-    _estimate_tokens,
+    analyze_prompt,
 )
 
 # ---------------------------------------------------------------------------
@@ -247,9 +238,7 @@ def estimate_tokens(text: str, model: str = "gpt-4o") -> dict[str, Any]:
             "gpt-4o (128k)": "fits" if gpt4_count <= 128_000 else "exceeds",
             "claude-3-5-sonnet (200k)": "fits" if heuristic_claude <= 200_000 else "exceeds",
             "gpt-3.5-turbo (16k)": (
-                "fits"
-                if (tiktoken_count or heuristic_gpt) <= 16_000
-                else "exceeds"
+                "fits" if (tiktoken_count or heuristic_gpt) <= 16_000 else "exceeds"
             ),
         },
     }
@@ -280,7 +269,6 @@ def _apply_improvements(
     has_role: bool = analysis["has_role"]
     has_format: bool = analysis["has_format_spec"]
     is_closed_q: bool = analysis.get("is_closed_question", False)
-    vague_words: list[str] = analysis.get("vague_words_found", [])
 
     # 1. Convertir pregunta cerrada a abierta
     if is_closed_q:
@@ -426,7 +414,6 @@ def generate_variations(prompt: str, n: int = 3) -> list[dict[str, Any]]:
     """
     n = max(1, min(n, 10))
     analysis = analyze_prompt(prompt)
-    prompt_type = analysis["prompt_type"]
     has_role = analysis["has_role"]
     word_count = analysis["word_count"]
 
@@ -435,12 +422,14 @@ def generate_variations(prompt: str, n: int = 3) -> list[dict[str, Any]]:
     # Variación 1: Agregar rol de experto
     if not has_role:
         v1 = f"Actúa como un experto senior en el área. {prompt}"
-        variations.append({
-            "variation": v1,
-            "approach": "role_injection",
-            "description": "Se añadió un rol de experto para orientar el estilo de respuesta.",
-            "clarity_score": analyze_prompt(v1)["clarity_score"],
-        })
+        variations.append(
+            {
+                "variation": v1,
+                "approach": "role_injection",
+                "description": "Se añadió un rol de experto para orientar el estilo de respuesta.",
+                "clarity_score": analyze_prompt(v1)["clarity_score"],
+            }
+        )
 
     # Variación 2: Chain-of-thought explícito
     v2 = (
@@ -450,12 +439,14 @@ def generate_variations(prompt: str, n: int = 3) -> list[dict[str, Any]]:
         "2. ¿Cuál es el enfoque correcto?\n"
         "3. ¿Cuál es mi respuesta final?"
     )
-    variations.append({
-        "variation": v2,
-        "approach": "chain_of_thought",
-        "description": "Se añadió estructura de razonamiento paso a paso.",
-        "clarity_score": analyze_prompt(v2)["clarity_score"],
-    })
+    variations.append(
+        {
+            "variation": v2,
+            "approach": "chain_of_thought",
+            "description": "Se añadió estructura de razonamiento paso a paso.",
+            "clarity_score": analyze_prompt(v2)["clarity_score"],
+        }
+    )
 
     # Variación 3: Formato de salida estructurado
     if not analysis["has_format_spec"]:
@@ -466,27 +457,28 @@ def generate_variations(prompt: str, n: int = 3) -> list[dict[str, Any]]:
             "**Desarrollo:** [detalle principal]\n"
             "**Conclusión:** [cierre y próximos pasos si aplica]"
         )
-        variations.append({
-            "variation": v3,
-            "approach": "structured_output",
-            "description": "Se añadió una plantilla de formato de salida estructurada.",
-            "clarity_score": analyze_prompt(v3)["clarity_score"],
-        })
+        variations.append(
+            {
+                "variation": v3,
+                "approach": "structured_output",
+                "description": "Se añadió una plantilla de formato de salida estructurada.",
+                "clarity_score": analyze_prompt(v3)["clarity_score"],
+            }
+        )
 
     # Variación 4: Versión concisa (si el prompt es largo)
     if word_count > 50:
         # Tomar la primera oración/párrafo principal
         first_para = prompt.strip().split("\n\n")[0].strip()
-        v4 = (
-            f"{first_para}\n\n"
-            "Sé directo y conciso. Responde en máximo 3 párrafos."
+        v4 = f"{first_para}\n\nSé directo y conciso. Responde en máximo 3 párrafos."
+        variations.append(
+            {
+                "variation": v4,
+                "approach": "concise",
+                "description": "Versión condensada que preserva la intención principal.",
+                "clarity_score": analyze_prompt(v4)["clarity_score"],
+            }
         )
-        variations.append({
-            "variation": v4,
-            "approach": "concise",
-            "description": "Versión condensada que preserva la intención principal.",
-            "clarity_score": analyze_prompt(v4)["clarity_score"],
-        })
 
     # Variación 5: Versión con contexto de audiencia
     v5 = (
@@ -494,25 +486,26 @@ def generate_variations(prompt: str, n: int = 3) -> list[dict[str, Any]]:
         f"con conocimientos intermedios en el tema.\n\n{prompt}\n\n"
         "Adapta tu respuesta para esta audiencia específica."
     )
-    variations.append({
-        "variation": v5,
-        "approach": "audience_context",
-        "description": "Se añadió contexto de audiencia para personalizar la respuesta.",
-        "clarity_score": analyze_prompt(v5)["clarity_score"],
-    })
+    variations.append(
+        {
+            "variation": v5,
+            "approach": "audience_context",
+            "description": "Se añadió contexto de audiencia para personalizar la respuesta.",
+            "clarity_score": analyze_prompt(v5)["clarity_score"],
+        }
+    )
 
     # Variación 6: Con ejemplos solicitados explícitamente
     if not analysis["has_examples"]:
-        v6 = (
-            f"{prompt}\n\n"
-            "Incluye al menos 2 ejemplos concretos para ilustrar tu respuesta."
+        v6 = f"{prompt}\n\nIncluye al menos 2 ejemplos concretos para ilustrar tu respuesta."
+        variations.append(
+            {
+                "variation": v6,
+                "approach": "examples_requested",
+                "description": "Se añadió solicitud explícita de ejemplos ilustrativos.",
+                "clarity_score": analyze_prompt(v6)["clarity_score"],
+            }
         )
-        variations.append({
-            "variation": v6,
-            "approach": "examples_requested",
-            "description": "Se añadió solicitud explícita de ejemplos ilustrativos.",
-            "clarity_score": analyze_prompt(v6)["clarity_score"],
-        })
 
     # Variación 7: Versión en inglés (si el prompt está en español)
     if analysis["language"] in {"es", "ca", "pt"}:
@@ -523,12 +516,14 @@ def generate_variations(prompt: str, n: int = 3) -> list[dict[str, Any]]:
             "Note: This is a template for the English version. Replace [English version of: ...] "
             "with the actual English translation of the original prompt."
         )
-        variations.append({
-            "variation": v7,
-            "approach": "english_version",
-            "description": "Template para versión en inglés (requiere traducción manual del contenido).",
-            "clarity_score": 6.0,
-        })
+        variations.append(
+            {
+                "variation": v7,
+                "approach": "english_version",
+                "description": "Template para versión en inglés (requiere traducción manual del contenido).",
+                "clarity_score": 6.0,
+            }
+        )
 
     # Variación 8: Prompt tipo sistema (system prompt)
     v8 = (
@@ -539,12 +534,14 @@ def generate_variations(prompt: str, n: int = 3) -> list[dict[str, Any]]:
         "- Si tienes dudas, pide aclaración antes de proceder\n"
         "- Cita fuentes cuando sea relevante"
     )
-    variations.append({
-        "variation": v8,
-        "approach": "system_prompt_style",
-        "description": "Versión reformateada como system prompt con instrucciones adicionales.",
-        "clarity_score": analyze_prompt(v8)["clarity_score"],
-    })
+    variations.append(
+        {
+            "variation": v8,
+            "approach": "system_prompt_style",
+            "description": "Versión reformateada como system prompt con instrucciones adicionales.",
+            "clarity_score": analyze_prompt(v8)["clarity_score"],
+        }
+    )
 
     # Variación 9: Con criterios de éxito
     v9 = (
@@ -555,12 +552,14 @@ def generate_variations(prompt: str, n: int = 3) -> list[dict[str, Any]]:
         "- Está bien organizada y es fácil de leer\n"
         "- Responde completamente a lo solicitado"
     )
-    variations.append({
-        "variation": v9,
-        "approach": "success_criteria",
-        "description": "Se añadieron criterios de éxito explícitos para guiar la respuesta.",
-        "clarity_score": analyze_prompt(v9)["clarity_score"],
-    })
+    variations.append(
+        {
+            "variation": v9,
+            "approach": "success_criteria",
+            "description": "Se añadieron criterios de éxito explícitos para guiar la respuesta.",
+            "clarity_score": analyze_prompt(v9)["clarity_score"],
+        }
+    )
 
     # Variación 10: Con restricciones negativas
     v10 = (
@@ -570,12 +569,14 @@ def generate_variations(prompt: str, n: int = 3) -> list[dict[str, Any]]:
         "- NO repitas información ya mencionada\n"
         "- NO respondas con información desactualizada si conoces la versión actual"
     )
-    variations.append({
-        "variation": v10,
-        "approach": "negative_constraints",
-        "description": "Se añadieron restricciones negativas para aclarar qué evitar.",
-        "clarity_score": analyze_prompt(v10)["clarity_score"],
-    })
+    variations.append(
+        {
+            "variation": v10,
+            "approach": "negative_constraints",
+            "description": "Se añadieron restricciones negativas para aclarar qué evitar.",
+            "clarity_score": analyze_prompt(v10)["clarity_score"],
+        }
+    )
 
     # Retornar solo las primeras N variaciones, ordenadas por clarity_score
     result = sorted(variations, key=lambda x: x["clarity_score"], reverse=True)
@@ -659,7 +660,6 @@ def decompose_task(task: str) -> list[dict[str, Any]]:
     """
     analysis = analyze_prompt(task)
     prompt_type = analysis["prompt_type"]
-    word_count = analysis["word_count"]
 
     subtasks: list[dict[str, Any]] = []
 

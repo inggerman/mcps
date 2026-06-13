@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Any
 
 from mcp_shared.errors import ApiError, NetworkError, ValidationError
+
 from mcp_docker.config import settings
 
 _DOCKER_MISSING = "docker SDK no está instalado. Ejecuta: pip install docker"
@@ -18,7 +19,6 @@ def _get_client() -> Any:
     """Obtiene un cliente Docker conectado al daemon."""
     try:
         import docker
-        from docker.errors import DockerException
     except ImportError as exc:
         raise NetworkError(url="docker-daemon", reason=_DOCKER_MISSING) from exc
 
@@ -153,8 +153,13 @@ def containers_stats(container_id: str) -> dict[str, Any]:
 
 
 def _parse_stats(raw: dict[str, Any], container_id: str) -> dict[str, Any]:
-    cpu_delta = raw["cpu_stats"]["cpu_usage"]["total_usage"] - raw["precpu_stats"]["cpu_usage"]["total_usage"]
-    system_delta = raw["cpu_stats"].get("system_cpu_usage", 0) - raw["precpu_stats"].get("system_cpu_usage", 0)
+    cpu_delta = (
+        raw["cpu_stats"]["cpu_usage"]["total_usage"]
+        - raw["precpu_stats"]["cpu_usage"]["total_usage"]
+    )
+    system_delta = raw["cpu_stats"].get("system_cpu_usage", 0) - raw["precpu_stats"].get(
+        "system_cpu_usage", 0
+    )
     num_cpus = len(raw["cpu_stats"]["cpu_usage"].get("percpu_usage") or []) or 1
     cpu_percent = (cpu_delta / system_delta * num_cpus * 100.0) if system_delta > 0 else 0.0
 
@@ -239,7 +244,11 @@ def container_logs(
             kwargs["since"] = since
 
         raw_logs = container.logs(**kwargs)
-        log_text = raw_logs.decode("utf-8", errors="replace") if isinstance(raw_logs, bytes) else str(raw_logs)
+        log_text = (
+            raw_logs.decode("utf-8", errors="replace")
+            if isinstance(raw_logs, bytes)
+            else str(raw_logs)
+        )
 
         return {
             "container_id": container.short_id,
@@ -315,7 +324,11 @@ def container_exec(
             kwargs["environment"] = environment
 
         exit_code, output = container.exec_run(cmd, **kwargs)
-        output_text = output.decode("utf-8", errors="replace") if isinstance(output, bytes) else str(output or "")
+        output_text = (
+            output.decode("utf-8", errors="replace")
+            if isinstance(output, bytes)
+            else str(output or "")
+        )
 
         return {
             "container_id": container.short_id,

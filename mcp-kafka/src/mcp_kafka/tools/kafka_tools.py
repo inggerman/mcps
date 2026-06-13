@@ -9,7 +9,8 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from mcp_shared.errors import ApiError, NetworkError, ParseError, ValidationError
+from mcp_shared.errors import ApiError, NetworkError, ValidationError
+
 from mcp_kafka.config import settings
 
 _CONFLUENT_MISSING = "confluent-kafka no está instalado. Ejecuta: pip install confluent-kafka"
@@ -76,11 +77,13 @@ def topics_list(
             continue
         if prefix and not name.startswith(prefix):
             continue
-        topics_out.append({
-            "name": name,
-            "partitions": len(topic_meta.partitions),
-            "error": str(topic_meta.error) if topic_meta.error else None,
-        })
+        topics_out.append(
+            {
+                "name": name,
+                "partitions": len(topic_meta.partitions),
+                "error": str(topic_meta.error) if topic_meta.error else None,
+            }
+        )
 
     topics_out.sort(key=lambda t: t["name"])
 
@@ -139,13 +142,15 @@ def topic_describe(topic: str) -> dict[str, Any]:
 
     partitions = []
     for pid, part_meta in sorted(topic_meta.partitions.items()):
-        partitions.append({
-            "id": pid,
-            "leader": part_meta.leader,
-            "replicas": list(part_meta.replicas),
-            "isr": list(part_meta.isrs),
-            "error": str(part_meta.error) if part_meta.error else None,
-        })
+        partitions.append(
+            {
+                "id": pid,
+                "leader": part_meta.leader,
+                "replicas": list(part_meta.replicas),
+                "isr": list(part_meta.isrs),
+                "error": str(part_meta.error) if part_meta.error else None,
+            }
+        )
 
     return {
         "topic": topic,
@@ -195,11 +200,13 @@ def consumer_groups_list(prefix: str | None = None) -> dict[str, Any]:
         group_id = group.group_id
         if prefix and not group_id.startswith(prefix):
             continue
-        groups_out.append({
-            "group_id": group_id,
-            "state": str(group.state) if hasattr(group, "state") else "unknown",
-            "is_simple": getattr(group, "is_simple_consumer_group", False),
-        })
+        groups_out.append(
+            {
+                "group_id": group_id,
+                "state": str(group.state) if hasattr(group, "state") else "unknown",
+                "is_simple": getattr(group, "is_simple_consumer_group", False),
+            }
+        )
 
     groups_out.sort(key=lambda g: g["group_id"])
 
@@ -246,10 +253,10 @@ def consumer_group_offsets(group_id: str, topics: list[str] | None = None) -> di
 
     try:
         future = admin.list_consumer_group_offsets(
-            [{"group_id": group_id, "partitions": topic_partitions}],
+            [{"group_id": group_id, "partitions": topic_partitions}],  # type: ignore[list-item]
             request_timeout=settings.admin_timeout,
         )
-        results = future.result()
+        results = future.result()  # type: ignore[attr-defined]
     except Exception as exc:
         raise ApiError(
             url=settings.bootstrap_servers,
@@ -266,12 +273,14 @@ def consumer_group_offsets(group_id: str, topics: list[str] | None = None) -> di
                 response_body=f"Error en grupo '{group_id}': {group_result.error}",
             )
         for tp, offset_info in (group_result.topic_partitions or {}).items():
-            offsets_out.append({
-                "topic": tp.topic,
-                "partition": tp.partition,
-                "offset": offset_info.offset if offset_info.offset >= 0 else "OFFSET_INVALID",
-                "metadata": getattr(offset_info, "metadata", "") or "",
-            })
+            offsets_out.append(
+                {
+                    "topic": tp.topic,
+                    "partition": tp.partition,
+                    "offset": offset_info.offset if offset_info.offset >= 0 else "OFFSET_INVALID",
+                    "metadata": getattr(offset_info, "metadata", "") or "",
+                }
+            )
 
     offsets_out.sort(key=lambda x: (x["topic"], x["partition"]))
 
@@ -413,7 +422,9 @@ def _parse_message(msg: Any, parse_json: bool) -> dict[str, Any]:
         "key": key,
         "value": value,
         "headers": {
-            (k.decode("utf-8", errors="replace") if isinstance(k, bytes) else k): v.decode("utf-8", errors="replace")
+            (k.decode("utf-8", errors="replace") if isinstance(k, bytes) else k): v.decode(
+                "utf-8", errors="replace"
+            )
             for k, v in (msg.headers() or [])
         },
     }
@@ -486,19 +497,23 @@ def consume_messages(
         raise NetworkError(url=settings.bootstrap_servers, reason=_CONFLUENT_MISSING) from exc
 
     cfg = settings.base_config()
-    cfg.update({
-        "group.id": group_id,
-        "auto.offset.reset": "earliest" if from_beginning else "latest",
-        "enable.auto.commit": False,
-        "session.timeout.ms": 6000,
-    })
+    cfg.update(
+        {
+            "group.id": group_id,
+            "auto.offset.reset": "earliest" if from_beginning else "latest",
+            "enable.auto.commit": False,
+            "session.timeout.ms": 6000,
+        }
+    )
 
     consumer = Consumer(cfg)
     messages_out: list[dict[str, Any]] = []
 
     try:
         consumer.subscribe([topic])
-        messages_out = _poll_loop(consumer, topic, resolved_max, resolved_timeout, parse_json, KafkaError)
+        messages_out = _poll_loop(
+            consumer, topic, resolved_max, resolved_timeout, parse_json, KafkaError
+        )
     except (ApiError, NetworkError, ValidationError):
         raise
     except Exception as exc:

@@ -25,7 +25,6 @@ from mistune.renderers.html import HTMLRenderer
 
 from mcp_markdown.config import settings
 
-
 # ---------------------------------------------------------------------------
 # Utilidades internas
 # ---------------------------------------------------------------------------
@@ -111,7 +110,7 @@ class _ASTCollector:
         self.code_blocks: list[dict[str, Any]] = []
         self.images: list[dict[str, Any]] = []
 
-    def walk(self, tokens: list[dict[str, Any]], line_offset: int = 0) -> None:  # noqa: ANN401
+    def walk(self, tokens: list[dict[str, Any]], line_offset: int = 0) -> None:
         """Recorre la lista de tokens del AST recursivamente."""
         current_line = line_offset
         for token in tokens:
@@ -128,7 +127,7 @@ class _ASTCollector:
                     }
                 )
 
-            elif token_type == "code":
+            elif token_type == "block_code":
                 attrs = token.get("attrs", {})
                 info = attrs.get("info", "") or ""
                 language = info.split()[0] if info.strip() else None
@@ -202,7 +201,7 @@ def _is_external_url(url: str) -> bool:
     try:
         parsed = urlparse(url)
         return parsed.scheme in {"http", "https", "ftp", "ftps"}
-    except Exception:  # noqa: BLE001
+    except Exception:
         return False
 
 
@@ -347,7 +346,9 @@ def get_toc(path: str, max_depth: int | None = None) -> str:
         text = h["text"]
         lines.append(f"{indent}- [{text}](#{anchor})")
 
-    return "\n".join(lines) if lines else "_No se encontraron encabezados dentro del nivel indicado._"
+    return (
+        "\n".join(lines) if lines else "_No se encontraron encabezados dentro del nivel indicado._"
+    )
 
 
 def markdown_to_html(path_or_text: str, is_path: bool = True) -> str:
@@ -669,7 +670,7 @@ def list_markdown_files(directory: str, recursive: bool = True) -> list[dict[str
                     "frontmatter": fm_data,
                 }
             )
-        except Exception:  # noqa: BLE001
+        except Exception:
             # Ignorar archivos que no se puedan leer
             continue
 
