@@ -35,6 +35,10 @@ members = [
     "mcp-openapi",
     "mcp-documents",
     "mcp-browser",
+    # Fase 8 - Plataforma
+    "mcp-kubernetes",
+    "mcp-observability",
+    "mcp-terraform",
 ]
 
 [tool.ruff]
