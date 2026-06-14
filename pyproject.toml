@@ -39,6 +39,8 @@ members = [
     "mcp-kubernetes",
     "mcp-observability",
     "mcp-terraform",
+    # Personal context
+    "mcp-personal-vault",
 ]
 
 [tool.ruff]

@@ -1002,6 +1002,46 @@ services:
       - "mcp.version=1.0.0"
       - "mcp.transport=streamable-http"
 
+  # ---------------------------------------------------------------------------
+  # MCP: Personal Vault (encrypted local context)
+  # ---------------------------------------------------------------------------
+  mcp-personal-vault:
+    profiles: ["personal"]
+    build:
+      context: .
+      dockerfile: mcp-personal-vault/Dockerfile
+      target: runtime
+    image: mcp-personal-vault:latest
+    container_name: mcp-personal-vault
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8035"
+      PERSONAL_VAULT_DATABASE_PATH: /vault/personal.db
+      PERSONAL_VAULT_KEY_FILE: /vault/vault.key
+      PERSONAL_VAULT_ALLOW_WRITE: "true"
+      PERSONAL_VAULT_ALLOW_HIGHLY_SENSITIVE: "false"
+      PERSONAL_VAULT_ALLOW_SECRETS: "false"
+    ports:
+      - "127.0.0.1:8035:8035"
+    volumes:
+      - mcp-personal-vault:/vault
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8035), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=personal-vault"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+
 # ---------------------------------------------------------------------------
 # Volumes
 # ---------------------------------------------------------------------------
@@ -1018,3 +1058,9 @@ volumes:
       type: none
       o: bind
       device: ${MCP_MEMORY_DIR:-./.ai-memory}
+  mcp-personal-vault:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PERSONAL_VAULT_DIR:-./data/personal-vault}

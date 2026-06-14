@@ -10,7 +10,7 @@ YELLOW := \033[0;33m
 CYAN   := \033[0;36m
 RESET  := \033[0m
 
-SERVERS := mcp-tabular mcp-calendar mcp-markdown mcp-prompt-engineer mcp-structured-output mcp-fetch mcp-docker mcp-kafka mcp-project-memory mcp-llm-router mcp-git mcp-github mcp-code-quality mcp-architecture mcp-event-driven mcp-orchestrator mcp-best-practices mcp-ci-cd mcp-design-patterns mcp-security-champion mcp-database mcp-filesystem mcp-object-storage mcp-openapi mcp-documents mcp-browser mcp-kubernetes mcp-observability mcp-terraform
+SERVERS := mcp-tabular mcp-calendar mcp-markdown mcp-prompt-engineer mcp-structured-output mcp-fetch mcp-docker mcp-kafka mcp-project-memory mcp-llm-router mcp-git mcp-github mcp-code-quality mcp-architecture mcp-event-driven mcp-orchestrator mcp-best-practices mcp-ci-cd mcp-design-patterns mcp-security-champion mcp-database mcp-filesystem mcp-object-storage mcp-openapi mcp-documents mcp-browser mcp-kubernetes mcp-observability mcp-terraform mcp-personal-vault
 
 ##@ Setup
 
@@ -94,6 +94,7 @@ test: ## Ejecuta todos los tests
 		--cov=mcp_kubernetes \
 		--cov=mcp_observability \
 		--cov=mcp_terraform \
+		--cov=mcp_personal_vault \
 		--cov-report=term-missing
 
 .PHONY: test-%

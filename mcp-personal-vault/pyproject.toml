@@ -1,0 +1,32 @@
+[project]
+name = "mcp-personal-vault"
+version = "1.0.0"
+description = "Encrypted local personal context vault for MCP clients"
+requires-python = ">=3.11"
+dependencies = [
+    "cryptography>=44.0",
+    "fastmcp>=2.3",
+    "mcp-shared",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "structlog>=24.1",
+]
+
+[tool.uv.sources]
+mcp-shared = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_personal_vault"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*", "*/test_*"]

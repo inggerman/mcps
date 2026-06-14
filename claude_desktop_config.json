@@ -422,6 +422,26 @@
         "TERRAFORM_ROOT": "C:/Users/germa/Documents/IA/mcps",
         "TERRAFORM_ALLOW_APPLY": "false"
       }
+    },
+    "mcp-personal-vault": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-personal-vault",
+        "run",
+        "python",
+        "-m",
+        "mcp_personal_vault.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "PERSONAL_VAULT_DATABASE_PATH": "C:/Users/germa/Documents/IA/mcps/data/personal-vault/personal.db",
+        "PERSONAL_VAULT_KEY_FILE": "C:/Users/germa/Documents/IA/mcps/data/personal-vault/vault.key",
+        "PERSONAL_VAULT_ALLOW_WRITE": "true",
+        "PERSONAL_VAULT_ALLOW_HIGHLY_SENSITIVE": "false",
+        "PERSONAL_VAULT_ALLOW_SECRETS": "false"
+      }
     }
   }
 }
