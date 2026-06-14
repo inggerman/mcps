@@ -276,6 +276,359 @@ services:
       - "mcp.version=1.0.0"
       - "mcp.transport=streamable-http"
 
+
+  # ---------------------------------------------------------------------------
+  # MCP: Project Memory (Memoria persistente de proyecto para agentes de IA)
+  # ---------------------------------------------------------------------------
+  mcp-project-memory:
+    build:
+      context: .
+      dockerfile: mcp-project-memory/Dockerfile
+      target: runtime
+    image: mcp-project-memory:latest
+    container_name: mcp-project-memory
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8009"
+      MEMORY_DIR: /app/.ai-memory
+      MEMORY_PROJECT_NAME: mcps
+    ports:
+      - "127.0.0.1:8009:8009"
+    volumes:
+      - mcp-memory:/app/.ai-memory
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8009), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=project-memory"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: LLM Router (Ruteo inteligente local vs nube)
+  # ---------------------------------------------------------------------------
+  mcp-llm-router:
+    build:
+      context: .
+      dockerfile: mcp-llm-router/Dockerfile
+      target: runtime
+    image: mcp-llm-router:latest
+    container_name: mcp-llm-router
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8010"
+      # host.docker.internal resuelve a la máquina host donde corre LM Studio
+      ROUTER_LMSTUDIO_BASE_URL: http://host.docker.internal:1234/v1
+      ROUTER_COMPLEXITY_THRESHOLD: "6"
+      ROUTER_MODEL_FAST: qwen3-8b
+      ROUTER_MODEL_CODE: devstral-small-2507
+      ROUTER_MODEL_REASON: deepseek-r1-0528-qwen3-8b
+      ROUTER_MODEL_LARGE: qwen2.5-14b-instruct-1m
+    ports:
+      - "127.0.0.1:8010:8010"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8010), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=llm-router"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Git (Operaciones locales de Git con confirmación segura)
+  # ---------------------------------------------------------------------------
+  mcp-git:
+    build:
+      context: .
+      dockerfile: mcp-git/Dockerfile
+      target: runtime
+    image: mcp-git:latest
+    container_name: mcp-git
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8011"
+      GIT_REPO_PATH: /repo
+      GIT_DEFAULT_BRANCH: main
+      GIT_ALLOW_FORCE_PUSH: "false"
+    ports:
+      - "127.0.0.1:8011:8011"
+    volumes:
+      # Monta el directorio de código actual como /repo
+      - .:/repo
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8011), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=git"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: GitHub (Integraciones con la API de GitHub)
+  # ---------------------------------------------------------------------------
+  mcp-github:
+    build:
+      context: .
+      dockerfile: mcp-github/Dockerfile
+      target: runtime
+    image: mcp-github:latest
+    container_name: mcp-github
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8012"
+      GITHUB_API_URL: https://api.github.com
+    ports:
+      - "127.0.0.1:8012:8012"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8012), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=github"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Code Quality (Linters, Formateadores y Tests)
+  # ---------------------------------------------------------------------------
+  mcp-code-quality:
+    build:
+      context: .
+      dockerfile: mcp-code-quality/Dockerfile
+      target: runtime
+    image: mcp-code-quality:latest
+    container_name: mcp-code-quality
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8013"
+      CQ_PROJECT_PATH: /repo
+      CQ_LINTER_CMD: "uv run ruff check"
+      CQ_FORMATTER_CMD: "uv run ruff format"
+      CQ_TEST_CMD: "uv run pytest"
+    ports:
+      - "127.0.0.1:8013:8013"
+    volumes:
+      - .:/repo
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8013), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=code-quality"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Architecture (Análisis de dependencias y SOLID)
+  # ---------------------------------------------------------------------------
+  mcp-architecture:
+    build:
+      context: .
+      dockerfile: mcp-architecture/Dockerfile
+      target: runtime
+    image: mcp-architecture:latest
+    container_name: mcp-architecture
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8014"
+      ARCH_PROJECT_PATH: /repo
+    ports:
+      - "127.0.0.1:8014:8014"
+    volumes:
+      - .:/repo
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8014), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=architecture"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Event Driven (Esquemas y Coreografía)
+  # ---------------------------------------------------------------------------
+  mcp-event-driven:
+    build:
+      context: .
+      dockerfile: mcp-event-driven/Dockerfile
+      target: runtime
+    image: mcp-event-driven:latest
+    container_name: mcp-event-driven
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8015"
+      EVENT_SCHEMAS_PATH: /schemas
+    ports:
+      - "127.0.0.1:8015:8015"
+    volumes:
+      - ./schemas:/schemas
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8015), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=event-driven"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Orchestrator (Flujos y DAGs)
+  # ---------------------------------------------------------------------------
+  mcp-orchestrator:
+    build:
+      context: .
+      dockerfile: mcp-orchestrator/Dockerfile
+      target: runtime
+    image: mcp-orchestrator:latest
+    container_name: mcp-orchestrator
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8016"
+      ORCH_DAGS_PATH: /dags
+    ports:
+      - "127.0.0.1:8016:8016"
+    volumes:
+      - ./dags:/dags
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8016), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=orchestrator"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Best Practices (Documentación Retroactiva)
+  # ---------------------------------------------------------------------------
+  mcp-best-practices:
+    build:
+      context: .
+      dockerfile: mcp-best-practices/Dockerfile
+      target: runtime
+    image: mcp-best-practices:latest
+    container_name: mcp-best-practices
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8017"
+      BP_PROJECT_PATH: /repo
+      BP_DOCS_PATH: /repo/docs
+    ports:
+      - "127.0.0.1:8017:8017"
+    volumes:
+      - .:/repo
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8017), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=best-practices"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: CI/CD (Pipelines Locales)
+  # ---------------------------------------------------------------------------
+  mcp-ci-cd:
+    build:
+      context: .
+      dockerfile: mcp-ci-cd/Dockerfile
+      target: runtime
+    image: mcp-ci-cd:latest
+    container_name: mcp-ci-cd
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8018"
+      CICD_PROJECT_PATH: /repo
+    ports:
+      - "127.0.0.1:8018:8018"
+    volumes:
+      - .:/repo
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8018), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=ci-cd"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
 # ---------------------------------------------------------------------------
 # Volumes
 # ---------------------------------------------------------------------------
@@ -286,3 +639,9 @@ volumes:
       type: none
       o: bind
       device: ${MCP_DATA_DIR:-./data}
+  mcp-memory:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${MCP_MEMORY_DIR:-./.ai-memory}

@@ -9,6 +9,21 @@ members = [
     "mcp-fetch",
     "mcp-docker",
     "mcp-kafka",
+    # Fase 1 — Fundamentos
+    "mcp-project-memory",
+    "mcp-llm-router",
+    # Fase 2 — Desarrollo
+    "mcp-git",
+    "mcp-github",
+    # Fase 3 — Calidad
+    "mcp-code-quality",
+    "mcp-architecture",
+    # Fase 4 — Patrones Avanzados
+    "mcp-event-driven",
+    "mcp-orchestrator",
+    # Fase 5 — Estándares
+    "mcp-best-practices",
+    "mcp-ci-cd",
 ]
 
 [tool.ruff]

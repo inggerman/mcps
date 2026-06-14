@@ -39,6 +39,9 @@ class ErrorCode(StrEnum):
     DIRECTORY_NOT_FOUND = "DIRECTORY_NOT_FOUND"
     """El directorio especificado no existe."""
 
+    RESOURCE_NOT_FOUND = "RESOURCE_NOT_FOUND"
+    """Un recurso interno solicitado no existe (ej: tarea, sesión)."""
+
     # --- Errores de formato ---
     UNSUPPORTED_FORMAT = "UNSUPPORTED_FORMAT"
     """El formato del archivo o dato no está soportado."""
@@ -188,6 +191,29 @@ class FileNotFoundError(McpError):
             context={"file_path": file_path, **(context or {})},
         )
         self.file_path = file_path
+
+
+class NotFoundError(McpError):
+    """
+    Error que indica que un recurso lógico solicitado no existe.
+    """
+
+    def __init__(self, resource: str, identifier: str, context: dict | None = None) -> None:
+        """
+        Inicializa el error con el tipo de recurso y su identificador.
+
+        Args:
+            resource: Tipo de recurso (ej: 'sesión', 'tarea').
+            identifier: Identificador del recurso no encontrado.
+            context: Información adicional del contexto.
+        """
+        super().__init__(
+            message=f"Recurso no encontrado: {resource} '{identifier}'",
+            error_code=ErrorCode.RESOURCE_NOT_FOUND,
+            context={"resource": resource, "identifier": identifier, **(context or {})},
+        )
+        self.resource = resource
+        self.identifier = identifier
 
 
 class FileReadError(McpError):
