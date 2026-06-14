@@ -24,10 +24,17 @@ members = [
     # Fase 5 — Estándares
     "mcp-best-practices",
     "mcp-ci-cd",
+    # Fase 6 — Arquitectura y Seguridad
+    "mcp-design-patterns",
+    "mcp-security-champion",
     # Fase 6 - Datos
     "mcp-database",
     "mcp-filesystem",
     "mcp-object-storage",
+    # Fase 7 - Interfaces
+    "mcp-openapi",
+    "mcp-documents",
+    "mcp-browser",
 ]
 
 [tool.ruff]
@@ -99,4 +106,5 @@ dev = [
     "pytest-asyncio>=1.0",
     "pytest-cov>=6.0",
     "ruff>=0.11",
+    "types-PyYAML>=6.0",
 ]
