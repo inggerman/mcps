@@ -24,6 +24,10 @@ members = [
     # Fase 5 — Estándares
     "mcp-best-practices",
     "mcp-ci-cd",
+    # Fase 6 - Datos
+    "mcp-database",
+    "mcp-filesystem",
+    "mcp-object-storage",
 ]
 
 [tool.ruff]
