@@ -697,6 +697,311 @@ services:
       - "mcp.version=1.0.0"
       - "mcp.transport=streamable-http"
 
+  # ---------------------------------------------------------------------------
+  # MCP: Database (SQL read-only by default)
+  # ---------------------------------------------------------------------------
+  mcp-database:
+    build:
+      context: .
+      dockerfile: mcp-database/Dockerfile
+    image: mcp-database:latest
+    container_name: mcp-database
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8021"
+      DATABASE_URL: sqlite:////data/database.db
+      DATABASE_READ_ONLY: "true"
+    ports:
+      - "127.0.0.1:8021:8021"
+    volumes:
+      - mcp-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8021), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=database"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Filesystem (sandboxed and read-only by default)
+  # ---------------------------------------------------------------------------
+  mcp-filesystem:
+    build:
+      context: .
+      dockerfile: mcp-filesystem/Dockerfile
+    image: mcp-filesystem:latest
+    container_name: mcp-filesystem
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8022"
+      FILESYSTEM_ROOT: /data
+      FILESYSTEM_ALLOW_WRITE: "false"
+    ports:
+      - "127.0.0.1:8022:8022"
+    volumes:
+      - mcp-data:/data:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8022), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=filesystem"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Object Storage (S3 and MinIO)
+  # ---------------------------------------------------------------------------
+  mcp-object-storage:
+    profiles: ["cloud"]
+    build:
+      context: .
+      dockerfile: mcp-object-storage/Dockerfile
+    image: mcp-object-storage:latest
+    container_name: mcp-object-storage
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8023"
+      OBJECT_STORAGE_ALLOW_WRITE: "false"
+    ports:
+      - "127.0.0.1:8023:8023"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8023), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=object-storage"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: OpenAPI
+  # ---------------------------------------------------------------------------
+  mcp-openapi:
+    build:
+      context: .
+      dockerfile: mcp-openapi/Dockerfile
+    image: mcp-openapi:latest
+    container_name: mcp-openapi
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8024"
+      OPENAPI_SPEC: /data/openapi.yaml
+      OPENAPI_ALLOWED_ROOT: /data
+      OPENAPI_ALLOW_INVOKE: "false"
+    ports:
+      - "127.0.0.1:8024:8024"
+    volumes:
+      - mcp-data:/data:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8024), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=openapi"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Documents (PDF, DOCX and PPTX)
+  # ---------------------------------------------------------------------------
+  mcp-documents:
+    build:
+      context: .
+      dockerfile: mcp-documents/Dockerfile
+    image: mcp-documents:latest
+    container_name: mcp-documents
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8025"
+      DOCUMENTS_ROOT: /data
+    ports:
+      - "127.0.0.1:8025:8025"
+    volumes:
+      - mcp-data:/data:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8025), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=documents"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Browser (Playwright)
+  # ---------------------------------------------------------------------------
+  mcp-browser:
+    profiles: ["browser"]
+    build:
+      context: .
+      dockerfile: mcp-browser/Dockerfile
+    image: mcp-browser:latest
+    container_name: mcp-browser
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8026"
+      BROWSER_HEADLESS: "true"
+      BROWSER_OUTPUT_DIR: /data/browser
+    ports:
+      - "127.0.0.1:8026:8026"
+    volumes:
+      - mcp-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8026), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "mcp.server=browser"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Kubernetes
+  # ---------------------------------------------------------------------------
+  mcp-kubernetes:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-kubernetes/Dockerfile
+    image: mcp-kubernetes:latest
+    container_name: mcp-kubernetes
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8027"
+      KUBERNETES_ALLOW_WRITE: "false"
+    ports:
+      - "127.0.0.1:8027:8027"
+    volumes:
+      - ${KUBECONFIG_DIR:-./data/kube}:/home/mcpuser/.kube:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8027), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=kubernetes"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Observability (Prometheus, Loki and health checks)
+  # ---------------------------------------------------------------------------
+  mcp-observability:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-observability/Dockerfile
+    image: mcp-observability:latest
+    container_name: mcp-observability
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8028"
+    ports:
+      - "127.0.0.1:8028:8028"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8028), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=observability"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Terraform
+  # ---------------------------------------------------------------------------
+  mcp-terraform:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-terraform/Dockerfile
+    image: mcp-terraform:latest
+    container_name: mcp-terraform
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8029"
+      TERRAFORM_ROOT: /workspace
+      TERRAFORM_ALLOW_APPLY: "false"
+    ports:
+      - "127.0.0.1:8029:8029"
+    volumes:
+      - .:/workspace
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8029), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=terraform"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
 # ---------------------------------------------------------------------------
 # Volumes
 # ---------------------------------------------------------------------------

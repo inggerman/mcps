@@ -333,6 +333,95 @@
         "LOG_FORMAT": "console",
         "SEC_PROJECT_PATH": "C:/Users/germa/Documents/IA/mcps"
       }
+    },
+    "mcp-database": {
+      "command": "uv",
+      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-database", "run", "python", "-m", "mcp_database.server"],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "DATABASE_URL": "sqlite:///C:/Users/germa/Documents/IA/mcps/data/database.db",
+        "DATABASE_READ_ONLY": "true"
+      }
+    },
+    "mcp-filesystem": {
+      "command": "uv",
+      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-filesystem", "run", "python", "-m", "mcp_filesystem.server"],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "FILESYSTEM_ROOT": "C:/Users/germa/Documents/IA/mcps",
+        "FILESYSTEM_ALLOW_WRITE": "false"
+      }
+    },
+    "mcp-object-storage": {
+      "command": "uv",
+      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-object-storage", "run", "python", "-m", "mcp_object_storage.server"],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "OBJECT_STORAGE_REGION": "us-east-1",
+        "OBJECT_STORAGE_ALLOW_WRITE": "false"
+      }
+    },
+    "mcp-openapi": {
+      "command": "uv",
+      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-openapi", "run", "python", "-m", "mcp_openapi.server"],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "OPENAPI_ALLOWED_ROOT": "C:/Users/germa/Documents/IA/mcps",
+        "OPENAPI_ALLOW_INVOKE": "false"
+      }
+    },
+    "mcp-documents": {
+      "command": "uv",
+      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-documents", "run", "python", "-m", "mcp_documents.server"],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "DOCUMENTS_ROOT": "C:/Users/germa/Documents/IA/mcps"
+      }
+    },
+    "mcp-browser": {
+      "command": "uv",
+      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-browser", "run", "python", "-m", "mcp_browser.server"],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "BROWSER_HEADLESS": "true",
+        "BROWSER_OUTPUT_DIR": "C:/Users/germa/Documents/IA/mcps/data/browser"
+      }
+    },
+    "mcp-kubernetes": {
+      "command": "uv",
+      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-kubernetes", "run", "python", "-m", "mcp_kubernetes.server"],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "KUBERNETES_NAMESPACE": "default",
+        "KUBERNETES_ALLOW_WRITE": "false"
+      }
+    },
+    "mcp-observability": {
+      "command": "uv",
+      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-observability", "run", "python", "-m", "mcp_observability.server"],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "OBSERVABILITY_PROMETHEUS_URL": "http://localhost:9090",
+        "OBSERVABILITY_LOKI_URL": "http://localhost:3100"
+      }
+    },
+    "mcp-terraform": {
+      "command": "uv",
+      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-terraform", "run", "python", "-m", "mcp_terraform.server"],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "TERRAFORM_ROOT": "C:/Users/germa/Documents/IA/mcps",
+        "TERRAFORM_ALLOW_APPLY": "false"
+      }
     }
   }
 }

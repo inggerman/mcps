@@ -10,7 +10,7 @@ YELLOW := \033[0;33m
 CYAN   := \033[0;36m
 RESET  := \033[0m
 
-SERVERS := mcp-tabular mcp-calendar mcp-markdown mcp-prompt-engineer mcp-structured-output mcp-fetch mcp-docker mcp-kafka mcp-project-memory mcp-llm-router mcp-git mcp-github mcp-code-quality mcp-architecture mcp-event-driven mcp-orchestrator mcp-best-practices mcp-ci-cd mcp-design-patterns mcp-security-champion
+SERVERS := mcp-tabular mcp-calendar mcp-markdown mcp-prompt-engineer mcp-structured-output mcp-fetch mcp-docker mcp-kafka mcp-project-memory mcp-llm-router mcp-git mcp-github mcp-code-quality mcp-architecture mcp-event-driven mcp-orchestrator mcp-best-practices mcp-ci-cd mcp-design-patterns mcp-security-champion mcp-database mcp-filesystem mcp-object-storage mcp-openapi mcp-documents mcp-browser mcp-kubernetes mcp-observability mcp-terraform
 
 ##@ Setup
 
@@ -85,6 +85,15 @@ test: ## Ejecuta todos los tests
 		--cov=mcp_ci_cd \
 		--cov=mcp_design_patterns \
 		--cov=mcp_security_champion \
+		--cov=mcp_database \
+		--cov=mcp_filesystem \
+		--cov=mcp_object_storage \
+		--cov=mcp_openapi \
+		--cov=mcp_documents \
+		--cov=mcp_browser \
+		--cov=mcp_kubernetes \
+		--cov=mcp_observability \
+		--cov=mcp_terraform \
 		--cov-report=term-missing
 
 .PHONY: test-%
@@ -133,6 +142,14 @@ up: ## Levanta todos los MCPs en Docker (modo producción)
 	docker compose up -d
 	@echo "$(GREEN)✓ Servicios corriendo$(RESET)"
 	docker compose ps
+
+.PHONY: up-platform
+up-platform: ## Levanta Docker, Kubernetes, Terraform y observabilidad
+	docker compose --profile privileged-tools --profile platform-tools up -d
+
+.PHONY: up-extended
+up-extended: ## Levanta todos los perfiles opcionales
+	docker compose --profile privileged-tools --profile platform-tools --profile cloud --profile browser up -d
 
 .PHONY: down
 down: ## Para todos los servicios Docker
