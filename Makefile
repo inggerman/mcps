@@ -10,7 +10,7 @@ YELLOW := \033[0;33m
 CYAN   := \033[0;36m
 RESET  := \033[0m
 
-SERVERS := mcp-tabular mcp-calendar mcp-markdown mcp-prompt-engineer mcp-structured-output mcp-fetch mcp-docker mcp-kafka mcp-project-memory mcp-llm-router mcp-git mcp-github mcp-code-quality mcp-architecture mcp-event-driven mcp-orchestrator mcp-best-practices mcp-ci-cd
+SERVERS := mcp-tabular mcp-calendar mcp-markdown mcp-prompt-engineer mcp-structured-output mcp-fetch mcp-docker mcp-kafka mcp-project-memory mcp-llm-router mcp-git mcp-github mcp-code-quality mcp-architecture mcp-event-driven mcp-orchestrator mcp-best-practices mcp-ci-cd mcp-design-patterns mcp-security-champion
 
 ##@ Setup
 
@@ -83,6 +83,8 @@ test: ## Ejecuta todos los tests
 		--cov=mcp_orchestrator \
 		--cov=mcp_best_practices \
 		--cov=mcp_ci_cd \
+		--cov=mcp_design_patterns \
+		--cov=mcp_security_champion \
 		--cov-report=term-missing
 
 .PHONY: test-%

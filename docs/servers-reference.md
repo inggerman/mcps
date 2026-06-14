@@ -1,5 +1,5 @@
 # Servers Reference
-**Última actualización:** 2026-06-13T20:48:00.165625
+**Última actualización:** 2026-06-13T21:04:30.973688
 
 Documentación autogenerada basada en la configuración de Claude Desktop.
 
@@ -142,3 +142,17 @@ Documentación autogenerada basada en la configuración de Claude Desktop.
   - `LOG_LEVEL`: INFO
   - `LOG_FORMAT`: console
   - `CICD_PROJECT_PATH`: C:/Users/germa/Documents/IA/mcps
+
+## mcp-design-patterns
+- **Comando:** `uv --directory C:/Users/germa/Documents/IA/mcps/mcp-design-patterns run python -m mcp_design_patterns.server`
+- **Variables de entorno (Locales):**
+  - `LOG_LEVEL`: INFO
+  - `LOG_FORMAT`: console
+  - `DP_PROJECT_PATH`: C:/Users/germa/Documents/IA/mcps
+
+## mcp-security-champion
+- **Comando:** `uv --directory C:/Users/germa/Documents/IA/mcps/mcp-security-champion run python -m mcp_security_champion.server`
+- **Variables de entorno (Locales):**
+  - `LOG_LEVEL`: INFO
+  - `LOG_FORMAT`: console
+  - `SEC_PROJECT_PATH`: C:/Users/germa/Documents/IA/mcps

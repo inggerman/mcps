@@ -301,6 +301,38 @@
         "LOG_FORMAT": "console",
         "CICD_PROJECT_PATH": "C:/Users/germa/Documents/IA/mcps"
       }
+    },
+    "mcp-design-patterns": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-design-patterns",
+        "run",
+        "python",
+        "-m",
+        "mcp_design_patterns.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "DP_PROJECT_PATH": "C:/Users/germa/Documents/IA/mcps"
+      }
+    },
+    "mcp-security-champion": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-security-champion",
+        "run",
+        "python",
+        "-m",
+        "mcp_security_champion.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "SEC_PROJECT_PATH": "C:/Users/germa/Documents/IA/mcps"
+      }
     }
   }
 }
