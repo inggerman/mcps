@@ -29,6 +29,11 @@
 - `mcp-fetch` — HTTP GET/POST, extracción de texto HTML, consumo de APIs JSON (4 tools)
 - `mcp-docker` — gestión de contenedores Docker: listar, logs, exec, run, stop, imágenes (8 tools)
 - `mcp-kafka` — Apache Kafka: topics, consumer groups, produce y consume mensajes (6 tools)
+- `mcp-database`, `mcp-filesystem`, `mcp-object-storage` — acceso controlado a datos
+- `mcp-openapi`, `mcp-documents`, `mcp-browser` — APIs, documentos y navegación
+- `mcp-kubernetes`, `mcp-observability`, `mcp-terraform` — operaciones de plataforma
+- 12 servidores adicionales para Git, GitHub, arquitectura, calidad, seguridad,
+  memoria, orquestación y CI/CD
 
 **Transporte dual:** `MCP_TRANSPORT=stdio` para uso local (Claude Desktop, Cursor, Windsurf) — `MCP_TRANSPORT=streamable-http` para producción en Docker.
 
@@ -49,7 +54,7 @@ c:\Users\germa\Documents\IA\mcps\          ← raíz del workspace
 ├── mcp-fetch/src/mcp_fetch/                ← servidor HTTP fetch
 ├── mcp-docker/src/mcp_docker/              ← servidor Docker
 ├── mcp-kafka/src/mcp_kafka/               ← servidor Kafka
-├── docker-compose.yml                      ← orquestación HTTP (puertos 8001-8008)
+├── docker-compose.yml                      ← orquestación HTTP (puertos 8001-8029)
 ├── claude_desktop_config.json              ← config Claude Desktop (modo stdio)
 ├── .env.example                            ← plantilla variables de entorno
 └── Makefile                                ← comandos operacionales
@@ -57,4 +62,4 @@ c:\Users\germa\Documents\IA\mcps\          ← raíz del workspace
 
 ---
 
-*Última actualización: junio 2026 — mcp-fetch, mcp-docker, mcp-kafka implementados*
+*Última actualización: junio 2026 — 29 servidores MCP implementados*

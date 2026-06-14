@@ -230,6 +230,24 @@ Analiza y mejora prompts para LLMs. Todo el procesamiento es local — sin llama
 
 ---
 
+### Catálogo completo
+
+Además de los cuatro servidores descritos arriba, el workspace incluye:
+
+| Grupo | Servidores |
+|---|---|
+| Datos | `mcp-database`, `mcp-filesystem`, `mcp-object-storage`, `mcp-documents` |
+| APIs | `mcp-fetch`, `mcp-openapi`, `mcp-browser`, `mcp-kafka`, `mcp-github` |
+| IA | `mcp-structured-output`, `mcp-llm-router`, `mcp-project-memory` |
+| Ingeniería | `mcp-git`, `mcp-code-quality`, `mcp-architecture`, `mcp-design-patterns`, `mcp-security-champion` |
+| Flujos | `mcp-event-driven`, `mcp-orchestrator`, `mcp-best-practices`, `mcp-ci-cd` |
+| Plataforma | `mcp-docker`, `mcp-kubernetes`, `mcp-observability`, `mcp-terraform` |
+
+El inventario operativo, puertos y perfiles está en
+[`docs/servers-reference.md`](docs/servers-reference.md).
+
+---
+
 ## 5. Prerrequisitos e instalación
 
 ### Herramientas necesarias
@@ -445,6 +463,12 @@ make up
 # mcp-docker requiere acceso privilegiado al socket del daemon
 docker compose --profile privileged-tools up -d mcp-docker
 
+# Kubernetes, observabilidad y Terraform
+make up-platform
+
+# Todos los perfiles opcionales, incluido S3 y Playwright
+make up-extended
+
 # Ver estado
 make ps
 
@@ -470,6 +494,27 @@ make down
 | `mcp-fetch` | 8006 | `http://127.0.0.1:8006/` |
 | `mcp-docker` | 8007 | `http://127.0.0.1:8007/` |
 | `mcp-kafka` | 8008 | `http://127.0.0.1:8008/` |
+| `mcp-project-memory` | 8009 | `http://127.0.0.1:8009/` |
+| `mcp-llm-router` | 8010 | `http://127.0.0.1:8010/` |
+| `mcp-git` | 8011 | `http://127.0.0.1:8011/` |
+| `mcp-github` | 8012 | `http://127.0.0.1:8012/` |
+| `mcp-code-quality` | 8013 | `http://127.0.0.1:8013/` |
+| `mcp-architecture` | 8014 | `http://127.0.0.1:8014/` |
+| `mcp-event-driven` | 8015 | `http://127.0.0.1:8015/` |
+| `mcp-orchestrator` | 8016 | `http://127.0.0.1:8016/` |
+| `mcp-best-practices` | 8017 | `http://127.0.0.1:8017/` |
+| `mcp-ci-cd` | 8018 | `http://127.0.0.1:8018/` |
+| `mcp-design-patterns` | 8019 | `http://127.0.0.1:8019/` |
+| `mcp-security-champion` | 8020 | `http://127.0.0.1:8020/` |
+| `mcp-database` | 8021 | `http://127.0.0.1:8021/` |
+| `mcp-filesystem` | 8022 | `http://127.0.0.1:8022/` |
+| `mcp-object-storage` | 8023 | `http://127.0.0.1:8023/` |
+| `mcp-openapi` | 8024 | `http://127.0.0.1:8024/` |
+| `mcp-documents` | 8025 | `http://127.0.0.1:8025/` |
+| `mcp-browser` | 8026 | `http://127.0.0.1:8026/` |
+| `mcp-kubernetes` | 8027 | `http://127.0.0.1:8027/` |
+| `mcp-observability` | 8028 | `http://127.0.0.1:8028/` |
+| `mcp-terraform` | 8029 | `http://127.0.0.1:8029/` |
 
 ### Healthcheck
 
