@@ -686,3 +686,208 @@ def list_markdown_files(directory: str, recursive: bool = True) -> list[dict[str
             continue
 
     return results
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+def count_words(path: str) -> dict[str, Any]:
+    """Cuenta palabras, lineas y caracteres de un archivo Markdown."""
+    content, _ = _read_file(path)
+    _, body = _parse_frontmatter(content)
+    plain = markdown_to_plain_text(body, is_path=False)
+    lines = body.splitlines()
+    return {
+        "path": str(Path(path).resolve()),
+        "words": len(plain.split()),
+        "lines": len(lines),
+        "characters": len(body),
+        "characters_no_spaces": len(body.replace(" ", "").replace("\n", "")),
+    }
+
+
+def extract_images(path: str) -> list[dict[str, Any]]:
+    """Extrae todas las imagenes de un archivo Markdown."""
+    content, _ = _read_file(path)
+    _, body = _parse_frontmatter(content)
+    ast = _build_ast(body)
+    collector = _ASTCollector()
+    collector.walk(ast)
+    return collector.images
+
+
+def get_section(path: str, heading_text: str, case_sensitive: bool = False) -> dict[str, Any] | None:
+    """Extrae el contenido de una seccion bajo un encabezado especifico."""
+    content, _ = _read_file(path)
+    _, body = _parse_frontmatter(content)
+    headings = extract_headings(path)
+    if not headings:
+        return None
+
+    target_level: int | None = None
+    start_idx: int | None = None
+    for i, h in enumerate(headings):
+        match = (h["text"] == heading_text) if case_sensitive else (h["text"].lower() == heading_text.lower())
+        if match:
+            target_level = h["level"]
+            start_idx = i
+            break
+
+    if start_idx is None or target_level is None:
+        return None
+
+    end_idx = None
+    for j in range(start_idx + 1, len(headings)):
+        if headings[j]["level"] <= target_level:
+            end_idx = j
+            break
+
+    section_headings = headings[start_idx:end_idx] if end_idx else headings[start_idx:]
+    lines = body.splitlines()
+    start_line = None
+    end_line = None
+    heading_pattern = re.compile(r"^(#{1,6})\s+(.+)$")
+    current_h_idx = 0
+    for i, line in enumerate(lines):
+        m = heading_pattern.match(line)
+        if m:
+            if current_h_idx == start_idx:
+                start_line = i
+            if end_idx is not None and current_h_idx == end_idx:
+                end_line = i
+                break
+            current_h_idx += 1
+
+    if start_line is None:
+        return None
+    if end_line is None:
+        end_line = len(lines)
+
+    section_text = "\n".join(lines[start_line:end_line])
+    return {
+        "heading": headings[start_idx]["text"],
+        "level": target_level,
+        "content": section_text,
+        "subheadings": [h for h in section_headings[1:]],
+    }
+
+
+def merge_markdown(files: list[str], separator: str = "\n\n---\n\n") -> str:
+    """Combina multiples archivos Markdown en uno solo."""
+    parts: list[str] = []
+    for f in files:
+        content, _ = _read_file(f)
+        parts.append(content)
+    return separator.join(parts)
+
+
+def extract_tables(path: str) -> list[dict[str, Any]]:
+    """Extrae todas las tablas Markdown de un archivo."""
+    content, _ = _read_file(path)
+    _, body = _parse_frontmatter(content)
+    lines = body.splitlines()
+    tables: list[dict[str, Any]] = []
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        if "|" in line and line.startswith("|") and line.endswith("|"):
+            if i + 1 < len(lines) and re.match(r"^\|[\s:|-]+\|$", lines[i + 1].strip()):
+                header = [c.strip() for c in line.strip("|").split("|")]
+                separator_line = lines[i + 1].strip()
+                rows: list[list[str]] = []
+                j = i + 2
+                while j < len(lines) and "|" in lines[j].strip() and lines[j].strip().startswith("|"):
+                    row = [c.strip() for c in lines[j].strip("|").split("|")]
+                    rows.append(row)
+                    j += 1
+                tables.append({
+                    "line_start": i + 1,
+                    "headers": header,
+                    "rows": rows,
+                    "row_count": len(rows),
+                })
+                i = j
+                continue
+        i += 1
+    return tables
+
+
+def check_links(path: str) -> dict[str, Any]:
+    """Verifica los enlaces locales de un archivo Markdown."""
+    links = extract_links(path)
+    base_dir = Path(path).resolve().parent
+    broken: list[dict[str, Any]] = []
+    valid: list[dict[str, Any]] = []
+    for link in links:
+        url = link.get("url", "")
+        if not url or url.startswith("#") or _is_external_url(url):
+            continue
+        url_path = url.split("#")[0]
+        if not url_path:
+            continue
+        target = (base_dir / url_path).resolve()
+        if target.exists():
+            valid.append({"text": link.get("text", ""), "url": url, "resolved": str(target)})
+        else:
+            broken.append({"text": link.get("text", ""), "url": url, "resolved": str(target)})
+    return {
+        "total_local_links": len(broken) + len(valid),
+        "valid_count": len(valid),
+        "broken_count": len(broken),
+        "broken_links": broken,
+    }
+
+
+def get_summary(path: str, max_words: int = 100) -> dict[str, Any]:
+    """Genera un resumen del contenido de un archivo Markdown."""
+    content, _ = _read_file(path)
+    fm_data, body = _parse_frontmatter(content)
+    plain = markdown_to_plain_text(body, is_path=False)
+    words = plain.split()
+    if len(words) <= max_words:
+        summary = " ".join(words)
+    else:
+        summary = " ".join(words[:max_words]) + "..."
+    title = _extract_title_from_body(body)
+    headings = extract_headings(path)
+    return {
+        "path": str(Path(path).resolve()),
+        "title": title or fm_data.get("title"),
+        "summary": summary,
+        "word_count": len(words),
+        "heading_count": len(headings),
+        "frontmatter": fm_data,
+    }
+
+
+def split_by_headings(path: str, level: int = 2) -> list[dict[str, Any]]:
+    """Divide un archivo Markdown en secciones por nivel de encabezado."""
+    content, _ = _read_file(path)
+    _, body = _parse_frontmatter(content)
+    headings = extract_headings(path)
+    lines = body.splitlines()
+    heading_pattern = re.compile(r"^(#{1,6})\s+(.+)$")
+    sections: list[dict[str, Any]] = []
+    current_section: dict[str, Any] | None = None
+    current_lines: list[str] = []
+    for line in lines:
+        m = heading_pattern.match(line)
+        if m:
+            h_level = len(m.group(1))
+            h_text = m.group(2).strip()
+            if h_level == level:
+                if current_section is not None:
+                    current_section["content"] = "\n".join(current_lines)
+                    sections.append(current_section)
+                current_section = {"heading": h_text, "level": level, "line_start": 0}
+                current_lines = [line]
+            else:
+                current_lines.append(line)
+        else:
+            current_lines.append(line)
+    if current_section is not None:
+        current_section["content"] = "\n".join(current_lines)
+        sections.append(current_section)
+    return sections

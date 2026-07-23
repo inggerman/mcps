@@ -1,3 +1,33 @@
-from mcp_browser.tools.browser_tools import capture_page, extract_page, validate_url
+from mcp_browser.tools.browser_tools import (
+    capture_page,
+    click_element,
+    evaluate_js,
+    extract_page,
+    fill_form,
+    get_cookies,
+    get_page_links,
+    get_page_metadata,
+    get_page_text,
+    get_page_title,
+    scroll_page,
+    set_viewport,
+    validate_url,
+    wait_for_selector,
+)
 
-__all__ = ["capture_page", "extract_page", "validate_url"]
+__all__ = [
+    "capture_page",
+    "click_element",
+    "evaluate_js",
+    "extract_page",
+    "fill_form",
+    "get_cookies",
+    "get_page_links",
+    "get_page_metadata",
+    "get_page_text",
+    "get_page_title",
+    "scroll_page",
+    "set_viewport",
+    "validate_url",
+    "wait_for_selector",
+]

@@ -745,3 +745,300 @@ def get_routing_history(history_path: Path, limit: int = 50) -> list[dict[str, A
         raise ValidationError(field="limit", message="El límite debe estar entre 1 y 1000.")
     history = _load_history(history_path)
     return list(reversed(history[-limit:]))
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+def clear_routing_history(history_path: Path) -> dict[str, Any]:
+    """Borra todo el historial de ruteo."""
+    if history_path.exists():
+        history_path.unlink()
+    return {"cleared": True, "path": str(history_path)}
+
+
+def get_routing_stats(history_path: Path) -> dict[str, Any]:
+    """Retorna estadisticas agregadas del historial de ruteo."""
+    history = _load_history(history_path)
+    if not history:
+        return {
+            "total_decisions": 0,
+            "local_count": 0,
+            "cloud_count": 0,
+            "local_percentage": 0,
+            "cloud_percentage": 0,
+            "avg_complexity": 0,
+            "avg_tokens": 0,
+            "task_type_distribution": {},
+            "model_distribution": {},
+        }
+
+    local_count = sum(1 for h in history if h.get("destination") == "local")
+    cloud_count = sum(1 for h in history if h.get("destination") == "cloud")
+    total = len(history)
+
+    task_types: dict[str, int] = {}
+    models: dict[str, int] = {}
+    for h in history:
+        tt = h.get("task_type", "unknown")
+        task_types[tt] = task_types.get(tt, 0) + 1
+        m = h.get("model", "unknown")
+        models[m] = models.get(m, 0) + 1
+
+    avg_complexity = round(sum(h.get("complexity_score", 0) for h in history) / total, 2)
+    avg_tokens = round(sum(h.get("estimated_tokens", 0) for h in history) / total, 2)
+
+    return {
+        "total_decisions": total,
+        "local_count": local_count,
+        "cloud_count": cloud_count,
+        "local_percentage": round(local_count / total * 100, 1),
+        "cloud_percentage": round(cloud_count / total * 100, 1),
+        "avg_complexity": avg_complexity,
+        "avg_tokens": avg_tokens,
+        "task_type_distribution": task_types,
+        "model_distribution": models,
+    }
+
+
+def compare_models(
+    prompt: str,
+    local_model: str,
+    base_url: str,
+    cloud_model: str,
+    provider: str,
+    api_key: str,
+    system: str = "",
+    temperature: float = 0.7,
+    max_tokens: int = 1024,
+    local_timeout: int = 120,
+    cloud_timeout: int = 60,
+) -> dict[str, Any]:
+    """Ejecuta un prompt en ambos modelos (local y nube) y compara resultados."""
+    local_result = call_local_model(
+        prompt, local_model, base_url, system, temperature, max_tokens, local_timeout
+    )
+    cloud_result = call_cloud_model(
+        prompt, cloud_model, provider, api_key, system, temperature, max_tokens, cloud_timeout
+    )
+    return {
+        "local": local_result,
+        "cloud": cloud_result,
+        "local_elapsed": local_result.get("elapsed_seconds", 0),
+        "cloud_elapsed": cloud_result.get("elapsed_seconds", 0),
+        "local_tokens": local_result.get("tokens_total", 0),
+        "cloud_tokens": cloud_result.get("tokens_total", 0),
+    }
+
+
+def set_routing_threshold(
+    new_threshold: int,
+    current_threshold: int,
+) -> dict[str, Any]:
+    """Valida y retorna un nuevo umbral de complejidad."""
+    if new_threshold < 1 or new_threshold > 10:
+        raise ValidationError(
+            field="new_threshold",
+            message="El umbral debe estar entre 1 y 10.",
+        )
+    return {
+        "old_threshold": current_threshold,
+        "new_threshold": new_threshold,
+        "updated": True,
+    }
+
+
+def set_privacy_mode(enabled: bool) -> dict[str, Any]:
+    """Activa o desactiva el modo privacidad."""
+    return {
+        "privacy_mode": enabled,
+        "message": "Modo privacidad activado. No se enviaran datos a la nube." if enabled
+        else "Modo privacidad desactivado.",
+        "updated": True,
+    }
+
+
+def get_model_info(model_name: str, base_url: str, timeout: int = 5) -> dict[str, Any]:
+    """Obtiene informacion detallada de un modelo especifico en LM Studio."""
+    try:
+        with httpx.Client(timeout=timeout) as client:
+            resp = client.get(f"{base_url}/models")
+            resp.raise_for_status()
+            data = resp.json()
+    except httpx.TimeoutException as exc:
+        raise NetworkTimeoutError(url=base_url, timeout_seconds=timeout) from exc
+    except httpx.RequestError as exc:
+        raise NetworkError(url=base_url, detail=str(exc)) from exc
+    except httpx.HTTPStatusError as exc:
+        raise ApiError(service="lmstudio", detail=str(exc)) from exc
+
+    for m in data.get("data", []):
+        if m.get("id") == model_name:
+            return {
+                "model": model_name,
+                "found": True,
+                "metadata": m,
+            }
+    return {"model": model_name, "found": False, "metadata": None}
+
+
+def batch_route_tasks(
+    prompts: list[str],
+    complexity_threshold: int = 6,
+    max_local_tokens: int = 6000,
+    privacy_mode: bool = False,
+    model_fast: str = "qwen3-8b",
+    model_code: str = "devstral-small-2507",
+    model_reason: str = "deepseek-r1-0528-qwen3-8b",
+    model_large_context: str = "qwen2.5-14b-instruct-1m",
+    cloud_model: str = "claude-sonnet-4-5",
+    cloud_provider: str = "anthropic",
+) -> list[dict[str, Any]]:
+    """Ruta multiples prompts en lote y retorna todas las decisiones."""
+    results = []
+    for prompt in prompts:
+        try:
+            decision = route_task(
+                prompt,
+                "",
+                False,
+                False,
+                complexity_threshold,
+                max_local_tokens,
+                privacy_mode,
+                model_fast,
+                model_code,
+                model_reason,
+                model_large_context,
+                cloud_model,
+                cloud_provider,
+            )
+            results.append({"prompt_preview": prompt[:100], "decision": decision})
+        except ValidationError as exc:
+            results.append({"prompt_preview": prompt[:100], "error": str(exc)})
+    return results
+
+
+def get_routing_history_filtered(
+    history_path: Path,
+    destination: str | None = None,
+    task_type: str | None = None,
+    limit: int = 50,
+) -> list[dict[str, Any]]:
+    """Retorna el historial de ruteo filtrado por destination o task_type."""
+    if limit < 1 or limit > 1000:
+        raise ValidationError(field="limit", message="El limite debe estar entre 1 y 1000.")
+    history = _load_history(history_path)
+    filtered = history
+    if destination:
+        filtered = [h for h in filtered if h.get("destination") == destination]
+    if task_type:
+        filtered = [h for h in filtered if h.get("task_type") == task_type]
+    return list(reversed(filtered[-limit:]))
+
+
+def estimate_cost(
+    prompt: str,
+    destination: str,
+    cloud_provider: str = "anthropic",
+    cloud_model: str = "claude-sonnet-4-5",
+) -> dict[str, Any]:
+    """Estima el costo de procesar un prompt en local vs nube."""
+    tokens = _estimate_tokens(prompt)
+    local_cost = 0.0
+
+    cloud_pricing = {
+        "anthropic": {"input": 3.0, "output": 15.0},
+        "openai": {"input": 2.5, "output": 10.0},
+    }
+
+    provider = cloud_provider if cloud_provider in cloud_pricing else "anthropic"
+    pricing = cloud_pricing[provider]
+    estimated_output_tokens = min(tokens * 2, 4096)
+    cloud_cost = round(
+        (tokens / 1000 * pricing["input"]) + (estimated_output_tokens / 1000 * pricing["output"]),
+        4,
+    )
+
+    return {
+        "estimated_input_tokens": tokens,
+        "estimated_output_tokens": estimated_output_tokens,
+        "local_cost_usd": local_cost,
+        "cloud_cost_usd": cloud_cost,
+        "savings_usd": round(cloud_cost - local_cost, 4),
+        "destination": destination,
+        "cloud_provider": provider,
+        "cloud_model": cloud_model,
+    }
+
+
+def export_routing_history(history_path: Path, format: str = "json") -> str:
+    """Exporta el historial de ruteo en formato JSON o CSV."""
+    history = _load_history(history_path)
+    if format == "csv":
+        lines = ["timestamp,destination,model,task_type,complexity_score,estimated_tokens"]
+        for h in history:
+            lines.append(
+                f"{h.get('timestamp','')},{h.get('destination','')},"
+                f"{h.get('model','')},{h.get('task_type','')},"
+                f"{h.get('complexity_score','')},{h.get('estimated_tokens','')}"
+            )
+        return "\n".join(lines)
+    return json.dumps(history, indent=2, ensure_ascii=False)
+
+
+def validate_routing_config(
+    complexity_threshold: int,
+    max_local_tokens: int,
+    model_fast: str,
+    model_code: str,
+    model_reason: str,
+    model_large_context: str,
+    cloud_model: str,
+    cloud_provider: str,
+) -> dict[str, Any]:
+    """Valida la configuracion del router y retorna advertencias si las hay."""
+    warnings: list[str] = []
+    errors: list[str] = []
+
+    if complexity_threshold < 1 or complexity_threshold > 10:
+        errors.append("complexity_threshold debe estar entre 1 y 10.")
+    if max_local_tokens < 512:
+        errors.append("max_local_tokens debe ser >= 512.")
+    if cloud_provider not in ("anthropic", "openai"):
+        errors.append("cloud_provider debe ser 'anthropic' o 'openai'.")
+    if not model_fast:
+        warnings.append("model_fast no esta configurado.")
+    if not model_code:
+        warnings.append("model_code no esta configurado.")
+    if not model_reason:
+        warnings.append("model_reason no esta configurado.")
+    if not model_large_context:
+        warnings.append("model_large_context no esta configurado.")
+    if complexity_threshold <= 2:
+        warnings.append("complexity_threshold muy bajo: la mayoria de tareas iran a la nube.")
+    if complexity_threshold >= 9:
+        warnings.append("complexity_threshold muy alto: casi nada ira a la nube.")
+
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors,
+        "warnings": warnings,
+    }
+
+
+def get_routing_summary(history_path: Path) -> dict[str, Any]:
+    """Retorna un resumen rapido del historial: total, ultimo destino, ultimo modelo."""
+    history = _load_history(history_path)
+    if not history:
+        return {"total": 0, "last_destination": None, "last_model": None}
+    last = history[-1]
+    return {
+        "total": len(history),
+        "last_destination": last.get("destination"),
+        "last_model": last.get("model"),
+        "last_task_type": last.get("task_type"),
+        "last_complexity": last.get("complexity_score"),
+    }

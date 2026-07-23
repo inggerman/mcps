@@ -15,13 +15,26 @@ from mcp_shared.logging import get_logger, setup_logging
 
 from mcp_kafka.config import settings
 from mcp_kafka.tools import (
+    alter_topic_config,
+    broker_list,
+    list_acls,
+    cluster_metadata,
     consume_messages,
+    consumer_group_delete,
+    consumer_group_describe,
     consumer_group_offsets,
+    consumer_group_reset_offsets,
     consumer_groups_list,
+    create_topic,
+    delete_topic,
+    produce_batch,
     produce_message,
     topic_describe,
+    topic_offsets,
+    topic_partitions,
     topics_list,
 )
+from mcp_kafka import resources as res
 
 setup_logging(
     log_level=settings.log_level,
@@ -194,6 +207,199 @@ def tool_consume_messages(
     )
     logger.info("consume_messages completado", topic=topic, count=result["count"])
     return result
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    name="create_topic",
+    description="Crea un nuevo topic Kafka. Parametros: topic (requerido), num_partitions (default 1), replication_factor (default 1).",
+)
+def tool_create_topic(topic: str, num_partitions: int = 1, replication_factor: int = 1) -> dict[str, Any]:
+    logger.info("create_topic llamado", topic=topic)
+    return _handle(create_topic, topic=topic, num_partitions=num_partitions, replication_factor=replication_factor)
+
+
+@mcp.tool(
+    name="delete_topic",
+    description="Elimina un topic Kafka. Parametros: topic (requerido).",
+)
+def tool_delete_topic(topic: str) -> dict[str, Any]:
+    logger.info("delete_topic llamado", topic=topic)
+    return _handle(delete_topic, topic=topic)
+
+
+@mcp.tool(
+    name="topic_partitions",
+    description="Obtiene las particiones de un topic. Parametros: topic (requerido). Retorna: partition_count, partitions[].",
+)
+def tool_topic_partitions(topic: str) -> dict[str, Any]:
+    logger.info("topic_partitions llamado", topic=topic)
+    return _handle(topic_partitions, topic=topic)
+
+
+@mcp.tool(
+    name="topic_offsets",
+    description="Obtiene los offsets begin/end de cada particion de un topic. Parametros: topic (requerido).",
+)
+def tool_topic_offsets(topic: str) -> dict[str, Any]:
+    logger.info("topic_offsets llamado", topic=topic)
+    return _handle(topic_offsets, topic=topic)
+
+
+@mcp.tool(
+    name="cluster_metadata",
+    description="Obtiene metadata completa del cluster: brokers, topics, controller. Retorna: cluster_id, brokers[], broker_count, topic_count.",
+)
+def tool_cluster_metadata() -> dict[str, Any]:
+    logger.info("cluster_metadata llamado")
+    return _handle(cluster_metadata)
+
+
+@mcp.tool(
+    name="broker_list",
+    description="Lista los brokers del cluster Kafka. Retorna: brokers[], count.",
+)
+def tool_broker_list() -> dict[str, Any]:
+    logger.info("broker_list llamado")
+    return _handle(broker_list)
+
+
+@mcp.tool(
+    name="produce_batch",
+    description="Produce un lote de mensajes en un topic. Parametros: topic (requerido), messages (list de dicts con 'value' y 'key' opcional).",
+)
+def tool_produce_batch(topic: str, messages: list[dict[str, Any]]) -> dict[str, Any]:
+    logger.info("produce_batch llamado", topic=topic, count=len(messages))
+    return _handle(produce_batch, topic=topic, messages=messages)
+
+
+@mcp.tool(
+    name="consumer_group_describe",
+    description="Describe un consumer group: estado, miembros, asignaciones. Parametros: group_id (requerido).",
+)
+def tool_consumer_group_describe(group_id: str) -> dict[str, Any]:
+    logger.info("consumer_group_describe llamado", group_id=group_id)
+    return _handle(consumer_group_describe, group_id=group_id)
+
+
+@mcp.tool(
+    name="consumer_group_reset_offsets",
+    description="Resetea offsets de un consumer group. Parametros: group_id, topic, partition (default -1 = todas), offset ('earliest' o 'latest').",
+)
+def tool_consumer_group_reset_offsets(group_id: str, topic: str, partition: int = -1, offset: str = "earliest") -> dict[str, Any]:
+    logger.info("consumer_group_reset_offsets llamado", group_id=group_id, topic=topic)
+    return _handle(consumer_group_reset_offsets, group_id=group_id, topic=topic, partition=partition, offset=offset)
+
+
+@mcp.tool(
+    name="consumer_group_delete",
+    description="Elimina un consumer group del cluster. Parametros: group_id (requerido).",
+)
+def tool_consumer_group_delete(group_id: str) -> dict[str, Any]:
+    logger.info("consumer_group_delete llamado", group_id=group_id)
+    return _handle(consumer_group_delete, group_id=group_id)
+
+
+@mcp.tool(
+    name="alter_topic_config",
+    description="Modifica la configuracion de un topic. Parametros: topic (requerido), config (dict string->string, ej: {'retention.ms': '86400000'}).",
+)
+def tool_alter_topic_config(topic: str, config: dict[str, str]) -> dict[str, Any]:
+    logger.info("alter_topic_config llamado", topic=topic)
+    return _handle(alter_topic_config, topic=topic, config=config)
+
+
+@mcp.tool(
+    name="list_acls",
+    description="Lista ACLs del cluster Kafka. Parametros: principal (string opcional), topic (string opcional), group_id (string opcional). Retorna: acls[], count.",
+)
+def tool_list_acls(principal: str | None = None, topic: str | None = None, group_id: str | None = None) -> dict[str, Any]:
+    logger.info("list_acls llamado")
+    return _handle(list_acls, principal=principal, topic=topic, group_id=group_id)
+
+
+# ---------------------------------------------------------------------------
+# Resources estaticos
+# ---------------------------------------------------------------------------
+
+
+@mcp.resource("kafka://configuration")
+def res_config() -> str:
+    return res.kafka_configuration()
+
+
+@mcp.resource("kafka://concepts")
+def res_concepts() -> str:
+    return res.kafka_concepts()
+
+
+@mcp.resource("kafka://produce-guide")
+def res_produce() -> str:
+    return res.kafka_produce_guide()
+
+
+@mcp.resource("kafka://consume-guide")
+def res_consume() -> str:
+    return res.kafka_consume_guide()
+
+
+@mcp.resource("kafka://topic-management")
+def res_topic_mgmt() -> str:
+    return res.kafka_topic_management()
+
+
+@mcp.resource("kafka://consumer-groups")
+def res_cg() -> str:
+    return res.kafka_consumer_groups()
+
+
+@mcp.resource("kafka://security-guide")
+def res_sec() -> str:
+    return res.kafka_security_guide()
+
+
+@mcp.resource("kafka://best-practices")
+def res_best() -> str:
+    return res.kafka_best_practices()
+
+
+@mcp.resource("kafka://error-codes")
+def res_errors() -> str:
+    return res.kafka_error_codes()
+
+
+@mcp.resource("kafka://troubleshooting")
+def res_trouble() -> str:
+    return res.kafka_troubleshooting()
+
+
+@mcp.resource("kafka://quick-reference")
+def res_quick() -> str:
+    return res.kafka_quick_reference()
+
+
+@mcp.resource("kafka://performance-tips")
+def res_perf() -> str:
+    return res.kafka_performance_tips()
+
+
+@mcp.resource("kafka://examples")
+def res_examples() -> str:
+    return res.kafka_examples()
+
+
+@mcp.resource("kafka://broker-management")
+def res_brokers() -> str:
+    return res.kafka_broker_management()
+
+
+@mcp.resource("kafka://partitioning-guide")
+def res_partitioning() -> str:
+    return res.kafka_partitioning_guide()
 
 
 # ---------------------------------------------------------------------------

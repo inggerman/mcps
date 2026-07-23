@@ -1,8 +1,9 @@
 """
 Servidor FastMCP para mcp-tabular.
 
-Expone 8 herramientas para leer, filtrar, buscar y analizar archivos tabulares
-(Excel, CSV, ODS, TSV, Parquet) como tools del protocolo MCP.
+Expone tools para leer, filtrar, buscar, transformar y analizar archivos
+tabulares (Excel, CSV, ODS, TSV, Parquet) y resources con documentación,
+metadatos y vistas de archivos.
 
 Transporte: stdio (compatible con Claude Desktop, Cursor, Cline).
 """
@@ -32,6 +33,26 @@ from mcp_tabular.tools.tabular_reader import (
     read_tabular_file,
     search_in_file,
 )
+from mcp_tabular.tools.tabular_transform import (
+    convert_to_json,
+    convert_to_markdown,
+    drop_columns,
+    drop_duplicates,
+    drop_nulls,
+    fill_nulls,
+    get_correlation,
+    get_duplicates_info,
+    groupby_agg,
+    head_rows,
+    melt_table,
+    pivot_table,
+    rename_columns,
+    sample_rows,
+    select_columns,
+    sort_rows,
+    tail_rows,
+)
+from mcp_tabular import resources as res
 
 # ---------------------------------------------------------------------------
 # Configuración
@@ -397,6 +418,627 @@ def tool_get_column_stats(
     except Exception as exc:
         _handle_unexpected_error("get_column_stats", exc)
     return {}
+
+
+# ---------------------------------------------------------------------------
+# Tools de transformación (tabular_transform)
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    name="sort_rows",
+    description=(
+        "Ordena las filas del archivo por una o más columnas. "
+        "Parámetros: path, by (nombre de columna o lista), ascending (bool, default true), sheet (opcional). "
+        "Retorna: mismo formato que read_tabular_file con las filas ordenadas."
+    ),
+)
+def tool_sort_rows(
+    path: str,
+    by: str | list[str],
+    ascending: bool = True,
+    sheet: str | None = None,
+) -> dict[str, Any]:
+    """Ordena filas por columnas."""
+    try:
+        return sort_rows(
+            path=path, by=by, ascending=ascending, sheet=sheet,
+            max_rows=settings.max_rows_preview, max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("sort_rows", exc)
+    except Exception as exc:
+        _handle_unexpected_error("sort_rows", exc)
+    return {}
+
+
+@mcp.tool(
+    name="drop_columns",
+    description=(
+        "Elimina columnas específicas del archivo. "
+        "Parámetros: path, columns (nombre o lista de columnas a eliminar), sheet (opcional). "
+        "Retorna: mismo formato que read_tabular_file sin las columnas eliminadas."
+    ),
+)
+def tool_drop_columns(
+    path: str,
+    columns: str | list[str],
+    sheet: str | None = None,
+) -> dict[str, Any]:
+    """Elimina columnas del archivo."""
+    try:
+        return drop_columns(
+            path=path, columns=columns, sheet=sheet,
+            max_rows=settings.max_rows_preview, max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("drop_columns", exc)
+    except Exception as exc:
+        _handle_unexpected_error("drop_columns", exc)
+    return {}
+
+
+@mcp.tool(
+    name="select_columns",
+    description=(
+        "Selecciona solo las columnas especificadas, descartando las demás. "
+        "Parámetros: path, columns (nombre o lista de columnas a conservar), sheet (opcional). "
+        "Retorna: mismo formato que read_tabular_file con solo las columnas seleccionadas."
+    ),
+)
+def tool_select_columns(
+    path: str,
+    columns: str | list[str],
+    sheet: str | None = None,
+) -> dict[str, Any]:
+    """Selecciona columnas específicas."""
+    try:
+        return select_columns(
+            path=path, columns=columns, sheet=sheet,
+            max_rows=settings.max_rows_preview, max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("select_columns", exc)
+    except Exception as exc:
+        _handle_unexpected_error("select_columns", exc)
+    return {}
+
+
+@mcp.tool(
+    name="rename_columns",
+    description=(
+        "Renombra columnas del archivo usando un diccionario {nombre_antiguo: nombre_nuevo}. "
+        "Parámetros: path, mapping (dict de renombrado), sheet (opcional). "
+        "Retorna: mismo formato que read_tabular_file con las columnas renombradas."
+    ),
+)
+def tool_rename_columns(
+    path: str,
+    mapping: dict[str, str],
+    sheet: str | None = None,
+) -> dict[str, Any]:
+    """Renombra columnas."""
+    try:
+        return rename_columns(
+            path=path, mapping=mapping, sheet=sheet,
+            max_rows=settings.max_rows_preview, max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("rename_columns", exc)
+    except Exception as exc:
+        _handle_unexpected_error("rename_columns", exc)
+    return {}
+
+
+@mcp.tool(
+    name="fill_nulls",
+    description=(
+        "Rellena valores nulos (NaN) con un valor dado. "
+        "Parámetros: path, value (valor de relleno, default 0), "
+        "columns (lista opcional de columnas a rellenar; si es None, rellena todas), sheet (opcional). "
+        "Retorna: mismo formato que read_tabular_file con los nulos rellenados."
+    ),
+)
+def tool_fill_nulls(
+    path: str,
+    value: Any = 0,
+    columns: str | list[str] | None = None,
+    sheet: str | None = None,
+) -> dict[str, Any]:
+    """Rellena valores nulos."""
+    try:
+        return fill_nulls(
+            path=path, value=value, columns=columns, sheet=sheet,
+            max_rows=settings.max_rows_preview, max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("fill_nulls", exc)
+    except Exception as exc:
+        _handle_unexpected_error("fill_nulls", exc)
+    return {}
+
+
+@mcp.tool(
+    name="drop_nulls",
+    description=(
+        "Elimina filas que contienen valores nulos. "
+        "Parámetros: path, how ('any' = cualquier nulo, 'all' = todos nulos, default 'any'), "
+        "subset (columnas específicas a considerar, opcional), sheet (opcional). "
+        "Retorna: mismo formato que read_tabular_file sin las filas con nulos."
+    ),
+)
+def tool_drop_nulls(
+    path: str,
+    how: str = "any",
+    subset: str | list[str] | None = None,
+    sheet: str | None = None,
+) -> dict[str, Any]:
+    """Elimina filas con nulos."""
+    try:
+        return drop_nulls(
+            path=path, how=how, subset=subset, sheet=sheet,
+            max_rows=settings.max_rows_preview, max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("drop_nulls", exc)
+    except Exception as exc:
+        _handle_unexpected_error("drop_nulls", exc)
+    return {}
+
+
+@mcp.tool(
+    name="drop_duplicates",
+    description=(
+        "Elimina filas duplicadas del archivo. "
+        "Parámetros: path, subset (columnas a considerar para duplicados, opcional), "
+        "keep ('first' = mantener primero, 'last' = mantener último, 'false' = eliminar todos), "
+        "sheet (opcional). "
+        "Retorna: mismo formato que read_tabular_file sin duplicados."
+    ),
+)
+def tool_drop_duplicates(
+    path: str,
+    subset: str | list[str] | None = None,
+    keep: str = "first",
+    sheet: str | None = None,
+) -> dict[str, Any]:
+    """Elimina filas duplicadas."""
+    try:
+        return drop_duplicates(
+            path=path, subset=subset, keep=keep, sheet=sheet,
+            max_rows=settings.max_rows_preview, max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("drop_duplicates", exc)
+    except Exception as exc:
+        _handle_unexpected_error("drop_duplicates", exc)
+    return {}
+
+
+@mcp.tool(
+    name="groupby_agg",
+    description=(
+        "Agrupa filas por una o más columnas y aplica una función de agregación. "
+        "Funciones soportadas: mean, sum, min, max, count, median, std, var, first, last, nunique. "
+        "Parámetros: path, by (columna o lista de agrupación), agg_func (función de agregación), sheet (opcional). "
+        "Retorna: mismo formato que read_tabular_file con el resultado agrupado."
+    ),
+)
+def tool_groupby_agg(
+    path: str,
+    by: str | list[str],
+    agg_func: str = "mean",
+    sheet: str | None = None,
+) -> dict[str, Any]:
+    """Agrupa y agrega."""
+    try:
+        return groupby_agg(
+            path=path, by=by, agg_func=agg_func, sheet=sheet,
+            max_rows=settings.max_rows_preview, max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("groupby_agg", exc)
+    except Exception as exc:
+        _handle_unexpected_error("groupby_agg", exc)
+    return {}
+
+
+@mcp.tool(
+    name="pivot_table",
+    description=(
+        "Crea una tabla pivot desde el archivo tabular. "
+        "Parámetros: path, index (columna de filas), columns (columna de columnas), "
+        "values (columna de valores), aggfunc (función de agregación, default 'mean'), sheet (opcional). "
+        "Retorna: mismo formato que read_tabular_file con la tabla pivot."
+    ),
+)
+def tool_pivot_table(
+    path: str,
+    index: str,
+    columns: str,
+    values: str,
+    aggfunc: str = "mean",
+    sheet: str | None = None,
+) -> dict[str, Any]:
+    """Crea tabla pivot."""
+    try:
+        return pivot_table(
+            path=path, index=index, columns=columns, values=values,
+            aggfunc=aggfunc, sheet=sheet,
+            max_rows=settings.max_rows_preview, max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("pivot_table", exc)
+    except Exception as exc:
+        _handle_unexpected_error("pivot_table", exc)
+    return {}
+
+
+@mcp.tool(
+    name="melt_table",
+    description=(
+        "Convierte el archivo de formato ancho a largo (unpivot/melt). "
+        "Parámetros: path, id_vars (columnas que se mantienen), "
+        "value_vars (columnas a despivotar, opcional), sheet (opcional). "
+        "Retorna: mismo formato que read_tabular_file en formato largo."
+    ),
+)
+def tool_melt_table(
+    path: str,
+    id_vars: str | list[str],
+    value_vars: str | list[str] | None = None,
+    sheet: str | None = None,
+) -> dict[str, Any]:
+    """Convierte ancho a largo."""
+    try:
+        return melt_table(
+            path=path, id_vars=id_vars, value_vars=value_vars, sheet=sheet,
+            max_rows=settings.max_rows_preview, max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("melt_table", exc)
+    except Exception as exc:
+        _handle_unexpected_error("melt_table", exc)
+    return {}
+
+
+@mcp.tool(
+    name="sample_rows",
+    description=(
+        "Retorna una muestra aleatoria de n filas del archivo. "
+        "Parámetros: path, n (número de filas, default 10), random_state (semilla, opcional), sheet (opcional). "
+        "Retorna: mismo formato que read_tabular_file con la muestra."
+    ),
+)
+def tool_sample_rows(
+    path: str,
+    n: int = 10,
+    random_state: int | None = None,
+    sheet: str | None = None,
+) -> dict[str, Any]:
+    """Muestra aleatoria de filas."""
+    try:
+        return sample_rows(
+            path=path, n=n, random_state=random_state, sheet=sheet,
+            max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("sample_rows", exc)
+    except Exception as exc:
+        _handle_unexpected_error("sample_rows", exc)
+    return {}
+
+
+@mcp.tool(
+    name="head_rows",
+    description=(
+        "Retorna las primeras n filas del archivo. "
+        "Parámetros: path, n (número de filas, default 10), sheet (opcional). "
+        "Retorna: mismo formato que read_tabular_file."
+    ),
+)
+def tool_head_rows(
+    path: str,
+    n: int = 10,
+    sheet: str | None = None,
+) -> dict[str, Any]:
+    """Primeras n filas."""
+    try:
+        return head_rows(
+            path=path, n=n, sheet=sheet,
+            max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("head_rows", exc)
+    except Exception as exc:
+        _handle_unexpected_error("head_rows", exc)
+    return {}
+
+
+@mcp.tool(
+    name="tail_rows",
+    description=(
+        "Retorna las últimas n filas del archivo. "
+        "Parámetros: path, n (número de filas, default 10), sheet (opcional). "
+        "Retorna: mismo formato que read_tabular_file."
+    ),
+)
+def tool_tail_rows(
+    path: str,
+    n: int = 10,
+    sheet: str | None = None,
+) -> dict[str, Any]:
+    """Últimas n filas."""
+    try:
+        return tail_rows(
+            path=path, n=n, sheet=sheet,
+            max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("tail_rows", exc)
+    except Exception as exc:
+        _handle_unexpected_error("tail_rows", exc)
+    return {}
+
+
+@mcp.tool(
+    name="convert_to_json",
+    description=(
+        "Convierte un archivo tabular a formato JSON. "
+        "Parámetros: path, sheet (opcional), orient ('records', 'index', 'columns', 'values', 'split'). "
+        "Retorna: string JSON completo."
+    ),
+)
+def tool_convert_to_json(
+    path: str,
+    sheet: str | None = None,
+    orient: str = "records",
+) -> str:
+    """Convierte a JSON."""
+    try:
+        return convert_to_json(
+            path=path, sheet=sheet, orient=orient,
+            max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("convert_to_json", exc)
+    except Exception as exc:
+        _handle_unexpected_error("convert_to_json", exc)
+    return ""
+
+
+@mcp.tool(
+    name="convert_to_markdown",
+    description=(
+        "Convierte un archivo tabular a tabla Markdown. "
+        "Parámetros: path, sheet (opcional), max_rows (límite de filas, default 50). "
+        "Retorna: string con tabla Markdown."
+    ),
+)
+def tool_convert_to_markdown(
+    path: str,
+    sheet: str | None = None,
+    max_rows: int = 50,
+) -> str:
+    """Convierte a Markdown."""
+    try:
+        return convert_to_markdown(
+            path=path, sheet=sheet, max_rows=max_rows,
+            max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("convert_to_markdown", exc)
+    except Exception as exc:
+        _handle_unexpected_error("convert_to_markdown", exc)
+    return ""
+
+
+@mcp.tool(
+    name="get_duplicates_info",
+    description=(
+        "Reporta filas duplicadas en el archivo con conteo y muestra. "
+        "Parámetros: path, subset (columnas a considerar, opcional), sheet (opcional). "
+        "Retorna: dict con total_rows, duplicate_rows, duplicate_percentage, sample_duplicates."
+    ),
+)
+def tool_get_duplicates_info(
+    path: str,
+    subset: str | list[str] | None = None,
+    sheet: str | None = None,
+) -> dict[str, Any]:
+    """Reporta duplicados."""
+    try:
+        return get_duplicates_info(
+            path=path, subset=subset, sheet=sheet,
+            max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("get_duplicates_info", exc)
+    except Exception as exc:
+        _handle_unexpected_error("get_duplicates_info", exc)
+    return {}
+
+
+@mcp.tool(
+    name="get_correlation",
+    description=(
+        "Calcula la matriz de correlación entre columnas numéricas. "
+        "Métodos soportados: pearson, spearman, kendall. "
+        "Parámetros: path, method (default 'pearson'), sheet (opcional). "
+        "Retorna: dict con la matriz de correlación."
+    ),
+)
+def tool_get_correlation(
+    path: str,
+    method: str = "pearson",
+    sheet: str | None = None,
+) -> dict[str, Any]:
+    """Matriz de correlación."""
+    try:
+        return get_correlation(
+            path=path, method=method, sheet=sheet,
+            max_file_size_mb=settings.max_file_size_mb,
+        )
+    except McpError as exc:
+        _handle_mcp_error("get_correlation", exc)
+    except Exception as exc:
+        _handle_unexpected_error("get_correlation", exc)
+    return {}
+
+
+# ---------------------------------------------------------------------------
+# Resources (solo lectura)
+# ---------------------------------------------------------------------------
+
+
+@mcp.resource("tabular://supported-formats")
+def res_supported_formats() -> str:
+    """Formatos de archivo soportados por el servidor."""
+    return res.supported_formats()
+
+
+@mcp.resource("tabular://supported-encodings")
+def res_supported_encodings() -> str:
+    """Encodings comunes soportados para CSV/TSV."""
+    return res.supported_encodings()
+
+
+@mcp.resource("tabular://filter-operators")
+def res_filter_operators() -> str:
+    """Operadores de filtrado disponibles."""
+    return res.filter_operators()
+
+
+@mcp.resource("tabular://tips/encoding")
+def res_tips_encoding() -> str:
+    """Consejos para manejar encoding."""
+    return res.tips_encoding()
+
+
+@mcp.resource("tabular://tips/large-files")
+def res_tips_large_files() -> str:
+    """Consejos para archivos grandes."""
+    return res.tips_large_files()
+
+
+@mcp.resource("tabular://tips/data-types")
+def res_tips_data_types() -> str:
+    """Consejos sobre tipos de datos en pandas."""
+    return res.tips_data_types()
+
+
+@mcp.resource("tabular://best-practices/csv")
+def res_best_practices_csv() -> str:
+    """Buenas prácticas para CSV."""
+    return res.best_practices_csv()
+
+
+@mcp.resource("tabular://best-practices/excel")
+def res_best_practices_excel() -> str:
+    """Buenas prácticas para Excel."""
+    return res.best_practices_excel()
+
+
+@mcp.resource("tabular://best-practices/parquet")
+def res_best_practices_parquet() -> str:
+    """Buenas prácticas para Parquet."""
+    return res.best_practices_parquet()
+
+
+@mcp.resource("tabular://examples/sample-csv")
+def res_example_sample_csv() -> str:
+    """Ejemplo de contenido CSV."""
+    return res.example_sample_csv()
+
+
+@mcp.resource("tabular://examples/sample-json")
+def res_example_sample_json() -> str:
+    """Ejemplo de registro JSON."""
+    return res.example_sample_json()
+
+
+@mcp.resource("tabular://cheatsheet/pandas")
+def res_pandas_cheatsheet() -> str:
+    """Cheatsheet de pandas."""
+    return res.pandas_cheatsheet()
+
+
+@mcp.resource("tabular://file/{path}/schema")
+def res_file_schema(path: str) -> str:
+    """Esquema de columnas del archivo."""
+    return res.file_schema(path=path)
+
+
+@mcp.resource("tabular://file/{path}/columns")
+def res_file_columns(path: str) -> str:
+    """Nombres de columnas del archivo."""
+    return res.file_columns(path=path)
+
+
+@mcp.resource("tabular://file/{path}/shape")
+def res_file_shape(path: str) -> str:
+    """Dimensiones del archivo."""
+    return res.file_shape(path=path)
+
+
+@mcp.resource("tabular://file/{path}/dtypes")
+def res_file_dtypes(path: str) -> str:
+    """Tipos de datos por columna."""
+    return res.file_dtypes(path=path)
+
+
+@mcp.resource("tabular://file/{path}/nulls")
+def res_file_nulls(path: str) -> str:
+    """Reporte de valores nulos."""
+    return res.file_nulls(path=path)
+
+
+@mcp.resource("tabular://file/{path}/summary")
+def res_file_summary(path: str) -> str:
+    """Resumen estadístico del archivo."""
+    return res.file_summary(path=path)
+
+
+@mcp.resource("tabular://file/{path}/preview")
+def res_file_preview(path: str) -> str:
+    """Vista previa en Markdown."""
+    return res.file_preview(path=path)
+
+
+@mcp.resource("tabular://file/{path}/head")
+def res_file_head(path: str) -> str:
+    """Primeras filas en Markdown."""
+    return res.file_head(path=path)
+
+
+@mcp.resource("tabular://file/{path}/tail")
+def res_file_tail(path: str) -> str:
+    """Últimas filas en Markdown."""
+    return res.file_tail(path=path)
+
+
+@mcp.resource("tabular://file/{path}/csv")
+def res_file_csv(path: str) -> str:
+    """Archivo convertido a CSV."""
+    return res.file_csv(path=path)
+
+
+@mcp.resource("tabular://file/{path}/sheets")
+def res_file_sheets(path: str) -> str:
+    """Hojas de un archivo Excel/ODS."""
+    return res.file_sheets(path=path)
+
+
+@mcp.resource("tabular://file/{path}/column/{column}/stats")
+def res_file_stats(path: str, column: str) -> str:
+    """Estadísticas de una columna."""
+    return res.file_stats(path=path, column=column)
+
+
+@mcp.resource("tabular://file/{path}/column/{column}/unique")
+def res_file_unique(path: str, column: str) -> str:
+    """Valores únicos de una columna."""
+    return res.file_unique(path=path, column=column)
 
 
 # ---------------------------------------------------------------------------

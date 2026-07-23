@@ -148,3 +148,418 @@ def generate_boilerplate_dag(dag_id: str, tasks: list[str]) -> str:
         lines.append(f"    {' >> '.join(var_names)}")
 
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+def list_dags(dags_path: Path) -> list[dict[str, Any]]:
+    """Lista todos los DAGs disponibles en el directorio."""
+    if not dags_path.exists() or not dags_path.is_dir():
+        return []
+
+    results: list[dict[str, Any]] = []
+    for f in dags_path.glob("*.py"):
+        try:
+            parsed = parse_airflow_dag(f)
+            results.append({
+                "file": f.name,
+                "dag_id": parsed["dag_id"],
+                "tasks": parsed["tasks_found"],
+                "dependencies": len(parsed["dependencies"]),
+                "size": f.stat().st_size,
+            })
+        except Exception:
+            results.append({"file": f.name, "dag_id": "ERROR", "tasks": 0, "dependencies": 0, "size": f.stat().st_size})
+
+    return results
+
+
+def analyze_dag_dependencies(dags_path: Path, filename: str) -> dict[str, Any]:
+    """Analiza dependencias detalladas de un DAG."""
+    file_path = dags_path / filename
+    parsed = parse_airflow_dag(file_path)
+
+    tasks = parsed["tasks"]
+    deps = parsed["dependencies"]
+
+    task_names = [t["var_name"] for t in tasks]
+    dep_edges: list[tuple[str, str]] = []
+    for dep in deps:
+        parts = dep.split(" -> ")
+        if len(parts) == 2:
+            dep_edges.append((parts[0], parts[1]))
+
+    in_degree: dict[str, int] = {t: 0 for t in task_names}
+    out_degree: dict[str, int] = {t: 0 for t in task_names}
+    for u, v in dep_edges:
+        if u in in_degree and v in out_degree:
+            out_degree[u] = out_degree.get(u, 0) + 1
+            in_degree[v] = in_degree.get(v, 0) + 1
+
+    root_tasks = [t for t, d in in_degree.items() if d == 0]
+    leaf_tasks = [t for t, d in out_degree.items() if d == 0]
+
+    return {
+        "file": filename,
+        "dag_id": parsed["dag_id"],
+        "total_tasks": len(tasks),
+        "total_dependencies": len(deps),
+        "root_tasks": root_tasks,
+        "leaf_tasks": leaf_tasks,
+        "in_degree": in_degree,
+        "out_degree": out_degree,
+        "edges": dep_edges,
+    }
+
+
+def generate_task_group(name: str, tasks: list[str], dependencies: list[tuple[str, str]] | None = None) -> str:
+    """Genera codigo boilerplate para un TaskGroup de Airflow 2.x."""
+    if not name or not tasks:
+        raise ValidationError(field="name/tasks", message="Se requiere name y al menos una tarea.")
+
+    lines = [
+        "from airflow.utils.task_group import TaskGroup",
+        "",
+        f"with TaskGroup('{name}') as {name}:",
+    ]
+
+    for task in tasks:
+        var_name = task.replace("-", "_").replace(" ", "_").lower()
+        lines.append(f"    {var_name} = EmptyOperator(task_id='{task}')")
+
+    if dependencies:
+        lines.append("")
+        for u, v in dependencies:
+            u_var = u.replace("-", "_").replace(" ", "_").lower()
+            v_var = v.replace("-", "_").replace(" ", "_").lower()
+            lines.append(f"    {u_var} >> {v_var}")
+
+    return "\n".join(lines)
+
+
+def find_dag_cycles(edges: list[tuple[str, str]]) -> dict[str, Any]:
+    """Encuentra y retorna los ciclos especificos en un grafo."""
+    graph: dict[str, list[str]] = {}
+    for u, v in edges:
+        graph.setdefault(u, []).append(v)
+        graph.setdefault(v, [])
+
+    cycles: list[list[str]] = []
+    visited: set[str] = set()
+    rec_stack: set[str] = set()
+    path: list[str] = []
+
+    def dfs(node: str) -> None:
+        visited.add(node)
+        rec_stack.add(node)
+        path.append(node)
+
+        for neighbor in graph.get(node, []):
+            if neighbor not in visited:
+                dfs(neighbor)
+            elif neighbor in rec_stack:
+                idx = path.index(neighbor)
+                cycles.append(path[idx:] + [neighbor])
+
+        path.pop()
+        rec_stack.remove(node)
+
+    for node in graph:
+        if node not in visited:
+            dfs(node)
+
+    return {
+        "has_cycles": len(cycles) > 0,
+        "cycles": cycles,
+        "total_cycles": len(cycles),
+        "nodes": len(graph),
+        "edges": len(edges),
+    }
+
+
+def calculate_dag_critical_path(edges: list[tuple[str, str]], task_durations: dict[str, float]) -> dict[str, Any]:
+    """Calcula el camino critico de un DAG dado duraciones de tasks."""
+    graph: dict[str, list[str]] = {}
+    in_degree: dict[str, int] = {}
+
+    for u, v in edges:
+        graph.setdefault(u, []).append(v)
+        graph.setdefault(v, [])
+        in_degree[v] = in_degree.get(v, 0) + 1
+        in_degree.setdefault(u, 0)
+
+    # Topological sort
+    queue = [n for n in in_degree if in_degree[n] == 0]
+    topo: list[str] = []
+    while queue:
+        node = queue.pop(0)
+        topo.append(node)
+        for neighbor in graph.get(node, []):
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:
+                queue.append(neighbor)
+
+    # Longest path
+    dist: dict[str, float] = {n: 0.0 for n in in_degree}
+    parent: dict[str, str | None] = {n: None for n in in_degree}
+
+    for node in topo:
+        for neighbor in graph.get(node, []):
+            duration = task_durations.get(neighbor, 0)
+            if dist[node] + task_durations.get(node, 0) + duration > dist[neighbor]:
+                dist[neighbor] = dist[node] + task_durations.get(node, 0) + duration
+                parent[neighbor] = node
+
+    end_node = max(dist, key=dist.get) if dist else ""
+    path: list[str] = []
+    current: str | None = end_node
+    while current:
+        path.insert(0, current)
+        current = parent.get(current)
+
+    return {
+        "critical_path": path,
+        "total_duration": dist.get(end_node, 0) + task_durations.get(end_node, 0),
+        "task_durations": task_durations,
+    }
+
+
+def generate_dag_documentation(dags_path: Path, filename: str) -> str:
+    """Genera documentacion markdown para un DAG."""
+    file_path = dags_path / filename
+    parsed = parse_airflow_dag(file_path)
+
+    lines = [
+        f"# DAG: {parsed['dag_id']}",
+        "",
+        f"**File:** {filename}",
+        f"**Tasks:** {parsed['tasks_found']}",
+        f"**Dependencies:** {len(parsed['dependencies'])}",
+        "",
+        "## Tasks",
+        "",
+    ]
+
+    for task in parsed["tasks"]:
+        lines.append(f"- **{task['var_name']}** ({task['operator']})")
+
+    lines.extend(["", "## Dependencies", ""])
+    for dep in parsed["dependencies"]:
+        lines.append(f"- {dep}")
+
+    if not parsed["dependencies"]:
+        lines.append("No dependencies found.")
+
+    return "\n".join(lines)
+
+
+def validate_dag_structure(dags_path: Path, filename: str) -> dict[str, Any]:
+    """Valida la estructura de un DAG verificando best practices."""
+    file_path = dags_path / filename
+    parsed = parse_airflow_dag(file_path)
+
+    issues: list[dict[str, Any]] = []
+
+    if parsed["tasks_found"] == 0:
+        issues.append({"type": "NO_TASKS", "severity": "error", "message": "DAG no tiene tareas"})
+
+    if parsed["tasks_found"] > 50:
+        issues.append({"type": "TOO_MANY_TASKS", "severity": "warning", "message": "DAG con mas de 50 tareas, considerar dividir"})
+
+    if len(parsed["dependencies"]) == 0 and parsed["tasks_found"] > 1:
+        issues.append({"type": "NO_DEPENDENCIES", "severity": "warning", "message": "Tasks sin dependencias definidas"})
+
+    edges: list[tuple[str, str]] = []
+    for dep in parsed["dependencies"]:
+        parts = dep.split(" -> ")
+        if len(parts) == 2:
+            edges.append((parts[0], parts[1]))
+
+    cycle_check = validate_dag_acyclicity(edges)
+    if cycle_check["has_cycle"]:
+        issues.append({"type": "CYCLE", "severity": "error", "message": "DAG contiene ciclos"})
+
+    task_names = [t["var_name"] for t in parsed["tasks"]]
+    for edge in edges:
+        if edge[0] not in task_names or edge[1] not in task_names:
+            issues.append({"type": "ORPHAN_DEPENDENCY", "severity": "warning", "message": f"Dependencia {edge[0]} -> {edge[1]} referencia task inexistente"})
+
+    return {
+        "file": filename,
+        "dag_id": parsed["dag_id"],
+        "valid": len([i for i in issues if i["severity"] == "error"]) == 0,
+        "issues": issues,
+        "total_issues": len(issues),
+    }
+
+
+def export_dag_catalog(dags_path: Path) -> dict[str, Any]:
+    """Exporta un catalogo completo de todos los DAGs."""
+    if not dags_path.exists() or not dags_path.is_dir():
+        return {"catalog": [], "total_dags": 0}
+
+    catalog: list[dict[str, Any]] = []
+    for f in sorted(dags_path.glob("*.py")):
+        try:
+            parsed = parse_airflow_dag(f)
+            catalog.append({
+                "file": f.name,
+                "dag_id": parsed["dag_id"],
+                "tasks": parsed["tasks_found"],
+                "dependencies": len(parsed["dependencies"]),
+            })
+        except Exception:
+            catalog.append({"file": f.name, "dag_id": "ERROR", "tasks": 0, "dependencies": 0})
+
+    return {
+        "catalog": catalog,
+        "total_dags": len(catalog),
+        "dags_path": str(dags_path),
+    }
+
+
+def generate_dag_test(filename: str, dags_path: Path) -> str:
+    """Genera un test boilerplate para un DAG."""
+    file_path = dags_path / filename
+    parsed = parse_airflow_dag(file_path)
+    dag_id = parsed["dag_id"]
+
+    lines = [
+        f'"""Tests for DAG: {dag_id}"""',
+        "",
+        "import pytest",
+        "from pathlib import Path",
+        "",
+        f'DAG_FILE = Path(__file__).parent / "{filename}"',
+        "",
+        "",
+        "def test_dag_has_tasks():",
+        f'    """Verify DAG {dag_id} has expected tasks."""',
+        f'    assert DAG_FILE.exists()',
+        f'    # Expected: {parsed["tasks_found"]} tasks',
+        "",
+        "",
+        "def test_dag_has_no_cycles():",
+        f'    """Verify DAG {dag_id} is acyclic."""',
+        f'    # Parse and validate edges',
+        "    pass",
+        "",
+        "",
+        "def test_dag_structure():",
+        f'    """Verify DAG {dag_id} structure."""',
+        f'    # Check dependencies: {parsed["dependencies"]}',
+        "    pass",
+    ]
+
+    return "\n".join(lines)
+
+
+def analyze_dag_complexity(dags_path: Path, filename: str) -> dict[str, Any]:
+    """Analiza la complejidad de un DAG."""
+    file_path = dags_path / filename
+    parsed = parse_airflow_dag(file_path)
+
+    tasks = parsed["tasks_found"]
+    deps = len(parsed["dependencies"])
+
+    edges: list[tuple[str, str]] = []
+    for dep in parsed["dependencies"]:
+        parts = dep.split(" -> ")
+        if len(parts) == 2:
+            edges.append((parts[0], parts[1]))
+
+    max_depth = 0
+    if edges:
+        graph: dict[str, list[str]] = {}
+        for u, v in edges:
+            graph.setdefault(u, []).append(v)
+
+        def depth(node: str, visited: set[str]) -> int:
+            if node in visited:
+                return 0
+            visited.add(node)
+            children = graph.get(node, [])
+            if not children:
+                return 1
+            return 1 + max(depth(c, visited.copy()) for c in children)
+
+        roots = [u for u, _ in edges if u not in [v for _, v in edges]]
+        max_depth = max(depth(r, set()) for r in roots) if roots else 1
+
+    fan_out = 0
+    fan_in = 0
+    out_count: dict[str, int] = {}
+    in_count: dict[str, int] = {}
+    for u, v in edges:
+        out_count[u] = out_count.get(u, 0) + 1
+        in_count[v] = in_count.get(v, 0) + 1
+    if out_count:
+        fan_out = max(out_count.values())
+    if in_count:
+        fan_in = max(in_count.values())
+
+    complexity = "low" if tasks <= 10 and deps <= 15 else "medium" if tasks <= 30 and deps <= 50 else "high"
+
+    return {
+        "file": filename,
+        "dag_id": parsed["dag_id"],
+        "task_count": tasks,
+        "dependency_count": deps,
+        "max_depth": max_depth,
+        "max_fan_out": fan_out,
+        "max_fan_in": fan_in,
+        "complexity": complexity,
+    }
+
+
+def get_dag_stats(dags_path: Path) -> dict[str, Any]:
+    """Genera estadisticas rapidas del catalogo de DAGs."""
+    catalog_result = export_dag_catalog(dags_path)
+
+    total_tasks = 0
+    total_deps = 0
+
+    for dag in catalog_result.get("catalog", []):
+        total_tasks += dag.get("tasks", 0)
+        total_deps += dag.get("dependencies", 0)
+
+    return {
+        "total_dags": catalog_result.get("total_dags", 0),
+        "total_tasks": total_tasks,
+        "total_dependencies": total_deps,
+        "avg_tasks_per_dag": round(total_tasks / max(catalog_result.get("total_dags", 1), 1), 2),
+        "avg_deps_per_dag": round(total_deps / max(catalog_result.get("total_dags", 1), 1), 2),
+        "dags_path": str(dags_path),
+    }
+
+
+def compare_dags(dags_path: Path, file_a: str, file_b: str) -> dict[str, Any]:
+    """Compara dos DAGs en terminos de tasks, dependencias y estructura."""
+    path_a = dags_path / file_a
+    path_b = dags_path / file_b
+    if not path_a.exists():
+        raise FileNotFoundError(str(path_a))
+    if not path_b.exists():
+        raise FileNotFoundError(str(path_b))
+
+    dag_a = parse_airflow_dag(path_a)
+    dag_b = parse_airflow_dag(path_b)
+
+    tasks_a = {t["var_name"] for t in dag_a["tasks"]}
+    tasks_b = {t["var_name"] for t in dag_b["tasks"]}
+
+    deps_a = set(dag_a["dependencies"])
+    deps_b = set(dag_b["dependencies"])
+
+    return {
+        "dag_a": {"file": file_a, "dag_id": dag_a["dag_id"], "tasks": len(tasks_a), "deps": len(deps_a)},
+        "dag_b": {"file": file_b, "dag_id": dag_b["dag_id"], "tasks": len(tasks_b), "deps": len(deps_b)},
+        "common_tasks": sorted(tasks_a & tasks_b),
+        "only_in_a": sorted(tasks_a - tasks_b),
+        "only_in_b": sorted(tasks_b - tasks_a),
+        "common_dependencies": sorted(deps_a & deps_b),
+        "similarity": round(len(tasks_a & tasks_b) / max(len(tasks_a | tasks_b), 1) * 100, 2),
+    }

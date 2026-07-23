@@ -4,9 +4,9 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 COPY shared /workspace/shared
 COPY mcp-filesystem/pyproject.toml ./
 COPY mcp-filesystem/src ./src
-RUN uv pip install --system --no-cache /workspace/shared .
+RUN uv pip install --system --no-cache --no-sources /workspace/shared .
 
-FROM python:3.12-slim
+FROM python:3.12-slim AS runtime
 WORKDIR /app
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY mcp-filesystem/src ./src

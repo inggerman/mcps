@@ -1,9 +1,35 @@
 from mcp_kubernetes.tools.kubernetes_tools import (
+    get_cluster_info,
+    get_deployment_status,
+    get_pod_details,
+    get_resource_quotas,
+    list_configmaps,
     list_deployments,
+    list_events,
     list_namespaces,
+    list_nodes,
     list_pods,
+    list_secrets,
+    list_services,
     pod_logs,
+    restart_deployment,
     scale_deployment,
 )
 
-__all__ = ["list_deployments", "list_namespaces", "list_pods", "pod_logs", "scale_deployment"]
+__all__ = [
+    "get_cluster_info",
+    "get_deployment_status",
+    "get_pod_details",
+    "get_resource_quotas",
+    "list_configmaps",
+    "list_deployments",
+    "list_events",
+    "list_namespaces",
+    "list_nodes",
+    "list_pods",
+    "list_secrets",
+    "list_services",
+    "pod_logs",
+    "restart_deployment",
+    "scale_deployment",
+]

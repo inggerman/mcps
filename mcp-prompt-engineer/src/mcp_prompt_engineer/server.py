@@ -20,13 +20,26 @@ from mcp.types import ErrorData
 from mcp_prompt_engineer.config import settings
 from mcp_prompt_engineer.tools.analyzer import analyze_prompt, classify_prompt
 from mcp_prompt_engineer.tools.improver import (
+    add_constraints,
+    add_few_shot_examples,
+    compare_prompts,
     create_system_prompt,
     decompose_task,
     estimate_tokens,
+    extract_keywords,
     generate_variations,
     get_prompt_template,
     improve_prompt,
+    merge_prompts,
+    optimize_for_model,
+    prompt_to_json_schema,
+    rewrite_for_audience,
+    score_prompt,
+    simplify_prompt,
+    translate_prompt,
+    validate_prompt_quality,
 )
+from mcp_prompt_engineer import resources as res
 from mcp_shared.logging import get_logger, setup_logging
 
 # ---------------------------------------------------------------------------
@@ -331,6 +344,261 @@ def tool_get_prompt_template(use_case: str) -> dict[str, Any]:
     except Exception as exc:
         _handle_unexpected_error("get_prompt_template", exc)
     return {}
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    name="add_few_shot_examples",
+    description=(
+        "Enriquece un prompt con ejemplos few-shot input/output. "
+        "Parametros: prompt (prompt base), examples (lista de dicts con 'input' y 'output'). "
+        "Retorna el prompt enriquecido con los ejemplos."
+    ),
+)
+def tool_add_few_shot_examples(prompt: str, examples: list[dict[str, str]]) -> str:
+    try:
+        return add_few_shot_examples(prompt=prompt, examples=examples)
+    except Exception as exc:
+        _handle_unexpected_error("add_few_shot_examples", exc)
+    return ""
+
+
+@mcp.tool(
+    name="compare_prompts",
+    description=(
+        "Compara dos prompts en base a claridad, tipo, tokens y numero de issues. "
+        "Retorna el ganador y el delta de puntuacion."
+    ),
+)
+def tool_compare_prompts(prompt_a: str, prompt_b: str) -> dict[str, Any]:
+    try:
+        return compare_prompts(prompt_a=prompt_a, prompt_b=prompt_b)
+    except Exception as exc:
+        _handle_unexpected_error("compare_prompts", exc)
+    return {}
+
+
+@mcp.tool(
+    name="optimize_for_model",
+    description=(
+        "Optimiza un prompt para un modelo especifico (GPT-4, Claude, GPT-3.5). "
+        "Retorna analisis, info de tokens y recomendaciones especificas del modelo."
+    ),
+)
+def tool_optimize_for_model(prompt: str, model: str) -> dict[str, Any]:
+    try:
+        return optimize_for_model(prompt=prompt, model=model)
+    except Exception as exc:
+        _handle_unexpected_error("optimize_for_model", exc)
+    return {}
+
+
+@mcp.tool(
+    name="add_constraints",
+    description="Anade restricciones a un prompt existente en formato de lista.",
+)
+def tool_add_constraints(prompt: str, constraints: list[str]) -> str:
+    try:
+        return add_constraints(prompt=prompt, constraints=constraints)
+    except Exception as exc:
+        _handle_unexpected_error("add_constraints", exc)
+    return ""
+
+
+@mcp.tool(
+    name="translate_prompt",
+    description=(
+        "Genera un template para traducir un prompt a otro idioma. "
+        "Idiomas soportados: en, es, fr, de, pt, it."
+    ),
+)
+def tool_translate_prompt(prompt: str, target_lang: str) -> dict[str, Any]:
+    try:
+        return translate_prompt(prompt=prompt, target_lang=target_lang)
+    except Exception as exc:
+        _handle_unexpected_error("translate_prompt", exc)
+    return {}
+
+
+@mcp.tool(
+    name="score_prompt",
+    description=(
+        "Retorna la puntuacion de claridad (0-10) con un grado y diagnostico rapido. "
+        "Grados: Excelente, Bueno, Regular, Pobre, Critico."
+    ),
+)
+def tool_score_prompt(prompt: str) -> dict[str, Any]:
+    try:
+        return score_prompt(prompt=prompt)
+    except Exception as exc:
+        _handle_unexpected_error("score_prompt", exc)
+    return {}
+
+
+@mcp.tool(
+    name="extract_keywords",
+    description="Extrae palabras clave y conceptos de un prompt, excluyendo stop words.",
+)
+def tool_extract_keywords(prompt: str) -> dict[str, Any]:
+    try:
+        return extract_keywords(prompt=prompt)
+    except Exception as exc:
+        _handle_unexpected_error("extract_keywords", exc)
+    return {}
+
+
+@mcp.tool(
+    name="prompt_to_json_schema",
+    description=(
+        "Infiere un JSON Schema basico a partir del tipo de prompt detectado. "
+        "Util para estructurar la salida esperada del modelo."
+    ),
+)
+def tool_prompt_to_json_schema(prompt: str) -> dict[str, Any]:
+    try:
+        return prompt_to_json_schema(prompt=prompt)
+    except Exception as exc:
+        _handle_unexpected_error("prompt_to_json_schema", exc)
+    return {}
+
+
+@mcp.tool(
+    name="rewrite_for_audience",
+    description="Reescribe un prompt adaptandolo para una audiencia especifica.",
+)
+def tool_rewrite_for_audience(prompt: str, audience: str) -> str:
+    try:
+        return rewrite_for_audience(prompt=prompt, audience=audience)
+    except Exception as exc:
+        _handle_unexpected_error("rewrite_for_audience", exc)
+    return ""
+
+
+@mcp.tool(
+    name="merge_prompts",
+    description="Fusiona multiples prompts en uno solo estructurado con subtareas numeradas.",
+)
+def tool_merge_prompts(prompts: list[str]) -> str:
+    try:
+        return merge_prompts(prompts=prompts)
+    except Exception as exc:
+        _handle_unexpected_error("merge_prompts", exc)
+    return ""
+
+
+@mcp.tool(
+    name="simplify_prompt",
+    description=(
+        "Simplifica un prompt removiendo redundancias, espacios multiples, "
+        "oraciones duplicadas y acortando si es muy largo."
+    ),
+)
+def tool_simplify_prompt(prompt: str) -> dict[str, Any]:
+    try:
+        return simplify_prompt(prompt=prompt)
+    except Exception as exc:
+        _handle_unexpected_error("simplify_prompt", exc)
+    return {}
+
+
+@mcp.tool(
+    name="validate_prompt_quality",
+    description=(
+        "Valida la calidad general de un prompt con checks estructurados. "
+        "Retorna quality_percentage, verdict (apto/apto_con_mejoras/requiere_reescritura) "
+        "y recommendations."
+    ),
+)
+def tool_validate_prompt_quality(prompt: str) -> dict[str, Any]:
+    try:
+        return validate_prompt_quality(prompt=prompt)
+    except Exception as exc:
+        _handle_unexpected_error("validate_prompt_quality", exc)
+    return {}
+
+
+# ---------------------------------------------------------------------------
+# Resources estaticos
+# ---------------------------------------------------------------------------
+
+
+@mcp.resource("prompt-engineer://configuration")
+def res_config() -> str:
+    return res.prompt_engineer_configuration()
+
+
+@mcp.resource("prompt-engineer://prompt-types")
+def res_types() -> str:
+    return res.prompt_types_reference()
+
+
+@mcp.resource("prompt-engineer://clarity-scoring")
+def res_clarity() -> str:
+    return res.clarity_scoring_guide()
+
+
+@mcp.resource("prompt-engineer://best-practices")
+def res_best_practices() -> str:
+    return res.prompt_engineering_best_practices()
+
+
+@mcp.resource("prompt-engineer://issues-reference")
+def res_issues() -> str:
+    return res.prompt_issues_reference()
+
+
+@mcp.resource("prompt-engineer://token-estimation")
+def res_tokens() -> str:
+    return res.token_estimation_guide()
+
+
+@mcp.resource("prompt-engineer://variation-approaches")
+def res_variations() -> str:
+    return res.prompt_variation_approaches()
+
+
+@mcp.resource("prompt-engineer://templates-catalog")
+def res_templates() -> str:
+    return res.prompt_templates_catalog()
+
+
+@mcp.resource("prompt-engineer://workflow")
+def res_workflow() -> str:
+    return res.prompt_engineering_workflow()
+
+
+@mcp.resource("prompt-engineer://tips")
+def res_tips() -> str:
+    return res.prompt_engineering_tips()
+
+
+@mcp.resource("prompt-engineer://error-codes")
+def res_errors() -> str:
+    return res.prompt_engineering_error_codes()
+
+
+@mcp.resource("prompt-engineer://few-shot-guide")
+def res_few_shot() -> str:
+    return res.few_shot_examples_guide()
+
+
+@mcp.resource("prompt-engineer://chain-of-thought-guide")
+def res_cot() -> str:
+    return res.chain_of_thought_guide()
+
+
+@mcp.resource("prompt-engineer://examples/analyze-prompt")
+def res_example_analyze() -> str:
+    return res.example_analyze_prompt()
+
+
+@mcp.resource("prompt-engineer://examples/improve-prompt")
+def res_example_improve() -> str:
+    return res.example_improve_prompt()
 
 
 # ---------------------------------------------------------------------------

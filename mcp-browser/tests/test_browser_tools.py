@@ -17,5 +17,5 @@ def test_validate_url_rejects_unsafe_urls(url: str) -> None:
 
 
 def test_validate_url_enforces_allowlist() -> None:
-    with pytest.raises(ValidationError, match="no está permitido"):
+    with pytest.raises(ValidationError, match="no esta permitido"):
         validate_url("https://example.com", ["internal.test"])

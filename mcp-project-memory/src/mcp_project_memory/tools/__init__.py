@@ -1,13 +1,18 @@
 """Exports públicos de tools de mcp-project-memory."""
 
 from mcp_project_memory.tools.memory_tools import (
+    add_invariant,
     add_pending_task,
     complete_pending_task,
     diff_state,
     export_memory_snapshot,
     generate_project_brief,
+    get_completed_tasks,
     get_component_map,
     get_decisions_history,
+    get_invariants,
+    get_memory_stats,
+    get_pending_tasks,
     get_project_state,
     get_session_history,
     initialize_project,
@@ -34,4 +39,9 @@ __all__ = [
     "complete_pending_task",
     "initialize_project",
     "sync_from_filesystem",
+    "get_pending_tasks",
+    "get_completed_tasks",
+    "get_invariants",
+    "add_invariant",
+    "get_memory_stats",
 ]

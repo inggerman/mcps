@@ -13,14 +13,24 @@ from mcp_shared.logging import get_logger, setup_logging
 
 from mcp_personal_vault.config import settings
 from mcp_personal_vault.tools import (
+    backup_vault,
+    clear_category,
     delete_entry,
+    export_entries,
+    get_audit_log,
     get_entry,
+    get_entry_history,
     get_vault_status,
+    import_entries,
+    list_categories,
     list_entries,
+    list_tags,
+    rotate_encryption_key,
     search_entries,
     upsert_entry,
 )
 from mcp_personal_vault.tools.vault_tools import initialize_database, load_or_create_key
+from mcp_personal_vault import resources as res
 
 setup_logging(
     log_level=settings.log_level,
@@ -134,6 +144,146 @@ def tool_search(
 def tool_delete(category: str, key: str) -> dict[str, str]:
     """Delete one personal fact when local writes are enabled."""
     return _handle(delete_entry, settings.database_path, category, key, settings.allow_write)
+
+
+@mcp.tool(name="personal_export")
+def tool_export(category: str | None = None, include_sensitive: bool = False) -> dict[str, Any]:
+    """Export vault entries as JSON."""
+    return _handle(export_entries, settings.database_path, _FERNET, category, include_sensitive, settings.allow_highly_sensitive)
+
+
+@mcp.tool(name="personal_import")
+def tool_import(entries_json: str) -> dict[str, Any]:
+    """Import entries from JSON."""
+    import json as _json
+    try:
+        entries = _json.loads(entries_json)
+    except Exception as exc:
+        raise SdkMcpError(ErrorData(code=-32602, message="Invalid JSON")) from exc
+    return _handle(import_entries, settings.database_path, _FERNET, entries, settings.allow_write, settings.allow_secrets)
+
+
+@mcp.tool(name="personal_audit_log")
+def tool_audit_log(limit: int = 50, action: str | None = None) -> list[dict[str, Any]]:
+    """View audit log entries."""
+    return _handle(get_audit_log, settings.database_path, limit, action)
+
+
+@mcp.tool(name="personal_list_categories")
+def tool_list_categories() -> list[dict[str, Any]]:
+    """List all categories with entry counts."""
+    return _handle(list_categories, settings.database_path)
+
+
+@mcp.tool(name="personal_list_tags")
+def tool_list_tags() -> list[str]:
+    """List all unique tags used in the vault."""
+    return _handle(list_tags, settings.database_path)
+
+
+@mcp.tool(name="personal_backup")
+def tool_backup(backup_path: str) -> dict[str, Any]:
+    """Create a backup of the vault database."""
+    from pathlib import Path
+    return _handle(backup_vault, settings.database_path, Path(backup_path))
+
+
+@mcp.tool(name="personal_clear_category")
+def tool_clear_category(category: str) -> dict[str, Any]:
+    """Delete all entries in a category."""
+    return _handle(clear_category, settings.database_path, category, settings.allow_write)
+
+
+@mcp.tool(name="personal_entry_history")
+def tool_entry_history(category: str, key: str, include_sensitive: bool = False) -> dict[str, Any]:
+    """Get change history for an entry."""
+    return _handle(get_entry_history, settings.database_path, _FERNET, category, key, include_sensitive, settings.allow_highly_sensitive)
+
+
+@mcp.tool(name="personal_rotate_key")
+def tool_rotate_key(new_key: str) -> dict[str, Any]:
+    """Rotate the encryption key for all entries."""
+    return _handle(rotate_encryption_key, settings.database_path, _FERNET, new_key.encode(), settings.allow_write)
+
+
+# ---------------------------------------------------------------------------
+# Resources estaticos
+# ---------------------------------------------------------------------------
+
+
+@mcp.resource("vault://configuration")
+def res_config() -> str:
+    return res.vault_configuration()
+
+
+@mcp.resource("vault://basics")
+def res_basics() -> str:
+    return res.vault_basics()
+
+
+@mcp.resource("vault://best-practices")
+def res_best() -> str:
+    return res.vault_best_practices()
+
+
+@mcp.resource("vault://quick-reference")
+def res_quick() -> str:
+    return res.vault_quick_reference()
+
+
+@mcp.resource("vault://error-codes")
+def res_errors() -> str:
+    return res.vault_error_codes()
+
+
+@mcp.resource("vault://troubleshooting")
+def res_trouble() -> str:
+    return res.vault_troubleshooting()
+
+
+@mcp.resource("vault://examples")
+def res_examples() -> str:
+    return res.vault_examples()
+
+
+@mcp.resource("vault://encryption")
+def res_encryption() -> str:
+    return res.vault_encryption()
+
+
+@mcp.resource("vault://categories")
+def res_categories() -> str:
+    return res.vault_categories()
+
+
+@mcp.resource("vault://privacy")
+def res_privacy() -> str:
+    return res.vault_privacy()
+
+
+@mcp.resource("vault://backup")
+def res_backup() -> str:
+    return res.vault_backup()
+
+
+@mcp.resource("vault://api")
+def res_api() -> str:
+    return res.vault_api()
+
+
+@mcp.resource("vault://integration")
+def res_integration() -> str:
+    return res.vault_integration()
+
+
+@mcp.resource("vault://security")
+def res_security() -> str:
+    return res.vault_security()
+
+
+@mcp.resource("vault://data-model")
+def res_data_model() -> str:
+    return res.vault_data_model()
 
 
 if __name__ == "__main__":

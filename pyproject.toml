@@ -27,6 +27,13 @@ members = [
     # Fase 6 — Arquitectura y Seguridad
     "mcp-design-patterns",
     "mcp-security-champion",
+    # Fase 7 — DevSecOps Integrations
+    "mcp-snyk",
+    "mcp-sonar",
+    "mcp-java-build",
+    "mcp-terraform",
+    # Fase 8 — Orquestación de Agentes
+    "mcp-agent-runner",
     # Fase 6 - Datos
     "mcp-database",
     "mcp-filesystem",
@@ -41,6 +48,8 @@ members = [
     "mcp-terraform",
     # Personal context
     "mcp-personal-vault",
+    # Gobierno de Mexico
+    "mcp-gob-mexico",
 ]
 
 [tool.ruff]

@@ -16,14 +16,27 @@ from mcp_shared.logging import get_logger, setup_logging
 from mcp_docker.config import settings
 from mcp_docker.tools import (
     container_exec,
+    container_inspect,
     container_logs,
+    container_pause,
+    container_restart,
+    container_unpause,
     containers_list,
     containers_stats,
+    image_inspect,
     image_pull,
+    image_remove,
     images_list,
+    network_create,
+    network_list,
+    network_remove,
     run_container,
     stop_container,
+    volume_create,
+    volume_list,
+    volume_remove,
 )
+from mcp_docker import resources as res
 
 setup_logging(
     log_level=settings.log_level,
@@ -259,6 +272,199 @@ def tool_image_pull(
     result = _handle(image_pull, image=image, tag=tag)
     logger.info("image_pull completado", image=image, tag=tag, size_mb=result["size_mb"])
     return result
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    name="image_remove",
+    description="Elimina una imagen Docker local. Parametros: image_id (ID o nombre), force (bool).",
+)
+def tool_image_remove(image_id: str, force: bool = False) -> dict[str, Any]:
+    logger.info("image_remove llamado", image_id=image_id)
+    return _handle(image_remove, image_id=image_id, force=force)
+
+
+@mcp.tool(
+    name="image_inspect",
+    description="Inspecciona una imagen Docker retornando metadatos completos. Parametros: image_id (ID o nombre).",
+)
+def tool_image_inspect(image_id: str) -> dict[str, Any]:
+    logger.info("image_inspect llamado", image_id=image_id)
+    return _handle(image_inspect, image_id=image_id)
+
+
+@mcp.tool(
+    name="network_list",
+    description="Lista redes Docker. Retorna: networks[], count.",
+)
+def tool_network_list() -> dict[str, Any]:
+    logger.info("network_list llamado")
+    return _handle(network_list)
+
+
+@mcp.tool(
+    name="network_create",
+    description="Crea una red Docker. Parametros: name (requerido), driver (default 'bridge').",
+)
+def tool_network_create(name: str, driver: str = "bridge") -> dict[str, Any]:
+    logger.info("network_create llamado", name=name)
+    return _handle(network_create, name=name, driver=driver)
+
+
+@mcp.tool(
+    name="network_remove",
+    description="Elimina una red Docker. Parametros: network_id (ID o nombre).",
+)
+def tool_network_remove(network_id: str) -> dict[str, Any]:
+    logger.info("network_remove llamado", network_id=network_id)
+    return _handle(network_remove, network_id=network_id)
+
+
+@mcp.tool(
+    name="volume_list",
+    description="Lista volumenes Docker. Retorna: volumes[], count.",
+)
+def tool_volume_list() -> dict[str, Any]:
+    logger.info("volume_list llamado")
+    return _handle(volume_list)
+
+
+@mcp.tool(
+    name="volume_create",
+    description="Crea un volumen Docker. Parametros: name (requerido), driver (default 'local').",
+)
+def tool_volume_create(name: str, driver: str = "local") -> dict[str, Any]:
+    logger.info("volume_create llamado", name=name)
+    return _handle(volume_create, name=name, driver=driver)
+
+
+@mcp.tool(
+    name="volume_remove",
+    description="Elimina un volumen Docker. Parametros: volume_name (nombre), force (bool).",
+)
+def tool_volume_remove(volume_name: str, force: bool = False) -> dict[str, Any]:
+    logger.info("volume_remove llamado", volume_name=volume_name)
+    return _handle(volume_remove, volume_name=volume_name, force=force)
+
+
+@mcp.tool(
+    name="container_inspect",
+    description="Inspecciona un contenedor retornando metadatos completos. Parametros: container_id.",
+)
+def tool_container_inspect(container_id: str) -> dict[str, Any]:
+    logger.info("container_inspect llamado", container_id=container_id)
+    return _handle(container_inspect, container_id=container_id)
+
+
+@mcp.tool(
+    name="container_restart",
+    description="Reinicia un contenedor. Parametros: container_id, timeout (segundos, default 10).",
+)
+def tool_container_restart(container_id: str, timeout: int = 10) -> dict[str, Any]:
+    logger.info("container_restart llamado", container_id=container_id)
+    return _handle(container_restart, container_id=container_id, timeout=timeout)
+
+
+@mcp.tool(
+    name="container_pause",
+    description="Pausa un contenedor en ejecucion. Parametros: container_id.",
+)
+def tool_container_pause(container_id: str) -> dict[str, Any]:
+    logger.info("container_pause llamado", container_id=container_id)
+    return _handle(container_pause, container_id=container_id)
+
+
+@mcp.tool(
+    name="container_unpause",
+    description="Reanuda un contenedor pausado. Parametros: container_id.",
+)
+def tool_container_unpause(container_id: str) -> dict[str, Any]:
+    logger.info("container_unpause llamado", container_id=container_id)
+    return _handle(container_unpause, container_id=container_id)
+
+
+# ---------------------------------------------------------------------------
+# Resources estaticos
+# ---------------------------------------------------------------------------
+
+
+@mcp.resource("docker://configuration")
+def res_config() -> str:
+    return res.docker_configuration()
+
+
+@mcp.resource("docker://container-statuses")
+def res_statuses() -> str:
+    return res.docker_container_statuses()
+
+
+@mcp.resource("docker://image-reference")
+def res_images() -> str:
+    return res.docker_image_reference()
+
+
+@mcp.resource("docker://run-guide")
+def res_run() -> str:
+    return res.docker_run_guide()
+
+
+@mcp.resource("docker://logs-guide")
+def res_logs() -> str:
+    return res.docker_logs_guide()
+
+
+@mcp.resource("docker://exec-guide")
+def res_exec() -> str:
+    return res.docker_exec_guide()
+
+
+@mcp.resource("docker://stats-guide")
+def res_stats() -> str:
+    return res.docker_stats_guide()
+
+
+@mcp.resource("docker://best-practices")
+def res_best() -> str:
+    return res.docker_best_practices()
+
+
+@mcp.resource("docker://network-guide")
+def res_net() -> str:
+    return res.docker_network_guide()
+
+
+@mcp.resource("docker://volume-guide")
+def res_vol() -> str:
+    return res.docker_volume_guide()
+
+
+@mcp.resource("docker://compose-guide")
+def res_compose() -> str:
+    return res.docker_compose_guide()
+
+
+@mcp.resource("docker://error-codes")
+def res_errors() -> str:
+    return res.docker_error_codes()
+
+
+@mcp.resource("docker://security-tips")
+def res_sec() -> str:
+    return res.docker_security_tips()
+
+
+@mcp.resource("docker://troubleshooting")
+def res_trouble() -> str:
+    return res.docker_troubleshooting()
+
+
+@mcp.resource("docker://quick-reference")
+def res_quick() -> str:
+    return res.docker_quick_reference()
 
 
 # ---------------------------------------------------------------------------

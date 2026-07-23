@@ -579,3 +579,231 @@ def _validate_container_id(container_id: str) -> None:
             field="container_id",
             message="El ID o nombre del contenedor no puede estar vacío.",
         )
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+def image_remove(image_id: str, force: bool = False) -> dict[str, Any]:
+    """Elimina una imagen Docker local."""
+    if not image_id or not image_id.strip():
+        raise ValidationError(field="image_id", message="El ID de la imagen no puede estar vacío.")
+    client = _get_client()
+    try:
+        client.images.remove(image_id, force=force)
+        return {"image_id": image_id, "removed": True, "force": force}
+    except Exception as exc:
+        raise ApiError(
+            url="docker-daemon",
+            status_code=0,
+            response_body=f"Error eliminando imagen '{image_id}': {exc}",
+        ) from exc
+
+
+def image_inspect(image_id: str) -> dict[str, Any]:
+    """Inspecciona una imagen Docker retornando metadatos completos."""
+    if not image_id or not image_id.strip():
+        raise ValidationError(field="image_id", message="El ID de la imagen no puede estar vacío.")
+    client = _get_client()
+    try:
+        img = client.images.get(image_id)
+        attrs = img.attrs or {}
+        return {
+            "id": img.short_id,
+            "tags": img.tags,
+            "size_mb": round(attrs.get("Size", 0) / 1024 / 1024, 1),
+            "created": attrs.get("Created", ""),
+            "architecture": attrs.get("Architecture", ""),
+            "os": attrs.get("Os", ""),
+            "config": attrs.get("Config", {}),
+            "layers": len(attrs.get("RootFS", {}).get("Layers", [])),
+        }
+    except Exception as exc:
+        raise ApiError(
+            url="docker-daemon",
+            status_code=0,
+            response_body=f"Error inspeccionando imagen '{image_id}': {exc}",
+        ) from exc
+
+
+def network_list() -> dict[str, Any]:
+    """Lista redes Docker."""
+    client = _get_client()
+    try:
+        networks = client.networks.list()
+        result = []
+        for net in networks:
+            attrs = net.attrs or {}
+            result.append({
+                "id": net.short_id,
+                "name": net.name,
+                "driver": attrs.get("Driver", ""),
+                "scope": attrs.get("Scope", ""),
+                "containers": list((attrs.get("Containers") or {}).keys()),
+            })
+        return {"networks": result, "count": len(result)}
+    except Exception as exc:
+        raise ApiError(
+            url="docker-daemon",
+            status_code=0,
+            response_body=f"Error listando redes: {exc}",
+        ) from exc
+
+
+def network_create(name: str, driver: str = "bridge") -> dict[str, Any]:
+    """Crea una red Docker."""
+    if not name or not name.strip():
+        raise ValidationError(field="name", message="El nombre de la red no puede estar vacío.")
+    client = _get_client()
+    try:
+        net = client.networks.create(name, driver=driver)
+        return {"id": net.short_id, "name": net.name, "driver": driver, "created": True}
+    except Exception as exc:
+        raise ApiError(
+            url="docker-daemon",
+            status_code=0,
+            response_body=f"Error creando red '{name}': {exc}",
+        ) from exc
+
+
+def network_remove(network_id: str) -> dict[str, Any]:
+    """Elimina una red Docker."""
+    if not network_id or not network_id.strip():
+        raise ValidationError(field="network_id", message="El ID de la red no puede estar vacío.")
+    client = _get_client()
+    try:
+        net = client.networks.get(network_id)
+        net.remove()
+        return {"network_id": network_id, "removed": True}
+    except Exception as exc:
+        raise ApiError(
+            url="docker-daemon",
+            status_code=0,
+            response_body=f"Error eliminando red '{network_id}': {exc}",
+        ) from exc
+
+
+def volume_list() -> dict[str, Any]:
+    """Lista volumenes Docker."""
+    client = _get_client()
+    try:
+        volumes = client.volumes.list()
+        result = []
+        for vol in volumes:
+            attrs = vol.attrs or {}
+            result.append({
+                "name": vol.name,
+                "driver": attrs.get("Driver", ""),
+                "mountpoint": attrs.get("Mountpoint", ""),
+                "size_mb": round(attrs.get("UsageData", {}).get("Size", 0) / 1024 / 1024, 1),
+            })
+        return {"volumes": result, "count": len(result)}
+    except Exception as exc:
+        raise ApiError(
+            url="docker-daemon",
+            status_code=0,
+            response_body=f"Error listando volumenes: {exc}",
+        ) from exc
+
+
+def volume_create(name: str, driver: str = "local") -> dict[str, Any]:
+    """Crea un volumen Docker."""
+    if not name or not name.strip():
+        raise ValidationError(field="name", message="El nombre del volumen no puede estar vacío.")
+    client = _get_client()
+    try:
+        vol = client.volumes.create(name, driver=driver)
+        return {"name": vol.name, "driver": driver, "created": True}
+    except Exception as exc:
+        raise ApiError(
+            url="docker-daemon",
+            status_code=0,
+            response_body=f"Error creando volumen '{name}': {exc}",
+        ) from exc
+
+
+def volume_remove(volume_name: str, force: bool = False) -> dict[str, Any]:
+    """Elimina un volumen Docker."""
+    if not volume_name or not volume_name.strip():
+        raise ValidationError(field="volume_name", message="El nombre del volumen no puede estar vacío.")
+    client = _get_client()
+    try:
+        vol = client.volumes.get(volume_name)
+        vol.remove(force=force)
+        return {"volume_name": volume_name, "removed": True}
+    except Exception as exc:
+        raise ApiError(
+            url="docker-daemon",
+            status_code=0,
+            response_body=f"Error eliminando volumen '{volume_name}': {exc}",
+        ) from exc
+
+
+def container_inspect(container_id: str) -> dict[str, Any]:
+    """Inspecciona un contenedor retornando metadatos completos."""
+    _validate_container_id(container_id)
+    client = _get_client()
+    try:
+        container = client.containers.get(container_id)
+        return {
+            "id": container.short_id,
+            "name": container.name,
+            "status": container.status,
+            "attrs": container.attrs or {},
+        }
+    except Exception as exc:
+        raise ApiError(
+            url="docker-daemon",
+            status_code=0,
+            response_body=f"Error inspeccionando contenedor '{container_id}': {exc}",
+        ) from exc
+
+
+def container_restart(container_id: str, timeout: int = 10) -> dict[str, Any]:
+    """Reinicia un contenedor Docker."""
+    _validate_container_id(container_id)
+    client = _get_client()
+    try:
+        container = client.containers.get(container_id)
+        container.restart(timeout=timeout)
+        return {"container_id": container.short_id, "name": container.name, "action": "restarted"}
+    except Exception as exc:
+        raise ApiError(
+            url="docker-daemon",
+            status_code=0,
+            response_body=f"Error reiniciando contenedor '{container_id}': {exc}",
+        ) from exc
+
+
+def container_pause(container_id: str) -> dict[str, Any]:
+    """Pausa un contenedor Docker."""
+    _validate_container_id(container_id)
+    client = _get_client()
+    try:
+        container = client.containers.get(container_id)
+        container.pause()
+        return {"container_id": container.short_id, "name": container.name, "action": "paused"}
+    except Exception as exc:
+        raise ApiError(
+            url="docker-daemon",
+            status_code=0,
+            response_body=f"Error pausando contenedor '{container_id}': {exc}",
+        ) from exc
+
+
+def container_unpause(container_id: str) -> dict[str, Any]:
+    """Reanuda un contenedor Docker pausado."""
+    _validate_container_id(container_id)
+    client = _get_client()
+    try:
+        container = client.containers.get(container_id)
+        container.unpause()
+        return {"container_id": container.short_id, "name": container.name, "action": "unpaused"}
+    except Exception as exc:
+        raise ApiError(
+            url="docker-daemon",
+            status_code=0,
+            response_body=f"Error reanudando contenedor '{container_id}': {exc}",
+        ) from exc

@@ -17,7 +17,12 @@ def test_server_registers_calendar_tools() -> None:
     tools = asyncio.run(mcp.list_tools())
     names = {tool.name for tool in tools}
     assert {"get_holidays", "calculate_business_days", "get_exchange_rate"} <= names
-    assert len(names) == 15
+    assert len(names) == 20
+
+
+def test_server_registers_resources() -> None:
+    resources = asyncio.run(mcp.list_resources())
+    assert len(resources) == 15
 
 
 def test_tool_defaults_come_from_settings() -> None:

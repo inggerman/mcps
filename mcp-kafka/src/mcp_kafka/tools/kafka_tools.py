@@ -532,3 +532,441 @@ def consume_messages(
         "count": len(messages_out),
         "from_beginning": from_beginning,
     }
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+def create_topic(
+    topic: str,
+    num_partitions: int = 1,
+    replication_factor: int = 1,
+) -> dict[str, Any]:
+    """Crea un nuevo topic en el cluster Kafka."""
+    _validate_topic(topic)
+    if num_partitions < 1:
+        raise ValidationError(field="num_partitions", message="num_partitions debe ser >= 1.")
+    if replication_factor < 1:
+        raise ValidationError(field="replication_factor", message="replication_factor debe ser >= 1.")
+
+    try:
+        from confluent_kafka.admin import NewTopic
+    except ImportError as exc:
+        raise NetworkError(url=settings.bootstrap_servers, reason=_CONFLUENT_MISSING) from exc
+
+    admin = _get_admin_client()
+    new_topic = NewTopic(
+        topic=topic,
+        num_partitions=num_partitions,
+        replication_factor=replication_factor,
+    )
+    try:
+        future = admin.create_topics([new_topic])
+        future[topic].result()
+        return {
+            "topic": topic,
+            "num_partitions": num_partitions,
+            "replication_factor": replication_factor,
+            "created": True,
+        }
+    except Exception as exc:
+        if "already exists" in str(exc).lower():
+            raise ValidationError(
+                field="topic",
+                message=f"Topic '{topic}' ya existe.",
+                value=topic,
+            ) from exc
+        raise ApiError(
+            url=settings.bootstrap_servers,
+            status_code=0,
+            response_body=f"Error creando topic '{topic}': {exc}",
+        ) from exc
+
+
+def delete_topic(topic: str) -> dict[str, Any]:
+    """Elimina un topic del cluster Kafka."""
+    _validate_topic(topic)
+    admin = _get_admin_client()
+    try:
+        future = admin.delete_topics([topic])
+        future[topic].result()
+        return {"topic": topic, "deleted": True}
+    except Exception as exc:
+        raise ApiError(
+            url=settings.bootstrap_servers,
+            status_code=0,
+            response_body=f"Error eliminando topic '{topic}': {exc}",
+        ) from exc
+
+
+def topic_partitions(topic: str) -> dict[str, Any]:
+    """Obtiene el numero de particiones de un topic."""
+    _validate_topic(topic)
+    admin = _get_admin_client()
+    try:
+        metadata = admin.list_topics(topic=topic, timeout=settings.admin_timeout)
+        if topic not in metadata.topics:
+            raise ValidationError(
+                field="topic",
+                message=f"Topic '{topic}' no encontrado.",
+                value=topic,
+            )
+        return {
+            "topic": topic,
+            "partition_count": len(metadata.topics[topic].partitions),
+            "partitions": list(metadata.topics[topic].partitions.keys()),
+        }
+    except (ValidationError, ApiError, NetworkError):
+        raise
+    except Exception as exc:
+        raise ApiError(
+            url=settings.bootstrap_servers,
+            status_code=0,
+            response_body=f"Error obteniendo particiones de '{topic}': {exc}",
+        ) from exc
+
+
+def topic_offsets(topic: str) -> dict[str, Any]:
+    """Obtiene los offsets (begin/end) de cada particion de un topic."""
+    _validate_topic(topic)
+    try:
+        from confluent_kafka import Consumer
+    except ImportError as exc:
+        raise NetworkError(url=settings.bootstrap_servers, reason=_CONFLUENT_MISSING) from exc
+
+    cfg = settings.base_config()
+    cfg["group.id"] = "mcp-kafka-offset-query"
+    consumer = Consumer(cfg)
+    try:
+        metadata = consumer.list_topics(topic=topic, timeout=settings.admin_timeout)
+        if topic not in metadata.topics:
+            raise ValidationError(
+                field="topic",
+                message=f"Topic '{topic}' no encontrado.",
+                value=topic,
+            )
+        from confluent_kafka import TopicPartition as TP
+
+        offsets = []
+        for pid in sorted(metadata.topics[topic].partitions.keys()):
+            _, begin = consumer.get_watermark_offsets(TP(topic, pid), cached=False)
+            _, end = consumer.get_watermark_offsets(TP(topic, pid), cached=False)
+            offsets.append({"partition": pid, "begin_offset": begin, "end_offset": end})
+        return {"topic": topic, "offsets": offsets, "partition_count": len(offsets)}
+    except (ValidationError, ApiError, NetworkError):
+        raise
+    except Exception as exc:
+        raise ApiError(
+            url=settings.bootstrap_servers,
+            status_code=0,
+            response_body=f"Error obteniendo offsets de '{topic}': {exc}",
+        ) from exc
+    finally:
+        consumer.close()
+
+
+def cluster_metadata() -> dict[str, Any]:
+    """Obtiene metadata completa del cluster Kafka."""
+    admin = _get_admin_client()
+    try:
+        metadata = admin.list_topics(timeout=settings.admin_timeout)
+        brokers = []
+        for bid, broker in metadata.brokers.items():
+            brokers.append({"id": bid, "host": broker.host, "port": broker.port})
+        return {
+            "cluster_id": metadata.cluster_id or "unknown",
+            "brokers": brokers,
+            "broker_count": len(brokers),
+            "topic_count": len(metadata.topics),
+            "controller_id": getattr(metadata, "controller_id", None),
+        }
+    except Exception as exc:
+        raise ApiError(
+            url=settings.bootstrap_servers,
+            status_code=0,
+            response_body=f"Error obteniendo metadata del cluster: {exc}",
+        ) from exc
+
+
+def broker_list() -> dict[str, Any]:
+    """Lista los brokers del cluster Kafka."""
+    admin = _get_admin_client()
+    try:
+        metadata = admin.list_topics(timeout=settings.admin_timeout)
+        brokers = []
+        for bid, broker in metadata.brokers.items():
+            brokers.append({"id": bid, "host": broker.host, "port": broker.port})
+        return {"brokers": brokers, "count": len(brokers)}
+    except Exception as exc:
+        raise ApiError(
+            url=settings.bootstrap_servers,
+            status_code=0,
+            response_body=f"Error listando brokers: {exc}",
+        ) from exc
+
+
+def produce_batch(
+    topic: str,
+    messages: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Produce un lote de mensajes en un topic."""
+    _validate_topic(topic)
+    if not messages:
+        raise ValidationError(field="messages", message="La lista de mensajes no puede estar vacia.")
+
+    try:
+        from confluent_kafka import Producer
+    except ImportError as exc:
+        raise NetworkError(url=settings.bootstrap_servers, reason=_CONFLUENT_MISSING) from exc
+
+    cfg = settings.base_config()
+    cfg["acks"] = "all"
+    producer = Producer(cfg)
+
+    results: list[dict[str, Any]] = []
+    errors: list[str] = []
+
+    def on_delivery(err: Any, msg: Any, idx: int) -> None:
+        if err:
+            errors.append(f"Mensaje {idx}: {err}")
+        else:
+            results.append({
+                "index": idx,
+                "partition": msg.partition(),
+                "offset": msg.offset(),
+            })
+
+    try:
+        for i, m in enumerate(messages):
+            value = m.get("value", "")
+            if isinstance(value, dict):
+                value_bytes = json.dumps(value).encode("utf-8")
+            else:
+                value_bytes = str(value).encode("utf-8")
+            key_bytes = str(m.get("key", "")).encode("utf-8") if m.get("key") else None
+            producer.produce(
+                topic,
+                value=value_bytes,
+                key=key_bytes,
+                on_delivery=lambda err, msg, idx=i: on_delivery(err, msg, idx),
+            )
+        producer.flush(timeout=settings.consume_timeout)
+    except Exception as exc:
+        raise ApiError(
+            url=settings.bootstrap_servers,
+            status_code=0,
+            response_body=f"Error produciendo batch en '{topic}': {exc}",
+        ) from exc
+
+    return {
+        "topic": topic,
+        "produced": len(results),
+        "errors": errors,
+        "results": results,
+    }
+
+
+def consumer_group_describe(group_id: str) -> dict[str, Any]:
+    """Describe un consumer group: estado, miembros, asignaciones."""
+    if not group_id or not group_id.strip():
+        raise ValidationError(field="group_id", message="El group_id no puede estar vacio.")
+
+    try:
+        from confluent_kafka.admin import AdminClient
+    except ImportError as exc:
+        raise NetworkError(url=settings.bootstrap_servers, reason=_CONFLUENT_MISSING) from exc
+
+    admin = AdminClient(settings.base_config())
+    try:
+        future = admin.describe_consumer_groups(
+            [group_id], request_timeout=settings.admin_timeout
+        )
+        result = future.result()
+    except Exception as exc:
+        raise ApiError(
+            url=settings.bootstrap_servers,
+            status_code=0,
+            response_body=f"Error describiendo grupo '{group_id}': {exc}",
+        ) from exc
+
+    group_info = result.get(group_id)
+    if group_info is None:
+        raise ValidationError(
+            field="group_id",
+            message=f"Consumer group '{group_id}' no encontrado.",
+            value=group_id,
+        )
+
+    members = []
+    for member in getattr(group_info, "members", []) or []:
+        assignment = []
+        for tp in getattr(member, "assignment", []) or []:
+            assignment.append({"topic": tp.topic, "partition": tp.partition})
+        members.append({
+            "member_id": getattr(member, "member_id", ""),
+            "client_id": getattr(member, "client_id", ""),
+            "client_host": getattr(member, "client_host", ""),
+            "assignment": assignment,
+        })
+
+    return {
+        "group_id": group_id,
+        "state": str(getattr(group_info, "state", "unknown")),
+        "is_simple": getattr(group_info, "is_simple_consumer_group", False),
+        "partition_assignor": getattr(group_info, "partition_assignor", ""),
+        "members": members,
+        "member_count": len(members),
+    }
+
+
+def consumer_group_reset_offsets(
+    group_id: str,
+    topic: str,
+    partition: int = -1,
+    offset: str = "earliest",
+) -> dict[str, Any]:
+    """Resetea los offsets de un consumer group a earliest o latest."""
+    if not group_id or not group_id.strip():
+        raise ValidationError(field="group_id", message="El group_id no puede estar vacio.")
+    _validate_topic(topic)
+
+    try:
+        from confluent_kafka import TopicPartition
+        from confluent_kafka.admin import AdminClient
+    except ImportError as exc:
+        raise NetworkError(url=settings.bootstrap_servers, reason=_CONFLUENT_MISSING) from exc
+
+    admin = AdminClient(settings.base_config())
+
+    if offset not in ("earliest", "latest"):
+        raise ValidationError(
+            field="offset",
+            message="offset debe ser 'earliest' o 'latest'.",
+            value=offset,
+        )
+
+    tp = TopicPartition(topic, partition)
+    if offset == "earliest":
+        tp.offset = -2
+    else:
+        tp.offset = -1
+
+    try:
+        future = admin.alter_consumer_group_offsets(
+            [{"group_id": group_id, "partitions": [tp]}],
+            request_timeout=settings.admin_timeout,
+        )
+        future.result()
+        return {
+            "group_id": group_id,
+            "topic": topic,
+            "partition": partition,
+            "reset_to": offset,
+            "success": True,
+        }
+    except Exception as exc:
+        raise ApiError(
+            url=settings.bootstrap_servers,
+            status_code=0,
+            response_body=f"Error reseteando offsets del grupo '{group_id}': {exc}",
+        ) from exc
+
+
+def consumer_group_delete(group_id: str) -> dict[str, Any]:
+    """Elimina un consumer group del cluster."""
+    if not group_id or not group_id.strip():
+        raise ValidationError(field="group_id", message="El group_id no puede estar vacio.")
+
+    try:
+        from confluent_kafka.admin import AdminClient
+    except ImportError as exc:
+        raise NetworkError(url=settings.bootstrap_servers, reason=_CONFLUENT_MISSING) from exc
+
+    admin = AdminClient(settings.base_config())
+    try:
+        future = admin.delete_consumer_groups([group_id], request_timeout=settings.admin_timeout)
+        future.result()
+        return {"group_id": group_id, "deleted": True}
+    except Exception as exc:
+        raise ApiError(
+            url=settings.bootstrap_servers,
+            status_code=0,
+            response_body=f"Error eliminando grupo '{group_id}': {exc}",
+        ) from exc
+
+
+def alter_topic_config(
+    topic: str,
+    config: dict[str, str],
+) -> dict[str, Any]:
+    """Modifica la configuracion de un topic (retention.ms, etc.)."""
+    _validate_topic(topic)
+    if not config:
+        raise ValidationError(field="config", message="La configuracion no puede estar vacia.")
+
+    try:
+        from confluent_kafka.admin import AdminClient, ConfigResource, ConfigSource
+    except ImportError as exc:
+        raise NetworkError(url=settings.bootstrap_servers, reason=_CONFLUENT_MISSING) from exc
+
+    admin = AdminClient(settings.base_config())
+    resource = ConfigResource(2, topic)
+    for key, value in config.items():
+        resource.set_config(key, value)
+
+    try:
+        future = admin.incremental_alter_configs([resource])
+        future[topic].result()
+        return {"topic": topic, "config_updated": config, "success": True}
+    except Exception as exc:
+        raise ApiError(
+            url=settings.bootstrap_servers,
+            status_code=0,
+            response_body=f"Error modificando config de '{topic}': {exc}",
+        ) from exc
+
+
+def list_acls(
+    principal: str | None = None,
+    topic: str | None = None,
+    group_id: str | None = None,
+) -> dict[str, Any]:
+    """Lista ACLs del cluster Kafka, opcionalmente filtradas."""
+    try:
+        from confluent_kafka.admin import AdminClient, ACLFilter, ResourcePatternFilter, ACLBinding
+    except ImportError as exc:
+        raise NetworkError(url=settings.bootstrap_servers, reason=_CONFLUENT_MISSING) from exc
+
+    admin = AdminClient(settings.base_config())
+
+    acl_filter = ACLFilter(
+        resource_pattern_filter=ResourcePatternFilter(2, topic, 3),
+        principal=principal,
+        host="*",
+        operation=2,
+        permission_type=2,
+    )
+
+    try:
+        future = admin.describe_acls(acl_filter, request_timeout=settings.admin_timeout)
+        result = future.result()
+    except Exception as exc:
+        raise ApiError(
+            url=settings.bootstrap_servers,
+            status_code=0,
+            response_body=f"Error listando ACLs: {exc}",
+        ) from exc
+
+    acls = []
+    for binding in getattr(result, "acls", []) or []:
+        acls.append({
+            "principal": getattr(binding, "principal", ""),
+            "host": getattr(binding, "host", ""),
+            "operation": str(getattr(binding, "operation", "")),
+            "permission_type": str(getattr(binding, "permission_type", "")),
+            "resource_type": str(getattr(binding, "resource_pattern", "")),
+        })
+
+    return {"acls": acls, "count": len(acls)}

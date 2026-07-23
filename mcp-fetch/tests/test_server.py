@@ -7,7 +7,12 @@ import asyncio
 from fastmcp import FastMCP
 from mcp_fetch.server import mcp
 
-_EXPECTED_TOOLS = {"fetch_url", "fetch_post", "extract_text", "fetch_json"}
+_EXPECTED_TOOLS = {
+    "fetch_url", "fetch_post", "extract_text", "fetch_json",
+    "fetch_head", "check_url", "fetch_with_auth", "extract_links",
+    "extract_metadata", "extract_tables", "fetch_with_retry",
+    "batch_fetch_json", "convert_html_to_markdown", "download_file",
+}
 
 
 class TestServer:
@@ -24,4 +29,8 @@ class TestServer:
 
     def test_tool_count(self) -> None:
         tools = asyncio.run(mcp.list_tools())
-        assert len(tools) >= 4
+        assert len(tools) == 14
+
+    def test_resources_registered(self) -> None:
+        resources = asyncio.run(mcp.list_resources())
+        assert len(resources) == 15

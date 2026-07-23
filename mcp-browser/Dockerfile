@@ -1,10 +1,10 @@
-FROM python:3.12-slim
+FROM python:3.12-slim AS runtime
 WORKDIR /app
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 COPY shared /workspace/shared
 COPY mcp-browser/pyproject.toml ./
 COPY mcp-browser/src ./src
-RUN uv pip install --system --no-cache /workspace/shared . && playwright install --with-deps chromium
+RUN uv pip install --system --no-cache --no-sources /workspace/shared . && playwright install --with-deps chromium
 RUN useradd --system --uid 1001 --no-create-home mcpuser && mkdir -p /data/browser \
     && chown -R mcpuser:mcpuser /app /data/browser
 USER mcpuser

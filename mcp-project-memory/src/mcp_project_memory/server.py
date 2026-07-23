@@ -24,13 +24,18 @@ from mcp_shared.logging import get_logger, setup_logging
 from mcp_project_memory import __version__
 from mcp_project_memory.config import settings
 from mcp_project_memory.tools.memory_tools import (
+    add_invariant,
     add_pending_task,
     complete_pending_task,
     diff_state,
     export_memory_snapshot,
     generate_project_brief,
+    get_completed_tasks,
     get_component_map,
     get_decisions_history,
+    get_invariants,
+    get_memory_stats,
+    get_pending_tasks,
     get_project_state,
     get_session_history,
     initialize_project,
@@ -40,6 +45,7 @@ from mcp_project_memory.tools.memory_tools import (
     sync_from_filesystem,
     update_component_status,
 )
+from mcp_project_memory import resources as res
 
 # ---------------------------------------------------------------------------
 # Configuración de logging
@@ -359,6 +365,136 @@ def tool_sync_from_filesystem(project_root: str = ".") -> dict[str, Any]:
     root = Path(project_root).resolve()
     logger.info("sync_from_filesystem llamado", project_root=str(root))
     return _handle(sync_from_filesystem, _MEMORY_PATH, root)
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    name="get_pending_tasks",
+    description="Retorna las tareas pendientes, opcionalmente filtradas por prioridad.",
+)
+def tool_get_pending_tasks(priority: str | None = None) -> list[dict[str, Any]]:
+    logger.info("get_pending_tasks llamado", priority=priority)
+    return _handle(get_pending_tasks, _MEMORY_PATH, priority)
+
+
+@mcp.tool(
+    name="get_completed_tasks",
+    description="Retorna las tareas completadas, mas recientes primero.",
+)
+def tool_get_completed_tasks(limit: int = 50) -> list[dict[str, Any]]:
+    logger.info("get_completed_tasks llamado", limit=limit)
+    return _handle(get_completed_tasks, _MEMORY_PATH, limit)
+
+
+@mcp.tool(
+    name="get_invariants",
+    description="Retorna la lista de invariantes del proyecto.",
+)
+def tool_get_invariants() -> list[str]:
+    logger.info("get_invariants llamado")
+    return _handle(get_invariants, _MEMORY_PATH)
+
+
+@mcp.tool(
+    name="add_invariant",
+    description="Agrega una invariante al proyecto.",
+)
+def tool_add_invariant(invariant: str) -> dict[str, Any]:
+    logger.info("add_invariant llamado")
+    return _handle(add_invariant, _MEMORY_PATH, invariant)
+
+
+@mcp.tool(
+    name="get_memory_stats",
+    description="Retorna estadisticas resumidas de la memoria del proyecto.",
+)
+def tool_get_memory_stats() -> dict[str, Any]:
+    logger.info("get_memory_stats llamado")
+    return _handle(get_memory_stats, _MEMORY_PATH)
+
+
+# ---------------------------------------------------------------------------
+# Resources estaticos
+# ---------------------------------------------------------------------------
+
+
+@mcp.resource("project-memory://configuration")
+def res_config() -> str:
+    return res.project_memory_configuration()
+
+
+@mcp.resource("project-memory://schema-reference")
+def res_schema() -> str:
+    return res.memory_schema_reference()
+
+
+@mcp.resource("project-memory://component-statuses")
+def res_statuses() -> str:
+    return res.component_statuses_reference()
+
+
+@mcp.resource("project-memory://task-priorities")
+def res_priorities() -> str:
+    return res.task_priorities_reference()
+
+
+@mcp.resource("project-memory://decision-statuses")
+def res_decision_statuses() -> str:
+    return res.decision_statuses_reference()
+
+
+@mcp.resource("project-memory://session-workflow")
+def res_workflow() -> str:
+    return res.session_workflow_guide()
+
+
+@mcp.resource("project-memory://best-practices")
+def res_best_practices() -> str:
+    return res.memory_best_practices()
+
+
+@mcp.resource("project-memory://search-tips")
+def res_search_tips() -> str:
+    return res.memory_search_tips()
+
+
+@mcp.resource("project-memory://common-workflows")
+def res_workflows() -> str:
+    return res.common_memory_workflows()
+
+
+@mcp.resource("project-memory://error-codes")
+def res_errors() -> str:
+    return res.memory_error_codes()
+
+
+@mcp.resource("project-memory://file-format")
+def res_file_format() -> str:
+    return res.memory_file_format()
+
+
+@mcp.resource("project-memory://invariant-guide")
+def res_invariant_guide() -> str:
+    return res.invariant_guide()
+
+
+@mcp.resource("project-memory://examples/get-project-state")
+def res_example_state() -> str:
+    return res.example_get_project_state()
+
+
+@mcp.resource("project-memory://examples/snapshot-session")
+def res_example_snapshot() -> str:
+    return res.example_snapshot_session()
+
+
+@mcp.resource("project-memory://examples/record-decision")
+def res_example_decision() -> str:
+    return res.example_record_decision()
 
 
 # ---------------------------------------------------------------------------

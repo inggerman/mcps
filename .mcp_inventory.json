@@ -1,0 +1,1888 @@
+{
+  "mcp-agent-runner": {
+    "tools": [
+      {
+        "name": "agent_trigger_webhook",
+        "description": "Dispara un webhook REST HTTP (ej. n8n) enviando un payload en JSON."
+      },
+      {
+        "name": "agent_run_local_script",
+        "description": "Ejecuta un sub-agente o script Python en local y espera su resultado."
+      }
+    ],
+    "env_prefix": "AGENT_",
+    "env_vars": [
+      {
+        "field": "project_path",
+        "var": "AGENT_PROJECT_PATH",
+        "default": "",
+        "description": "Ruta base del proyecto."
+      },
+      {
+        "field": "n8n_webhook_base_url",
+        "var": "AGENT_N8N_WEBHOOK_BASE_URL",
+        "default": "http://localhost:5678/webhook",
+        "description": "URL base para webhooks de n8n."
+      },
+      {
+        "field": "n8n_auth_token",
+        "var": "AGENT_N8N_AUTH_TOKEN",
+        "default": "",
+        "description": "Token opcional para autenticar webhooks de n8n."
+      }
+    ]
+  },
+  "mcp-architecture": {
+    "tools": [
+      {
+        "name": "arch_get_project_tree",
+        "description": "Retorna la estructura de carpetas y archivos del proyecto. Útil para entender la arquitectura macro."
+      },
+      {
+        "name": "arch_analyze_dependencies",
+        "description": "Usa AST para extraer todas las importaciones de un archivo .py y entender su acoplamiento."
+      },
+      {
+        "name": "arch_check_solid_principles",
+        "description": "Revisa un archivo buscando heurísticas como Clases Gigantes o demasiados argumentos, que violan SOLID."
+      }
+    ],
+    "env_prefix": "ARCH_",
+    "env_vars": [
+      {
+        "field": "project_path",
+        "var": "ARCH_PROJECT_PATH",
+        "default": "",
+        "description": "Ruta base del proyecto a analizar."
+      }
+    ]
+  },
+  "mcp-best-practices": {
+    "tools": [
+      {
+        "name": "bp_update_project_state",
+        "description": "Genera o actualiza el archivo docs/project-state.md escaneando la estructura actual del proyecto."
+      },
+      {
+        "name": "bp_update_servers_reference",
+        "description": "Genera o actualiza docs/servers-reference.md leyendo claude_desktop_config.json de la raíz."
+      }
+    ],
+    "env_prefix": "BP_",
+    "env_vars": [
+      {
+        "field": "project_path",
+        "var": "BP_PROJECT_PATH",
+        "default": "",
+        "description": "Ruta base del proyecto."
+      },
+      {
+        "field": "docs_path",
+        "var": "BP_DOCS_PATH",
+        "default": "./docs",
+        "description": "Ruta donde se almacenará la documentación retroactiva."
+      }
+    ]
+  },
+  "mcp-browser": {
+    "tools": [
+      {
+        "name": "browser_extract",
+        "description": ""
+      },
+      {
+        "name": "browser_screenshot",
+        "description": ""
+      }
+    ],
+    "env_prefix": "BROWSER_",
+    "env_vars": [
+      {
+        "field": "headless",
+        "var": "BROWSER_HEADLESS",
+        "default": "true",
+        "description": ""
+      },
+      {
+        "field": "timeout_ms",
+        "var": "BROWSER_TIMEOUT_MS",
+        "default": "30000",
+        "description": ""
+      },
+      {
+        "field": "allowed_hosts",
+        "var": "BROWSER_ALLOWED_HOSTS",
+        "default": "",
+        "description": ""
+      },
+      {
+        "field": "output_dir",
+        "var": "BROWSER_OUTPUT_DIR",
+        "default": "./data/browser",
+        "description": ""
+      }
+    ]
+  },
+  "mcp-calendar": {
+    "tools": [
+      {
+        "name": "get_holidays",
+        "description": "Lista todos los feriados de un país para un año dado. Soporta más de 100 países usando ISO 3166-1 alpha-2 (ej: 'MX', 'US', 'DE'). Parámetros: country (código de país), year (año ej: 2025), state (subdivisión opcional ej: 'CDMX', 'CA'). Retorna: lista de feriados con fecha, nombre, país y región."
+      },
+      {
+        "name": "calculate_business_days",
+        "description": "Calcula los días hábiles entre dos fechas (ambas inclusive). Excluye fines de semana y feriados del país. Parámetros: start_date (YYYY-MM-DD), end_date (YYYY-MM-DD), country (ISO alpha-2, por defecto 'MX'). Retorna: business_days, total_days, weekend_days, holidays_excluded, country."
+      },
+      {
+        "name": "add_business_days",
+        "description": "Suma N días hábiles a una fecha de inicio. Si n_days es negativo, resta días hábiles hacia atrás. La fecha de inicio NO cuenta como día hábil a sumar. Parámetros: start_date (YYYY-MM-DD), n_days (entero, puede ser negativo), country (ISO alpha-2, por defecto 'MX'). Retorna: fecha resultante en formato ISO 8601 (YYYY-MM-DD)."
+      },
+      {
+        "name": "is_business_day",
+        "description": "Verifica si una fecha específica es día hábil en el país dado. Parámetros: check_date (YYYY-MM-DD), country (ISO alpha-2, por defecto 'MX'). Retorna: is_business_day, is_weekend, is_holiday, holiday_name, holiday_description, day_of_week, country."
+      },
+      {
+        "name": "next_business_day",
+        "description": "Retorna el siguiente día hábil después de la fecha dada. Si la fecha dada ya es hábil, retorna el SIGUIENTE (no el mismo día). Parámetros: check_date (YYYY-MM-DD), country (ISO alpha-2, por defecto 'MX'). Retorna: fecha del siguiente día hábil en formato ISO 8601."
+      },
+      {
+        "name": "previous_business_day",
+        "description": "Retorna el día hábil anterior a la fecha dada. Si la fecha dada ya es hábil, retorna el ANTERIOR (no el mismo día). Parámetros: check_date (YYYY-MM-DD), country (ISO alpha-2, por defecto 'MX'). Retorna: fecha del día hábil anterior en formato ISO 8601."
+      },
+      {
+        "name": "business_days_in_month",
+        "description": "Calcula el total de días hábiles en un mes completo. Parámetros: year (ej: 2025), month (1–12), country (ISO alpha-2, por defecto 'MX'). Retorna: year, month, month_name, business_days, total_days, weekend_days, holiday_count, holidays, country."
+      },
+      {
+        "name": "get_mexico_holidays",
+        "description": "Retorna todos los feriados oficiales de México para el año dado, con descripciones en español de su contexto histórico y cultural. Incluye la base legal (Ley Federal del Trabajo, Art. 74). Parámetro: year (ej: 2025). Retorna: lista de feriados con date, name, description, is_fixed, day_of_week, legal_basis."
+      },
+      {
+        "name": "get_country_list",
+        "description": "Retorna la lista de todos los países soportados para cálculo de días hábiles. Incluye código ISO alpha-2, nombre del país y subdivisiones disponibles. Útil para validar códigos de país antes de llamar otras herramientas. No requiere parámetros. Retorna: lista con code, name, has_subdivisions, subdivisions."
+      },
+      {
+        "name": "get_exchange_rate",
+        "description": "Obtiene la tasa de cambio actual entre dos divisas vía Frankfurter API (BCE). Las tasas se actualizan diariamente y se cachean en memoria. Parámetros: from_currency (ISO 4217 ej: 'USD'), to_currency (ISO 4217 ej: 'MXN'), ttl_seconds (TTL del caché, por defecto 3600). Retorna: base_currency, target_currency, rate, timestamp, source."
+      },
+      {
+        "name": "convert_currency",
+        "description": "Convierte un monto de una divisa a otra usando la tasa de cambio actual. Parámetros: amount (monto a convertir, >=0), from_currency (ISO 4217), to_currency (ISO 4217), ttl_seconds (TTL del caché, por defecto 3600). Retorna: original_amount, converted_amount, rate (tasa utilizada)."
+      },
+      {
+        "name": "get_historical_rate",
+        "description": "Obtiene la tasa de cambio histórica entre dos divisas para una fecha específica. Datos disponibles desde 1999-01-04 (inicio del BCE). Parámetros: from_currency (ISO 4217), to_currency (ISO 4217), rate_date (YYYY-MM-DD, no puede ser fecha futura). Retorna: base_currency, target_currency, rate, timestamp, source."
+      },
+      {
+        "name": "get_mx_rates",
+        "description": "Obtiene las tasas de cambio entre MXN y las principales monedas mundiales (USD, EUR, GBP, CAD, JPY, CHF, CNY). Parámetros: base (divisa base, por defecto 'MXN'), ttl_seconds (TTL del caché, por defecto 3600). Retorna: base, date, rates (mapa código→rate), source."
+      },
+      {
+        "name": "list_supported_currencies",
+        "description": "Lista todas las divisas soportadas por Frankfurter API (ISO 4217). Incluye el código y el nombre completo en inglés de cada divisa. No requiere parámetros. Los resultados se cachean 24 horas. Retorna: lista de dicts con 'code' y 'name', ordenados alfabéticamente."
+      },
+      {
+        "name": "get_rate_history",
+        "description": "Obtiene el historial de tasas de cambio entre dos divisas para un rango de fechas. Solo incluye días hábiles del BCE (no fines de semana ni feriados europeos). Parámetros: from_currency (ISO 4217), to_currency (ISO 4217), start_date (YYYY-MM-DD), end_date (YYYY-MM-DD). Retorna: lista de tasas de cambio diarias ordenadas por fecha ascendente."
+      }
+    ],
+    "env_prefix": "",
+    "env_vars": [
+      {
+        "field": "default_country",
+        "var": "DEFAULT_COUNTRY",
+        "default": "MX",
+        "description": "Código de país ISO 3166-1 alpha-2 usado por defecto en todas las operaciones de calendario cuando no se especifica explícitamente. Variable de entorno: DEFAULT_COUNTRY."
+      },
+      {
+        "field": "exchange_cache_ttl_seconds",
+        "var": "EXCHANGE_CACHE_TTL_SECONDS",
+        "default": "3600",
+        "description": "Tiempo de vida del caché de tasas de cambio en segundos. Rango válido: 60–86400 (1 minuto a 24 horas). Variable de entorno: EXCHANGE_CACHE_TTL_SECONDS."
+      },
+      {
+        "field": "mcp_server_name",
+        "var": "MCP_SERVER_NAME",
+        "default": "mcp-calendar",
+        "description": "Nombre identificador del servidor MCP en logs y metadatos."
+      }
+    ]
+  },
+  "mcp-ci-cd": {
+    "tools": [
+      {
+        "name": "cicd_run_pipeline",
+        "description": "Ejecuta un pipeline local que incluye linting, testing y simulación de despliegue."
+      }
+    ],
+    "env_prefix": "CICD_",
+    "env_vars": [
+      {
+        "field": "project_path",
+        "var": "CICD_PROJECT_PATH",
+        "default": "",
+        "description": "Ruta base del proyecto."
+      },
+      {
+        "field": "test_cmd",
+        "var": "CICD_TEST_CMD",
+        "default": "uv run pytest",
+        "description": "Comando de test."
+      },
+      {
+        "field": "lint_cmd",
+        "var": "CICD_LINT_CMD",
+        "default": "uv run ruff check",
+        "description": "Comando de lint."
+      },
+      {
+        "field": "deploy_cmd",
+        "var": "CICD_DEPLOY_CMD",
+        "default": "echo 'Despliegue simulado exitoso'",
+        "description": "Comando de despliegue."
+      }
+    ]
+  },
+  "mcp-code-quality": {
+    "tools": [
+      {
+        "name": "quality_run_lint",
+        "description": "Ejecuta el linter sobre el proyecto. Puedes especificar un archivo/carpeta con 'target'."
+      },
+      {
+        "name": "quality_run_format",
+        "description": "Ejecuta el formateador de código. Usa check_only=True para ver qué cambiaría sin modificar."
+      },
+      {
+        "name": "quality_run_tests",
+        "description": "Ejecuta los tests unitarios. Puedes pasar un archivo de tests específico con 'target'."
+      }
+    ],
+    "env_prefix": "CQ_",
+    "env_vars": [
+      {
+        "field": "project_path",
+        "var": "CQ_PROJECT_PATH",
+        "default": "",
+        "description": "Ruta base del proyecto a analizar."
+      },
+      {
+        "field": "linter_cmd",
+        "var": "CQ_LINTER_CMD",
+        "default": "uv run ruff check",
+        "description": "Comando usado para linting de código."
+      },
+      {
+        "field": "formatter_cmd",
+        "var": "CQ_FORMATTER_CMD",
+        "default": "uv run ruff format",
+        "description": "Comando usado para formateo de código."
+      },
+      {
+        "field": "test_cmd",
+        "var": "CQ_TEST_CMD",
+        "default": "uv run pytest",
+        "description": "Comando usado para correr tests unitarios."
+      }
+    ]
+  },
+  "mcp-database": {
+    "tools": [
+      {
+        "name": "database_info",
+        "description": ""
+      },
+      {
+        "name": "database_list_tables",
+        "description": ""
+      },
+      {
+        "name": "database_describe_table",
+        "description": ""
+      },
+      {
+        "name": "database_query",
+        "description": ""
+      }
+    ],
+    "env_prefix": "DATABASE_",
+    "env_vars": [
+      {
+        "field": "url",
+        "var": "DATABASE_URL",
+        "default": "sqlite:///./data/database.db",
+        "description": ""
+      },
+      {
+        "field": "read_only",
+        "var": "DATABASE_READ_ONLY",
+        "default": "true",
+        "description": ""
+      },
+      {
+        "field": "max_rows",
+        "var": "DATABASE_MAX_ROWS",
+        "default": "500",
+        "description": ""
+      },
+      {
+        "field": "statement_timeout_seconds",
+        "var": "DATABASE_STATEMENT_TIMEOUT_SECONDS",
+        "default": "30",
+        "description": ""
+      }
+    ]
+  },
+  "mcp-design-patterns": {
+    "tools": [
+      {
+        "name": "dp_analyze_code_patterns",
+        "description": "Analiza un archivo Python (.py) para detectar posibles antipatrones como God Objects o Long Methods."
+      },
+      {
+        "name": "dp_suggest_pattern",
+        "description": "Sugiere un patrón de diseño (GoF) basado en la descripción del problema de software a resolver."
+      }
+    ],
+    "env_prefix": "DP_",
+    "env_vars": [
+      {
+        "field": "project_path",
+        "var": "DP_PROJECT_PATH",
+        "default": "",
+        "description": "Ruta base del proyecto."
+      }
+    ]
+  },
+  "mcp-docker": {
+    "tools": [
+      {
+        "name": "containers_list",
+        "description": "Lista contenedores Docker. Parámetros: all_containers (bool, default false = solo running), filters (dict opcional, ej: {\"name\": \"web\", \"status\": \"running\"}). Retorna: containers[], count, showing."
+      },
+      {
+        "name": "containers_stats",
+        "description": "Estadísticas de recursos de un contenedor: CPU %, memoria MB, red, disco. Parámetros: container_id (ID o nombre, requerido). Retorna: cpu_percent, memory_mb, memory_limit_mb, memory_percent, net_rx_mb, net_tx_mb, block_read_mb, block_write_mb."
+      },
+      {
+        "name": "container_logs",
+        "description": "Obtiene los logs de un contenedor. Parámetros: container_id (requerido), lines (int, default 100), since (str opcional, ej: '1h', '30m', '2024-01-01T10:00:00'), timestamps (bool, default false). Retorna: logs (texto), container_id, container_name, lines_requested, status."
+      },
+      {
+        "name": "container_exec",
+        "description": "Ejecuta un comando dentro de un contenedor en ejecución (debe estar running). Parámetros: container_id (requerido), command (string, requerido), workdir (string opcional), user (string opcional, ej: 'root'), environment (dict opcional). Retorna: exit_code, output, success, container_id, command."
+      },
+      {
+        "name": "run_container",
+        "description": "Crea y arranca un contenedor Docker. Parámetros: image (requerido, ej: 'nginx:latest'), command (string opcional), name (string opcional), detach (bool, default true = background), ports (dict container→host, ej: {'80': '8080'}), environment (dict), volumes (dict host_path→container_path), remove_on_exit (bool, default false). Retorna: id, name, status, image, ports."
+      },
+      {
+        "name": "stop_container",
+        "description": "Detiene un contenedor Docker en ejecución. Parámetros: container_id (ID o nombre, requerido), timeout (int segundos antes de SIGKILL, default 10), remove (bool, si True elimina tras detener, default false). Retorna: container_id, name, action, removed."
+      },
+      {
+        "name": "images_list",
+        "description": "Lista imágenes Docker locales. Parámetros: name (string opcional, filtrar por nombre/tag), dangling (bool, incluir imágenes sin tag, default false). Retorna: images[], count."
+      },
+      {
+        "name": "image_pull",
+        "description": "Descarga una imagen Docker desde un registry (Docker Hub, ECR, GHCR, etc.). Parámetros: image (requerido, ej: 'nginx', 'python', 'my-registry/app'), tag (string, default 'latest'). Retorna: image, tag, id, tags[], size_mb."
+      }
+    ],
+    "env_prefix": "MCP_DOCKER_",
+    "env_vars": [
+      {
+        "field": "docker_host",
+        "var": "MCP_DOCKER_DOCKER_HOST",
+        "default": "",
+        "description": "URL del daemon Docker. None = usa DOCKER_HOST del entorno o socket por defecto. Variable: MCP_DOCKER_DOCKER_HOST. Ej: unix:///var/run/docker.sock o tcp://host:2376"
+      },
+      {
+        "field": "log_lines",
+        "var": "MCP_DOCKER_LOG_LINES",
+        "default": "100",
+        "description": "Número de líneas de logs a retornar por defecto. Variable: MCP_DOCKER_LOG_LINES."
+      },
+      {
+        "field": "exec_timeout",
+        "var": "MCP_DOCKER_EXEC_TIMEOUT",
+        "default": "30",
+        "description": "Timeout en segundos para exec en contenedor. Variable: MCP_DOCKER_EXEC_TIMEOUT."
+      }
+    ]
+  },
+  "mcp-documents": {
+    "tools": [
+      {
+        "name": "documents_extract",
+        "description": ""
+      },
+      {
+        "name": "documents_metadata",
+        "description": ""
+      }
+    ],
+    "env_prefix": "DOCUMENTS_",
+    "env_vars": [
+      {
+        "field": "root",
+        "var": "DOCUMENTS_ROOT",
+        "default": ".",
+        "description": ""
+      },
+      {
+        "field": "max_file_size_mb",
+        "var": "DOCUMENTS_MAX_FILE_SIZE_MB",
+        "default": "50",
+        "description": ""
+      },
+      {
+        "field": "max_pages",
+        "var": "DOCUMENTS_MAX_PAGES",
+        "default": "200",
+        "description": ""
+      }
+    ]
+  },
+  "mcp-event-driven": {
+    "tools": [
+      {
+        "name": "event_parse_schema",
+        "description": "Parsea un esquema de evento (JSON Schema o AsyncAPI) para extraer metadata y propiedades."
+      },
+      {
+        "name": "event_analyze_choreography",
+        "description": "Escanea el directorio de esquemas configurado para encontrar todos los eventos registrados."
+      },
+      {
+        "name": "event_generate_mock_payload",
+        "description": "Genera un payload JSON simulado para un evento, dado un arreglo de sus propiedades."
+      }
+    ],
+    "env_prefix": "EVENT_",
+    "env_vars": [
+      {
+        "field": "schemas_path",
+        "var": "EVENT_SCHEMAS_PATH",
+        "default": "./schemas",
+        "description": "Ruta donde se almacenan los esquemas de eventos."
+      }
+    ]
+  },
+  "mcp-fetch": {
+    "tools": [
+      {
+        "name": "fetch_url",
+        "description": "Realiza un GET HTTP y devuelve el contenido crudo + metadatos. Parámetros: url (requerido), headers (dict opcional), timeout (segundos, default 30), max_bytes (default 5MB). Retorna: url, status_code, content_type, content, truncated, headers, elapsed_ms."
+      },
+      {
+        "name": "fetch_post",
+        "description": "Realiza un POST HTTP con cuerpo JSON o form-data. Parámetros: url (requerido), json_body (dict para application/json), form_data (dict para form-urlencoded), headers, timeout, max_bytes. Solo uno de json_body o form_data puede estar presente. Retorna: url, status_code, content_type, content, truncated, headers, elapsed_ms."
+      },
+      {
+        "name": "extract_text",
+        "description": "Descarga una página HTML y extrae el texto limpio (sin tags HTML, scripts ni estilos). Ideal para leer documentación: Spring Boot docs, Kafka docs, Kubernetes docs, Terraform registry, Javadoc, Stack Overflow, artículos, etc. Parámetros: url (requerido), headers, timeout, include_links (bool, default false), include_title (bool, default true). Retorna: url, title, text, word_count, links (si include_links=true), status_code."
+      },
+      {
+        "name": "fetch_json",
+        "description": "Descarga una URL y parsea la respuesta como JSON. Opcionalmente navega el resultado con un path tipo 'data.items[0].name'. Ideal para consultar APIs REST: GitHub API, Docker Hub API, Kubernetes API, Terraform Cloud API, Kafka REST Proxy, Spring Boot Actuator, etc. Parámetros: url (requerido), headers, timeout, jq_path (string opcional, notación punto+índice). Retorna: url, data (JSON completo o sub-valor), status_code, path_used."
+      }
+    ],
+    "env_prefix": "MCP_FETCH_",
+    "env_vars": [
+      {
+        "field": "default_timeout",
+        "var": "MCP_FETCH_DEFAULT_TIMEOUT",
+        "default": "30.0",
+        "description": "Timeout en segundos para peticiones HTTP. Variable: MCP_FETCH_DEFAULT_TIMEOUT."
+      },
+      {
+        "field": "max_content_length",
+        "var": "MCP_FETCH_MAX_CONTENT_LENGTH",
+        "default": "5242880",
+        "description": "Tamaño máximo de respuesta en bytes (default 5 MB). Variable: MCP_FETCH_MAX_CONTENT_LENGTH."
+      },
+      {
+        "field": "user_agent",
+        "var": "MCP_FETCH_USER_AGENT",
+        "default": "mcp-fetch/1.0 (MCP HTTP client)",
+        "description": "User-Agent enviado en peticiones. Variable: MCP_FETCH_USER_AGENT."
+      },
+      {
+        "field": "follow_redirects",
+        "var": "MCP_FETCH_FOLLOW_REDIRECTS",
+        "default": "false",
+        "description": "Seguir redirecciones HTTP. Desactivado por defecto para reducir riesgo SSRF. Variable: MCP_FETCH_FOLLOW_REDIRECTS."
+      },
+      {
+        "field": "allow_private_networks",
+        "var": "MCP_FETCH_ALLOW_PRIVATE_NETWORKS",
+        "default": "false",
+        "description": "Permitir destinos loopback, privados, link-local o reservados. Variable: MCP_FETCH_ALLOW_PRIVATE_NETWORKS."
+      },
+      {
+        "field": "verify_ssl",
+        "var": "MCP_FETCH_VERIFY_SSL",
+        "default": "true",
+        "description": "Verificar certificados SSL. Variable: MCP_FETCH_VERIFY_SSL."
+      }
+    ]
+  },
+  "mcp-filesystem": {
+    "tools": [
+      {
+        "name": "filesystem_list",
+        "description": ""
+      },
+      {
+        "name": "filesystem_read_text",
+        "description": ""
+      },
+      {
+        "name": "filesystem_search",
+        "description": ""
+      },
+      {
+        "name": "filesystem_write_text",
+        "description": ""
+      }
+    ],
+    "env_prefix": "FILESYSTEM_",
+    "env_vars": [
+      {
+        "field": "root",
+        "var": "FILESYSTEM_ROOT",
+        "default": ".",
+        "description": ""
+      },
+      {
+        "field": "allow_write",
+        "var": "FILESYSTEM_ALLOW_WRITE",
+        "default": "false",
+        "description": ""
+      },
+      {
+        "field": "max_read_bytes",
+        "var": "FILESYSTEM_MAX_READ_BYTES",
+        "default": "2097152",
+        "description": ""
+      },
+      {
+        "field": "max_results",
+        "var": "FILESYSTEM_MAX_RESULTS",
+        "default": "500",
+        "description": ""
+      }
+    ]
+  },
+  "mcp-git": {
+    "tools": [
+      {
+        "name": "get_git_status",
+        "description": "Retorna el estado de git: branch actual, cambios sin trackear y en stage."
+      },
+      {
+        "name": "get_git_diff",
+        "description": "Retorna el diff de cambios. Parámetros: staged (bool), file_path (str opcional)."
+      },
+      {
+        "name": "get_git_log",
+        "description": "Retorna el historial reciente. Parámetro: max_count (int, default 10)."
+      },
+      {
+        "name": "git_add",
+        "description": "Agrega archivos al stage. Parámetro: files (lista de strings, o ['.'] para todos)."
+      },
+      {
+        "name": "git_reset",
+        "description": "Quita archivos del stage (unstage). Si no se proveen files, quita todos."
+      },
+      {
+        "name": "git_branch",
+        "description": "Cambia de rama (checkout). Usa create=True para crearla (-b)."
+      },
+      {
+        "name": "prepare_commit",
+        "description": "PASO 1 de commit: Prepara el commit con el mensaje dado, revisa qué hay en el stage y genera un TOKEN. DEBES pedir autorización al usuario mostrando el diff antes de usar confirm_commit."
+      },
+      {
+        "name": "confirm_commit",
+        "description": "PASO 2 de commit: Aplica el commit previamente preparado usando el TOKEN devuelto por prepare_commit. SOLO USAR si el usuario aprobó el diff."
+      },
+      {
+        "name": "git_pull",
+        "description": "Descarga e integra cambios remotos en la rama actual (git pull)."
+      },
+      {
+        "name": "git_push",
+        "description": "Sube los commits locales al repositorio remoto. Para --force usa force=True."
+      }
+    ],
+    "env_prefix": "GIT_",
+    "env_vars": [
+      {
+        "field": "repo_path",
+        "var": "GIT_REPO_PATH",
+        "default": "",
+        "description": "Ruta al repositorio Git sobre el que operará el servidor. Variable de entorno: GIT_REPO_PATH."
+      },
+      {
+        "field": "default_branch",
+        "var": "GIT_DEFAULT_BRANCH",
+        "default": "main",
+        "description": "Nombre de la rama principal por defecto. Variable de entorno: GIT_DEFAULT_BRANCH."
+      },
+      {
+        "field": "allow_force_push",
+        "var": "GIT_ALLOW_FORCE_PUSH",
+        "default": "false",
+        "description": "Si es true, permite al agente usar push --force (peligroso). Variable de entorno: GIT_ALLOW_FORCE_PUSH."
+      }
+    ]
+  },
+  "mcp-github": {
+    "tools": [
+      {
+        "name": "github_create_issue",
+        "description": "Crea un issue en GitHub. Parámetros owner y repo son obligatorios si no están en .env."
+      },
+      {
+        "name": "github_get_issue",
+        "description": "Obtiene información detallada de un issue por su número."
+      },
+      {
+        "name": "github_create_pull_request",
+        "description": "Crea un Pull Request de la rama 'head' a 'base'."
+      },
+      {
+        "name": "github_get_pull_request_diff",
+        "description": "Obtiene el diff completo de un Pull Request."
+      },
+      {
+        "name": "github_add_issue_comment",
+        "description": "Agrega un comentario a un issue o Pull Request."
+      }
+    ],
+    "env_prefix": "GITHUB_",
+    "env_vars": [
+      {
+        "field": "token",
+        "var": "GITHUB_TOKEN",
+        "default": "",
+        "description": "Personal Access Token (PAT) de GitHub para autenticación. Requerido para la mayoría de operaciones. Variable de entorno: GITHUB_TOKEN."
+      },
+      {
+        "field": "owner",
+        "var": "GITHUB_OWNER",
+        "default": "",
+        "description": "Usuario u organización propietaria del repositorio. Variable de entorno: GITHUB_OWNER."
+      },
+      {
+        "field": "repo",
+        "var": "GITHUB_REPO",
+        "default": "",
+        "description": "Nombre del repositorio objetivo principal. Variable de entorno: GITHUB_REPO."
+      },
+      {
+        "field": "api_url",
+        "var": "GITHUB_API_URL",
+        "default": "https://api.github.com",
+        "description": "URL base de la API de GitHub. Útil para GitHub Enterprise Server. Variable de entorno: GITHUB_API_URL."
+      },
+      {
+        "field": "timeout_seconds",
+        "var": "GITHUB_TIMEOUT_SECONDS",
+        "default": "30",
+        "description": "Timeout para peticiones a la API en segundos."
+      }
+    ]
+  },
+  "mcp-java-build": {
+    "tools": [
+      {
+        "name": "java_mvn",
+        "description": "Ejecuta un comando Maven en el proyecto. Provee los argumentos (ej. 'clean install')."
+      },
+      {
+        "name": "java_gradle",
+        "description": "Ejecuta un comando Gradle en el proyecto. Provee los argumentos (ej. 'build')."
+      }
+    ],
+    "env_prefix": "JAVA_",
+    "env_vars": [
+      {
+        "field": "project_path",
+        "var": "JAVA_PROJECT_PATH",
+        "default": "",
+        "description": "Ruta base del proyecto Java."
+      }
+    ]
+  },
+  "mcp-kafka": {
+    "tools": [
+      {
+        "name": "topics_list",
+        "description": "Lista todos los topics del cluster Kafka. Parámetros: prefix (string opcional, filtrar por prefijo), exclude_internal (bool, default true, excluye topics __). Retorna: topics[], count, cluster_id, broker_count."
+      },
+      {
+        "name": "topic_describe",
+        "description": "Describe un topic Kafka: particiones, líder, réplicas e ISR. Parámetros: topic (requerido). Retorna: topic, partition_count, replication_factor, partitions[]."
+      },
+      {
+        "name": "consumer_groups_list",
+        "description": "Lista todos los consumer groups del cluster Kafka. Parámetros: prefix (string opcional, filtrar por prefijo). Retorna: groups[], count, errors[]."
+      },
+      {
+        "name": "consumer_group_offsets",
+        "description": "Obtiene los offsets actuales de un consumer group. Parámetros: group_id (requerido), topics (list de strings opcional). Retorna: group_id, offsets[] (topic, partition, offset), partition_count."
+      },
+      {
+        "name": "produce_message",
+        "description": "Produce un mensaje en un topic Kafka. Parámetros: topic (requerido), value (string o dict → se serializa como JSON), key (string opcional), partition (int opcional), headers (dict opcional). Retorna: topic, partition, offset, timestamp_ms, key, value_size_bytes."
+      },
+      {
+        "name": "consume_messages",
+        "description": "Consume mensajes de un topic Kafka. Parámetros: topic (requerido), group_id (default 'mcp-kafka-consumer'), max_messages (int, default 50), from_beginning (bool, default false), timeout (float segundos, default 5), parse_json (bool, default true). Retorna: topic, group_id, messages[] (partition, offset, key, value, timestamp_ms, headers), count."
+      }
+    ],
+    "env_prefix": "MCP_KAFKA_",
+    "env_vars": [
+      {
+        "field": "bootstrap_servers",
+        "var": "MCP_KAFKA_BOOTSTRAP_SERVERS",
+        "default": "localhost:9092",
+        "description": "Brokers Kafka (comma-separated). Variable: MCP_KAFKA_BOOTSTRAP_SERVERS. Ej: localhost:9092 o broker1:9092,broker2:9092"
+      },
+      {
+        "field": "security_protocol",
+        "var": "MCP_KAFKA_SECURITY_PROTOCOL",
+        "default": "PLAINTEXT",
+        "description": "Protocolo de seguridad: PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL. Variable: MCP_KAFKA_SECURITY_PROTOCOL."
+      },
+      {
+        "field": "sasl_mechanism",
+        "var": "MCP_KAFKA_SASL_MECHANISM",
+        "default": "",
+        "description": "Mecanismo SASL: PLAIN, SCRAM-SHA-256, SCRAM-SHA-512. Variable: MCP_KAFKA_SASL_MECHANISM."
+      },
+      {
+        "field": "sasl_username",
+        "var": "MCP_KAFKA_SASL_USERNAME",
+        "default": "",
+        "description": "Usuario SASL. Variable: MCP_KAFKA_SASL_USERNAME."
+      },
+      {
+        "field": "sasl_password",
+        "var": "MCP_KAFKA_SASL_PASSWORD",
+        "default": "",
+        "description": "Contraseña SASL. Variable: MCP_KAFKA_SASL_PASSWORD."
+      },
+      {
+        "field": "ssl_ca_location",
+        "var": "MCP_KAFKA_SSL_CA_LOCATION",
+        "default": "",
+        "description": "Ruta al CA certificate para SSL. Variable: MCP_KAFKA_SSL_CA_LOCATION."
+      },
+      {
+        "field": "consume_timeout",
+        "var": "MCP_KAFKA_CONSUME_TIMEOUT",
+        "default": "5.0",
+        "description": "Timeout en segundos para consumir mensajes. Variable: MCP_KAFKA_CONSUME_TIMEOUT."
+      },
+      {
+        "field": "max_consume_messages",
+        "var": "MCP_KAFKA_MAX_CONSUME_MESSAGES",
+        "default": "50",
+        "description": "Número máximo de mensajes a consumir por llamada. Variable: MCP_KAFKA_MAX_CONSUME_MESSAGES."
+      },
+      {
+        "field": "admin_timeout",
+        "var": "MCP_KAFKA_ADMIN_TIMEOUT",
+        "default": "10.0",
+        "description": "Timeout en segundos para operaciones admin (list topics, etc.). Variable: MCP_KAFKA_ADMIN_TIMEOUT."
+      }
+    ]
+  },
+  "mcp-kubernetes": {
+    "tools": [
+      {
+        "name": "kubernetes_list_namespaces",
+        "description": ""
+      },
+      {
+        "name": "kubernetes_list_pods",
+        "description": ""
+      },
+      {
+        "name": "kubernetes_list_deployments",
+        "description": ""
+      },
+      {
+        "name": "kubernetes_pod_logs",
+        "description": ""
+      },
+      {
+        "name": "kubernetes_scale_deployment",
+        "description": ""
+      }
+    ],
+    "env_prefix": "KUBERNETES_",
+    "env_vars": [
+      {
+        "field": "context",
+        "var": "KUBERNETES_CONTEXT",
+        "default": "",
+        "description": ""
+      },
+      {
+        "field": "namespace",
+        "var": "KUBERNETES_NAMESPACE",
+        "default": "default",
+        "description": ""
+      },
+      {
+        "field": "in_cluster",
+        "var": "KUBERNETES_IN_CLUSTER",
+        "default": "false",
+        "description": ""
+      },
+      {
+        "field": "allow_write",
+        "var": "KUBERNETES_ALLOW_WRITE",
+        "default": "false",
+        "description": ""
+      },
+      {
+        "field": "log_tail_lines",
+        "var": "KUBERNETES_LOG_TAIL_LINES",
+        "default": "200",
+        "description": ""
+      }
+    ]
+  },
+  "mcp-llm-router": {
+    "tools": [
+      {
+        "name": "route_task",
+        "description": "Analiza un prompt y decide qué modelo usar: local (LM Studio) o nube. Retorna destination, model recomendado, task_type, complexity_score (1-10), estimated_tokens y razonamiento de la decisión. Parámetros: prompt (obligatorio), context (contexto adicional), force_local (bool), force_cloud (bool)."
+      },
+      {
+        "name": "estimate_task_complexity",
+        "description": "Evalúa la complejidad de un prompt (score 1-10) sin tomar decisión de ruteo. Retorna complexity_score, task_type, estimated_tokens, complexity_label y factores. Parámetros: prompt, context (opcional)."
+      },
+      {
+        "name": "get_routing_config",
+        "description": "Retorna la configuración actual del router: modelos locales asignados por rol, modelo de nube, umbrales de complejidad y tokens, modo privacidad."
+      },
+      {
+        "name": "get_routing_history",
+        "description": "Retorna el historial de decisiones de ruteo tomadas por el servidor. Muestra destination, model, task_type y complexity_score por decisión. Parámetro limit: máximo de entradas (default 50)."
+      },
+      {
+        "name": "check_lmstudio_health",
+        "description": "Verifica si LM Studio está corriendo y lista los modelos disponibles. Retorna status, available_models y model_count. Parámetro timeout: segundos de espera (default 5)."
+      },
+      {
+        "name": "list_local_models",
+        "description": "Lista todos los modelos disponibles en LM Studio con sus metadatos completos (id, object, etc.). Útil para verificar qué modelos están cargados."
+      },
+      {
+        "name": "call_local_model",
+        "description": "Ejecuta un prompt directamente en un modelo local de LM Studio. Retorna response_text, tokens_used y elapsed_seconds. Parámetros: prompt, model (nombre en LM Studio), system (prompt de sistema), temperature (0-2, default 0.7), max_tokens (default 2048)."
+      },
+      {
+        "name": "call_cloud_model",
+        "description": "Ejecuta un prompt en el modelo de nube configurado (Anthropic o OpenAI). Requiere ROUTER_CLOUD_API_KEY configurado en el .env. Retorna response_text, tokens_used y elapsed_seconds. Parámetros: prompt, system (prompt de sistema), temperature (default 0.7), max_tokens (default 4096)."
+      }
+    ],
+    "env_prefix": "ROUTER_",
+    "env_vars": [
+      {
+        "field": "lmstudio_base_url",
+        "var": "ROUTER_LMSTUDIO_BASE_URL",
+        "default": "http://localhost:1234/v1",
+        "description": "URL base de la API de LM Studio (compatible con OpenAI). Variable de entorno: ROUTER_LMSTUDIO_BASE_URL."
+      },
+      {
+        "field": "complexity_threshold",
+        "var": "ROUTER_COMPLEXITY_THRESHOLD",
+        "default": "6",
+        "description": "Umbral de complejidad (1-10) por encima del cual se usa la nube. Tareas con score >= threshold van a la nube. Variable de entorno: ROUTER_COMPLEXITY_THRESHOLD."
+      },
+      {
+        "field": "max_local_tokens",
+        "var": "ROUTER_MAX_LOCAL_TOKENS",
+        "default": "6000",
+        "description": "Número máximo de tokens estimados para usar modelo local. Si la tarea requiere más tokens, se ruta a la nube. Variable de entorno: ROUTER_MAX_LOCAL_TOKENS."
+      },
+      {
+        "field": "privacy_mode",
+        "var": "ROUTER_PRIVACY_MODE",
+        "default": "false",
+        "description": "Si es true, fuerza el uso de modelos locales siempre. Nunca envía datos a la nube, independientemente de la complejidad. Variable de entorno: ROUTER_PRIVACY_MODE."
+      },
+      {
+        "field": "history_max",
+        "var": "ROUTER_HISTORY_MAX",
+        "default": "500",
+        "description": "Número máximo de entradas a conservar en el historial de ruteo. Variable de entorno: ROUTER_HISTORY_MAX."
+      },
+      {
+        "field": "model_fast",
+        "var": "ROUTER_MODEL_FAST",
+        "default": "qwen3-8b",
+        "description": "Modelo local rápido para tareas simples (< complexity 3, < 2K tokens). Ejemplo: qwen3-8b. Variable de entorno: ROUTER_MODEL_FAST."
+      },
+      {
+        "field": "model_code",
+        "var": "ROUTER_MODEL_CODE",
+        "default": "devstral-small-2507",
+        "description": "Modelo local especializado en código. Usado para generación, review y refactoring de código. Variable de entorno: ROUTER_MODEL_CODE."
+      },
+      {
+        "field": "model_reason",
+        "var": "ROUTER_MODEL_REASON",
+        "default": "deepseek-r1-0528-qwen3-8b",
+        "description": "Modelo local con capacidades de razonamiento (chain-of-thought). Usado para análisis complejos que no requieren la nube. Variable de entorno: ROUTER_MODEL_REASON."
+      },
+      {
+        "field": "model_large_context",
+        "var": "ROUTER_MODEL_LARGE_CONTEXT",
+        "default": "qwen2.5-14b-instruct-1m",
+        "description": "Modelo local con ventana de contexto grande (1M tokens). Usado para tareas con mucho contexto que pueden hacerse localmente. Variable de entorno: ROUTER_MODEL_LARGE."
+      },
+      {
+        "field": "cloud_provider",
+        "var": "ROUTER_CLOUD_PROVIDER",
+        "default": "anthropic",
+        "description": "Proveedor de modelos en la nube: 'anthropic' o 'openai'. Variable de entorno: ROUTER_CLOUD_PROVIDER."
+      },
+      {
+        "field": "cloud_model",
+        "var": "ROUTER_CLOUD_MODEL",
+        "default": "claude-sonnet-4-5",
+        "description": "Nombre del modelo de nube a usar para tareas complejas. Variable de entorno: ROUTER_CLOUD_MODEL."
+      },
+      {
+        "field": "cloud_api_key",
+        "var": "ROUTER_CLOUD_API_KEY",
+        "default": "",
+        "description": "API key del proveedor de nube. Dejar vacío si solo se usa local. Variable de entorno: ROUTER_CLOUD_API_KEY."
+      },
+      {
+        "field": "lmstudio_timeout_seconds",
+        "var": "ROUTER_LMSTUDIO_TIMEOUT_SECONDS",
+        "default": "120",
+        "description": "Timeout en segundos para llamadas a LM Studio. Variable: ROUTER_LMSTUDIO_TIMEOUT_SECONDS."
+      },
+      {
+        "field": "cloud_timeout_seconds",
+        "var": "ROUTER_CLOUD_TIMEOUT_SECONDS",
+        "default": "60",
+        "description": "Timeout en segundos para llamadas a la nube. Variable: ROUTER_CLOUD_TIMEOUT_SECONDS."
+      }
+    ]
+  },
+  "mcp-markdown": {
+    "tools": [
+      {
+        "name": "read_markdown",
+        "description": "Lee y analiza un archivo Markdown de forma completa. Retorna el contenido crudo, frontmatter YAML, título (primer H1), recuento de palabras, headings, links, bloques de código e imágenes."
+      },
+      {
+        "name": "extract_headings",
+        "description": "Extrae todos los encabezados (H1-H6) de un archivo Markdown. Cada encabezado incluye su nivel (1-6), texto y anchor HTML."
+      },
+      {
+        "name": "extract_links",
+        "description": "Extrae todos los enlaces de un archivo Markdown, incluyendo imágenes. Cada enlace indica texto, URL, si es externo y si es imagen."
+      },
+      {
+        "name": "extract_code_blocks",
+        "description": "Extrae todos los bloques de código (fenced code blocks) de un archivo Markdown. Incluye el lenguaje declarado, el contenido y la línea de inicio."
+      },
+      {
+        "name": "get_toc",
+        "description": "Genera una tabla de contenidos Markdown para el archivo, con enlaces de anclaje a cada encabezado. Se puede limitar la profundidad (1-6)."
+      },
+      {
+        "name": "markdown_to_html",
+        "description": "Convierte un archivo Markdown (o texto Markdown directo) a HTML5 completo con estilos básicos embebidos. Soporta tablas, strikethrough y autolinks."
+      },
+      {
+        "name": "markdown_to_plain_text",
+        "description": "Convierte Markdown a texto plano eliminando todo el markup (encabezados, énfasis, links, bloques de código, tablas, etc.)."
+      },
+      {
+        "name": "validate_markdown",
+        "description": "Valida un archivo Markdown y reporta problemas: H1 faltante o múltiple, encabezados duplicados, enlaces locales rotos, y ausencia de título. Retorna valid=True solo si no hay warnings."
+      },
+      {
+        "name": "search_in_markdown",
+        "description": "Busca un texto en un archivo Markdown línea por línea. Retorna cada coincidencia con número de línea, contexto completo y el encabezado bajo el cual aparece."
+      },
+      {
+        "name": "format_markdown",
+        "description": "Formatea y normaliza un archivo Markdown (o texto directo) usando mdformat. Estandariza encabezados, listas, espaciado y bloques de código."
+      },
+      {
+        "name": "get_frontmatter",
+        "description": "Extrae solo el frontmatter YAML de un archivo Markdown. Retorna un dict vacío si el archivo no tiene frontmatter."
+      },
+      {
+        "name": "list_markdown_files",
+        "description": "Lista todos los archivos Markdown en un directorio. Para cada archivo retorna la ruta, título, recuento de palabras, tamaño y frontmatter. Soporta búsqueda recursiva."
+      }
+    ],
+    "env_prefix": "MCP_MARKDOWN_",
+    "env_vars": [
+      {
+        "field": "server_name",
+        "var": "MCP_MARKDOWN_SERVER_NAME",
+        "default": "mcp-markdown",
+        "description": "Nombre del servidor MCP."
+      },
+      {
+        "field": "server_version",
+        "var": "MCP_MARKDOWN_SERVER_VERSION",
+        "default": "1.0.0",
+        "description": "Versión del servidor."
+      },
+      {
+        "field": "log_level",
+        "var": "MCP_MARKDOWN_LOG_LEVEL",
+        "default": "INFO",
+        "description": "Nivel de log: DEBUG | INFO | WARNING | ERROR."
+      },
+      {
+        "field": "log_format",
+        "var": "MCP_MARKDOWN_LOG_FORMAT",
+        "default": "json",
+        "description": "Formato de log: json (producción) | console (desarrollo)."
+      },
+      {
+        "field": "max_file_size_mb",
+        "var": "MCP_MARKDOWN_MAX_FILE_SIZE_MB",
+        "default": "10.0",
+        "description": "Tamaño máximo permitido de archivo Markdown en MB."
+      },
+      {
+        "field": "allowed_extensions",
+        "var": "MCP_MARKDOWN_ALLOWED_EXTENSIONS",
+        "default": "['.md', '.markdown', '.mdx', '.mdown', '.mkd']",
+        "description": "Extensiones de archivo reconocidas como Markdown."
+      },
+      {
+        "field": "default_max_toc_depth",
+        "var": "MCP_MARKDOWN_DEFAULT_MAX_TOC_DEPTH",
+        "default": "3",
+        "description": "Profundidad máxima por defecto para la tabla de contenidos."
+      },
+      {
+        "field": "validate_external_links",
+        "var": "MCP_MARKDOWN_VALIDATE_EXTERNAL_LINKS",
+        "default": "false",
+        "description": "Si True, valida que los enlaces externos respondan (requiere red)."
+      },
+      {
+        "field": "allowed_root",
+        "var": "MCP_MARKDOWN_ALLOWED_ROOT",
+        "default": "",
+        "description": "Directorio raíz opcional al que se restringe el acceso a archivos. Variable: MCP_MARKDOWN_ALLOWED_ROOT."
+      },
+      {
+        "field": "mcp_transport",
+        "var": "MCP_MARKDOWN_MCP_TRANSPORT",
+        "default": "stdio",
+        "description": "Protocolo de transporte: 'stdio' | 'streamable-http'. Variable: MCP_TRANSPORT."
+      },
+      {
+        "field": "mcp_host",
+        "var": "MCP_MARKDOWN_MCP_HOST",
+        "default": "0.0.0.0",
+        "description": "Host del servidor HTTP (solo usado con mcp_transport=streamable-http)."
+      },
+      {
+        "field": "mcp_port",
+        "var": "MCP_MARKDOWN_MCP_PORT",
+        "default": "8000",
+        "description": "Puerto del servidor HTTP (solo usado con mcp_transport=streamable-http)."
+      }
+    ]
+  },
+  "mcp-object-storage": {
+    "tools": [
+      {
+        "name": "storage_list_buckets",
+        "description": ""
+      },
+      {
+        "name": "storage_list_objects",
+        "description": ""
+      },
+      {
+        "name": "storage_object_metadata",
+        "description": ""
+      },
+      {
+        "name": "storage_presign_download",
+        "description": ""
+      },
+      {
+        "name": "storage_upload_text",
+        "description": ""
+      },
+      {
+        "name": "storage_delete_object",
+        "description": ""
+      }
+    ],
+    "env_prefix": "OBJECT_STORAGE_",
+    "env_vars": [
+      {
+        "field": "endpoint_url",
+        "var": "OBJECT_STORAGE_ENDPOINT_URL",
+        "default": "",
+        "description": ""
+      },
+      {
+        "field": "region",
+        "var": "OBJECT_STORAGE_REGION",
+        "default": "us-east-1",
+        "description": ""
+      },
+      {
+        "field": "profile",
+        "var": "OBJECT_STORAGE_PROFILE",
+        "default": "",
+        "description": ""
+      },
+      {
+        "field": "allow_write",
+        "var": "OBJECT_STORAGE_ALLOW_WRITE",
+        "default": "false",
+        "description": ""
+      },
+      {
+        "field": "max_keys",
+        "var": "OBJECT_STORAGE_MAX_KEYS",
+        "default": "500",
+        "description": ""
+      }
+    ]
+  },
+  "mcp-observability": {
+    "tools": [
+      {
+        "name": "observability_prometheus_query",
+        "description": ""
+      },
+      {
+        "name": "observability_loki_query",
+        "description": ""
+      },
+      {
+        "name": "observability_health_check",
+        "description": ""
+      }
+    ],
+    "env_prefix": "OBSERVABILITY_",
+    "env_vars": [
+      {
+        "field": "prometheus_url",
+        "var": "OBSERVABILITY_PROMETHEUS_URL",
+        "default": "",
+        "description": ""
+      },
+      {
+        "field": "loki_url",
+        "var": "OBSERVABILITY_LOKI_URL",
+        "default": "",
+        "description": ""
+      },
+      {
+        "field": "timeout_seconds",
+        "var": "OBSERVABILITY_TIMEOUT_SECONDS",
+        "default": "30.0",
+        "description": ""
+      },
+      {
+        "field": "bearer_token",
+        "var": "OBSERVABILITY_BEARER_TOKEN",
+        "default": "",
+        "description": ""
+      },
+      {
+        "field": "max_entries",
+        "var": "OBSERVABILITY_MAX_ENTRIES",
+        "default": "500",
+        "description": ""
+      }
+    ]
+  },
+  "mcp-openapi": {
+    "tools": [
+      {
+        "name": "openapi_list_operations",
+        "description": ""
+      },
+      {
+        "name": "openapi_describe_operation",
+        "description": ""
+      },
+      {
+        "name": "openapi_invoke",
+        "description": ""
+      }
+    ],
+    "env_prefix": "OPENAPI_",
+    "env_vars": [
+      {
+        "field": "spec",
+        "var": "OPENAPI_SPEC",
+        "default": "./openapi.yaml",
+        "description": ""
+      },
+      {
+        "field": "allowed_root",
+        "var": "OPENAPI_ALLOWED_ROOT",
+        "default": ".",
+        "description": ""
+      },
+      {
+        "field": "timeout_seconds",
+        "var": "OPENAPI_TIMEOUT_SECONDS",
+        "default": "30.0",
+        "description": ""
+      },
+      {
+        "field": "allow_invoke",
+        "var": "OPENAPI_ALLOW_INVOKE",
+        "default": "false",
+        "description": ""
+      },
+      {
+        "field": "allowed_hosts",
+        "var": "OPENAPI_ALLOWED_HOSTS",
+        "default": "",
+        "description": ""
+      }
+    ]
+  },
+  "mcp-orchestrator": {
+    "tools": [
+      {
+        "name": "orch_parse_airflow_dag",
+        "description": "Parsea un archivo de Python que contiene un DAG de Airflow y extrae tareas y sus dependencias (AST)."
+      },
+      {
+        "name": "orch_validate_dag",
+        "description": "Valida que un conjunto de aristas (dependencias) formen un grafo acíclico dirigido (DAG) válido."
+      },
+      {
+        "name": "orch_generate_boilerplate",
+        "description": "Genera código Python (Airflow DAG) a partir de un dag_id y una lista de nombres de tareas."
+      }
+    ],
+    "env_prefix": "ORCH_",
+    "env_vars": [
+      {
+        "field": "dags_path",
+        "var": "ORCH_DAGS_PATH",
+        "default": "./dags",
+        "description": "Ruta donde se almacenan los archivos de DAGs."
+      }
+    ]
+  },
+  "mcp-personal-vault": {
+    "tools": [
+      {
+        "name": "personal_vault_status",
+        "description": ""
+      },
+      {
+        "name": "personal_upsert",
+        "description": ""
+      },
+      {
+        "name": "personal_get",
+        "description": ""
+      },
+      {
+        "name": "personal_list",
+        "description": ""
+      },
+      {
+        "name": "search_personal_context",
+        "description": ""
+      },
+      {
+        "name": "personal_delete",
+        "description": ""
+      }
+    ],
+    "env_prefix": "PERSONAL_VAULT_",
+    "env_vars": [
+      {
+        "field": "database_path",
+        "var": "PERSONAL_VAULT_DATABASE_PATH",
+        "default": "data/personal-vault/personal.db",
+        "description": ""
+      },
+      {
+        "field": "key_file",
+        "var": "PERSONAL_VAULT_KEY_FILE",
+        "default": "data/personal-vault/vault.key",
+        "description": ""
+      },
+      {
+        "field": "encryption_key",
+        "var": "PERSONAL_VAULT_ENCRYPTION_KEY",
+        "default": "",
+        "description": ""
+      },
+      {
+        "field": "allow_write",
+        "var": "PERSONAL_VAULT_ALLOW_WRITE",
+        "default": "false",
+        "description": ""
+      },
+      {
+        "field": "allow_highly_sensitive",
+        "var": "PERSONAL_VAULT_ALLOW_HIGHLY_SENSITIVE",
+        "default": "false",
+        "description": ""
+      },
+      {
+        "field": "allow_secrets",
+        "var": "PERSONAL_VAULT_ALLOW_SECRETS",
+        "default": "false",
+        "description": ""
+      },
+      {
+        "field": "max_results",
+        "var": "PERSONAL_VAULT_MAX_RESULTS",
+        "default": "25",
+        "description": ""
+      }
+    ]
+  },
+  "mcp-project-memory": {
+    "tools": [
+      {
+        "name": "get_project_state",
+        "description": "Retorna el estado completo del proyecto: componentes, decisiones activas, tareas pendientes, invariantes y resumen de la última sesión. LLAMA ESTE TOOL AL INICIO DE CADA SESIÓN para recuperar el contexto completo."
+      },
+      {
+        "name": "generate_project_brief",
+        "description": "Genera un resumen ejecutivo del proyecto en Markdown. Ideal para iniciar una nueva sesión con un agente que no tiene contexto previo."
+      },
+      {
+        "name": "get_component_map",
+        "description": "Retorna el mapa de todos los componentes del proyecto con su estado, versión, número de tools y descripción."
+      },
+      {
+        "name": "get_decisions_history",
+        "description": "Retorna el historial de decisiones de arquitectura y diseño. Parámetro opcional status_filter: 'active', 'superseded' o 'rejected'."
+      },
+      {
+        "name": "get_session_history",
+        "description": "Retorna el historial de sesiones de trabajo registradas, ordenadas de más reciente a más antigua. Parámetro limit: máximo de sesiones a retornar (default 20)."
+      },
+      {
+        "name": "search_memory",
+        "description": "Búsqueda de texto en toda la memoria del proyecto: decisiones, tareas, sesiones e invariantes. Parámetro query: texto a buscar (mínimo 2 caracteres)."
+      },
+      {
+        "name": "diff_state",
+        "description": "Compara el estado actual del proyecto con el estado al finalizar una sesión anterior. Muestra componentes nuevos, decisiones tomadas y tareas completadas desde esa sesión. Parámetro session_id: ID de la sesión a comparar (ej: 'SES-0003')."
+      },
+      {
+        "name": "export_memory_snapshot",
+        "description": "Exporta toda la memoria del proyecto como JSON estructurado. Útil para backup, migración o inspección completa del estado."
+      },
+      {
+        "name": "snapshot_session",
+        "description": "Guarda un snapshot de la sesión de trabajo actual. LLAMA ESTE TOOL AL FINALIZAR CADA SESIÓN para preservar el contexto. Parámetros: summary (resumen de lo hecho), changes_made (lista de archivos/componentes modificados), decisions_taken (int), tasks_completed (int), agent (nombre del agente)."
+      },
+      {
+        "name": "update_component_status",
+        "description": "Actualiza o registra un componente del proyecto. Parámetros: component_name (ej: 'mcp-tabular'), status ('draft'|'ready'|'deprecated'), version (ej: '1.0.0'), description (str), tools (int), port (int)."
+      },
+      {
+        "name": "record_decision",
+        "description": "Registra una decisión de arquitectura o diseño con su justificación. Parámetros: title (título conciso), rationale (justificación), alternatives_rejected (lista de alternativas descartadas), tags (lista de etiquetas)."
+      },
+      {
+        "name": "add_pending_task",
+        "description": "Agrega una tarea pendiente al backlog del proyecto. Parámetros: title (descripción corta), context (detalles), priority ('high'|'medium'|'low')."
+      },
+      {
+        "name": "complete_pending_task",
+        "description": "Marca una tarea pendiente como completada. Parámetros: task_id (ej: 'TASK-0001'), resolution (cómo se resolvió)."
+      },
+      {
+        "name": "initialize_project",
+        "description": "Inicializa o actualiza los datos base del proyecto en la memoria. Idempotente: no borra sesiones ni decisiones existentes. Parámetros: project_name, description, tech_stack (lista), invariants (reglas que nunca deben violarse)."
+      },
+      {
+        "name": "sync_from_filesystem",
+        "description": "Escanea el filesystem del proyecto y registra automáticamente los directorios 'mcp-*' detectados como componentes en la memoria. No elimina componentes existentes. Parámetro project_root: ruta raíz del proyecto (default: directorio actual)."
+      }
+    ],
+    "env_prefix": "MEMORY_",
+    "env_vars": [
+      {
+        "field": "memory_dir",
+        "var": "MEMORY_MEMORY_DIR",
+        "default": ".ai-memory",
+        "description": "Directorio donde se almacena el archivo JSON de memoria del proyecto. Puede ser relativo al directorio de trabajo o absoluto. Variable de entorno: MEMORY_DIR."
+      },
+      {
+        "field": "memory_file",
+        "var": "MEMORY_MEMORY_FILE",
+        "default": "project_memory.json",
+        "description": "Nombre del archivo JSON que almacena la memoria del proyecto. Variable de entorno: MEMORY_FILE."
+      },
+      {
+        "field": "project_name",
+        "var": "MEMORY_PROJECT_NAME",
+        "default": "mcps",
+        "description": "Nombre del proyecto para identificación en los metadatos. Variable de entorno: MEMORY_PROJECT_NAME."
+      },
+      {
+        "field": "auto_sync",
+        "var": "MEMORY_AUTO_SYNC",
+        "default": "false",
+        "description": "Si es true, sincroniza automáticamente el estado de componentes con el filesystem al leer el estado del proyecto. Variable de entorno: MEMORY_AUTO_SYNC."
+      },
+      {
+        "field": "project_root",
+        "var": "MEMORY_PROJECT_ROOT",
+        "default": "",
+        "description": "Ruta raíz del proyecto para sincronización con el filesystem. Variable de entorno: MEMORY_PROJECT_ROOT."
+      },
+      {
+        "field": "max_sessions",
+        "var": "MEMORY_MAX_SESSIONS",
+        "default": "100",
+        "description": "Número máximo de sesiones a conservar en el historial. Las más antiguas se eliminan al superar el límite. Variable de entorno: MEMORY_MAX_SESSIONS."
+      }
+    ]
+  },
+  "mcp-prompt-engineer": {
+    "tools": [
+      {
+        "name": "analyze_prompt",
+        "description": "Analiza un prompt de LLM de forma exhaustiva usando heurísticas reales. Detecta: tokens estimados, conteo de palabras, idioma, tipo de prompt, puntuación de claridad (0–10), problemas (críticos/warnings/info) y fortalezas. Parámetros: prompt (texto a analizar), target_model (modelo objetivo opcional: 'gpt-4', 'claude-3-5', etc.). Retorna: token_count, word_count, language, prompt_type, clarity_score, issues, strengths, suggestions, has_role, has_examples, has_format_spec."
+      },
+      {
+        "name": "classify_prompt",
+        "description": "Clasifica el tipo de un prompt con una puntuación de confianza. Tipos posibles: instruction (tarea directa), question (pregunta abierta), closed_question (sí/no), few_shot (con ejemplos), system (system prompt), conversation (conversacional), creative (creativo), code (código). Parámetro: prompt (texto a clasificar). Retorna: type, confidence, indicators_found."
+      },
+      {
+        "name": "estimate_tokens",
+        "description": "Estima el número de tokens para un texto en múltiples modelos de lenguaje. Usa tiktoken para modelos OpenAI y heurísticas para Claude. También indica si el texto cabe en el contexto de cada modelo. Parámetros: text (texto a analizar), model (modelo de referencia, por defecto 'gpt-4o'). Retorna: text_length, word_count, method, tokens (por modelo), context_fit."
+      },
+      {
+        "name": "improve_prompt",
+        "description": "Mejora automáticamente un prompt aplicando buenas prácticas de prompt engineering. Las mejoras son heurísticas: agrega contexto, clarifica instrucciones, añade formato si falta, elimina ambigüedades. Parámetros: prompt (prompt original), goal (objetivo del prompt, opcional), target_model (modelo objetivo, opcional), style (estilo deseado: formal | casual | technical | simple | concise, opcional). Retorna: original, improved, changes (lista de cambios aplicados), score_before, score_after, improvement_delta."
+      },
+      {
+        "name": "generate_variations",
+        "description": "Genera N variaciones del prompt con diferentes enfoques de prompt engineering: role_injection (añade rol experto), chain_of_thought (razonamiento paso a paso), structured_output (plantilla de salida), concise (versión condensada), audience_context (adapta para audiencia específica). Parámetros: prompt (prompt base), n (número de variaciones, 1–10, por defecto 3). Retorna: lista de variaciones con variation, approach, description, clarity_score."
+      },
+      {
+        "name": "create_system_prompt",
+        "description": "Crea un system prompt estructurado y completo a partir de componentes. Parámetros: role (rol o persona del asistente, ej: 'experto en finanzas'), context (contexto de uso o empresa), constraints (restricciones o reglas a seguir, opcional). Retorna: system_prompt (texto listo para usar como system message)."
+      },
+      {
+        "name": "decompose_task",
+        "description": "Descompone una tarea compleja en subtareas numeradas y manejables. Útil para tareas de múltiples pasos que abruman al modelo en un solo prompt. Parámetro: task (descripción de la tarea compleja). Retorna: lista de subtareas con step, title, description, prompt_suggestion."
+      },
+      {
+        "name": "get_prompt_template",
+        "description": "Retorna un template de prompt optimizado para un caso de uso específico. Casos de uso disponibles: analysis, code_review, code_generation, writing, translation, summarization, classification, extraction, qa, brainstorming, debugging, documentation, refactoring, testing, explanation. Parámetro: use_case (nombre del caso de uso). Retorna: use_case, template, placeholders (variables a reemplazar), description, tips."
+      }
+    ],
+    "env_prefix": "MCP_PE_",
+    "env_vars": [
+      {
+        "field": "log_level",
+        "var": "MCP_PE_LOG_LEVEL",
+        "default": "INFO",
+        "description": "Nivel de logging: DEBUG | INFO | WARNING | ERROR"
+      },
+      {
+        "field": "log_format",
+        "var": "MCP_PE_LOG_FORMAT",
+        "default": "json",
+        "description": "Formato de logging: json (producción) | console (desarrollo)"
+      },
+      {
+        "field": "max_prompt_length",
+        "var": "MCP_PE_MAX_PROMPT_LENGTH",
+        "default": "100000",
+        "description": "Longitud máxima del prompt en caracteres."
+      },
+      {
+        "field": "max_variations",
+        "var": "MCP_PE_MAX_VARIATIONS",
+        "default": "10",
+        "description": "Número máximo de variaciones a generar."
+      },
+      {
+        "field": "default_variations",
+        "var": "MCP_PE_DEFAULT_VARIATIONS",
+        "default": "3",
+        "description": "Número por defecto de variaciones a generar."
+      },
+      {
+        "field": "default_model",
+        "var": "MCP_PE_DEFAULT_MODEL",
+        "default": "gpt-4o",
+        "description": "Modelo por defecto para estimación de tokens."
+      },
+      {
+        "field": "tiktoken_cache_dir",
+        "var": "MCP_PE_TIKTOKEN_CACHE_DIR",
+        "default": "",
+        "description": "Directorio de caché para modelos tiktoken (opcional)."
+      },
+      {
+        "field": "server_name",
+        "var": "MCP_PE_SERVER_NAME",
+        "default": "mcp-prompt-engineer",
+        "description": "Nombre del servidor MCP."
+      },
+      {
+        "field": "server_version",
+        "var": "MCP_PE_SERVER_VERSION",
+        "default": "1.0.0",
+        "description": "Versión del servidor MCP."
+      },
+      {
+        "field": "mcp_transport",
+        "var": "MCP_PE_MCP_TRANSPORT",
+        "default": "stdio",
+        "description": "Protocolo de transporte: 'stdio' | 'streamable-http'. Variable: MCP_TRANSPORT."
+      },
+      {
+        "field": "mcp_host",
+        "var": "MCP_PE_MCP_HOST",
+        "default": "0.0.0.0",
+        "description": "Host del servidor HTTP (solo usado con mcp_transport=streamable-http)."
+      },
+      {
+        "field": "mcp_port",
+        "var": "MCP_PE_MCP_PORT",
+        "default": "8000",
+        "description": "Puerto del servidor HTTP (solo usado con mcp_transport=streamable-http)."
+      }
+    ]
+  },
+  "mcp-security-champion": {
+    "tools": [
+      {
+        "name": "sec_audit_code",
+        "description": "Audita código fuente buscando hardcoded secrets o funciones inseguras (OWASP Top 10)."
+      },
+      {
+        "name": "sec_financial_compliance",
+        "description": "Revisa el cumplimiento de normativas financieras como PCI-DSS (enmascaramiento de datos, uso de HTTPS)."
+      }
+    ],
+    "env_prefix": "SEC_",
+    "env_vars": [
+      {
+        "field": "project_path",
+        "var": "SEC_PROJECT_PATH",
+        "default": "",
+        "description": "Ruta base del proyecto."
+      }
+    ]
+  },
+  "mcp-snyk": {
+    "tools": [
+      {
+        "name": "snyk_run_test",
+        "description": "Ejecuta 'snyk test' en el proyecto actual y devuelve un reporte de vulnerabilidades."
+      }
+    ],
+    "env_prefix": "SNYK_",
+    "env_vars": [
+      {
+        "field": "project_path",
+        "var": "SNYK_PROJECT_PATH",
+        "default": "",
+        "description": "Ruta base del proyecto."
+      },
+      {
+        "field": "api_token",
+        "var": "SNYK_API_TOKEN",
+        "default": "",
+        "description": "Token de API de Snyk (opcional para CLI auth global)."
+      }
+    ]
+  },
+  "mcp-sonar": {
+    "tools": [
+      {
+        "name": "sonar_run_scan",
+        "description": "Ejecuta 'sonar-scanner' en el proyecto actual y devuelve un resumen de calidad."
+      }
+    ],
+    "env_prefix": "SONAR_",
+    "env_vars": [
+      {
+        "field": "project_path",
+        "var": "SONAR_PROJECT_PATH",
+        "default": "",
+        "description": "Ruta base del proyecto."
+      },
+      {
+        "field": "host_url",
+        "var": "SONAR_HOST_URL",
+        "default": "http://localhost:9000",
+        "description": "URL del servidor SonarQube."
+      },
+      {
+        "field": "api_token",
+        "var": "SONAR_API_TOKEN",
+        "default": "",
+        "description": "Token de API de SonarQube."
+      }
+    ]
+  },
+  "mcp-structured-output": {
+    "tools": [
+      {
+        "name": "invoke_structured",
+        "description": "Llama a un LLM y garantiza que la respuesta cumpla un JSON Schema. Proveedores: bedrock-converse | bedrock-invoke-claude | bedrock-invoke-openweight | openai-compatible. Credenciales AWS vía entorno/perfil boto3. Parámetros: prompt, schema, schema_name (default 'response'), provider, model_id, system_prompt, max_tokens (default 2048), temperature (default 0.0), region (AWS), base_url (solo openai-compatible)."
+      },
+      {
+        "name": "validate_schema",
+        "description": "Valida localmente que un JSON Schema sea compatible con Bedrock structured output (Draft 2020-12). Detecta: schemas recursivos, $ref externos, additionalProperties != false, constraints numéricas/string no soportadas, minItems fuera de [0,1], enum con tipos complejos. No hace llamadas a AWS. Retorna: valid (bool), issues (lista con path, message, severity)."
+      },
+      {
+        "name": "generate_schema",
+        "description": "Genera un JSON Schema Bedrock-compatible a partir de un objeto JSON de ejemplo. Infiere tipos automáticamente y aplica additionalProperties: false. Parámetros: example (dict JSON), name (nombre del schema, default 'schema'), description (opcional), strict (bool, default true — marca todos los campos como required). Retorna: schema (dict), field_count (int), warnings (list)."
+      },
+      {
+        "name": "sanitize_schema",
+        "description": "Transforma un JSON Schema para que sea compatible con Bedrock structured output. Elimina/transforma automáticamente: constraints numéricas (minimum, maximum, multipleOf), constraints de string (minLength, maxLength), additionalProperties != false, $ref externos, minItems fuera de [0,1], valores complejos en enum. El schema original NO se modifica. Retorna: sanitized (dict), changes (lista con path, action, reason), was_valid (bool)."
+      }
+    ],
+    "env_prefix": "MCP_SO_",
+    "env_vars": [
+      {
+        "field": "aws_region",
+        "var": "MCP_SO_AWS_REGION",
+        "default": "us-east-1",
+        "description": "Región AWS por defecto para Bedrock. Variable: MCP_SO_AWS_REGION."
+      },
+      {
+        "field": "aws_profile",
+        "var": "MCP_SO_AWS_PROFILE",
+        "default": "",
+        "description": "Perfil AWS opcional (boto3 credential chain). Variable: MCP_SO_AWS_PROFILE."
+      },
+      {
+        "field": "default_provider",
+        "var": "MCP_SO_DEFAULT_PROVIDER",
+        "default": "bedrock-converse",
+        "description": "Proveedor por defecto: bedrock-converse | bedrock-invoke-claude | bedrock-invoke-openweight | openai-compatible. Variable: MCP_SO_DEFAULT_PROVIDER."
+      },
+      {
+        "field": "default_model_id",
+        "var": "MCP_SO_DEFAULT_MODEL_ID",
+        "default": "amazon.nova-pro-v1:0",
+        "description": "ID del modelo por defecto. Variable: MCP_SO_DEFAULT_MODEL_ID."
+      },
+      {
+        "field": "default_max_tokens",
+        "var": "MCP_SO_DEFAULT_MAX_TOKENS",
+        "default": "2048",
+        "description": "Max tokens por defecto. Variable: MCP_SO_DEFAULT_MAX_TOKENS."
+      },
+      {
+        "field": "default_temperature",
+        "var": "MCP_SO_DEFAULT_TEMPERATURE",
+        "default": "0.0",
+        "description": "Temperature por defecto (0.0 recomendado para structured output). Variable: MCP_SO_DEFAULT_TEMPERATURE."
+      },
+      {
+        "field": "openai_base_url",
+        "var": "MCP_SO_OPENAI_BASE_URL",
+        "default": "",
+        "description": "URL base para endpoints OpenAI-compatible. Variable: MCP_SO_OPENAI_BASE_URL."
+      },
+      {
+        "field": "openai_api_key",
+        "var": "MCP_SO_OPENAI_API_KEY",
+        "default": "",
+        "description": "API key para endpoints OpenAI-compatible. Variable: MCP_SO_OPENAI_API_KEY."
+      }
+    ]
+  },
+  "mcp-tabular": {
+    "tools": [
+      {
+        "name": "read_tabular_file",
+        "description": "Lee un archivo tabular (Excel, CSV, TSV, ODS, Parquet) y retorna los datos en formato JSON. Detecta automáticamente el encoding para archivos CSV/TSV. Parámetros: path (ruta al archivo), sheet (nombre de hoja para Excel/ODS, opcional), encoding ('auto' o nombre de encoding como 'utf-8', 'latin-1'). Retorna: columns (metadatos de columnas), records (filas como dicts), total_rows, returned_rows, truncated, metadata, warnings."
+      },
+      {
+        "name": "get_sheet_names",
+        "description": "Retorna la lista de nombres de hojas de un archivo Excel (.xlsx, .xls) u ODS. No aplica para CSV, TSV ni Parquet. Parámetro: path (ruta al archivo). Retorna: lista de strings con los nombres de las hojas en orden."
+      },
+      {
+        "name": "get_file_summary",
+        "description": "Retorna estadísticas completas de un archivo tabular: shape (filas × columnas), tipos de datos, conteo de nulos por columna, y estadísticas descriptivas (mean, std, min, max, percentiles) de columnas numéricas. Parámetros: path (ruta al archivo), sheet (hoja para Excel/ODS, opcional). Retorna: dict con shape, columns, dtypes, null_counts, null_percentages, numeric_describe, size_bytes, size_mb."
+      },
+      {
+        "name": "read_specific_sheet",
+        "description": "Lee una hoja específica de un archivo Excel (.xlsx, .xls) u ODS por nombre exacto. Retorna un error descriptivo si la hoja no existe, indicando las hojas disponibles. Parámetros: path (ruta al archivo), sheet_name (nombre exacto de la hoja). Retorna: mismo formato que read_tabular_file."
+      },
+      {
+        "name": "filter_rows",
+        "description": "Filtra filas de un archivo tabular según un criterio en una columna. Operadores soportados: eq (igual), ne (diferente), gt (mayor), lt (menor), gte (mayor o igual), lte (menor o igual), contains (contiene substring, case-insensitive), startswith (empieza con, case-insensitive). Parámetros: path, column (nombre de columna), operator (ver lista), value (valor a comparar como string), sheet (opcional). El valor se convierte automáticamente al tipo de la columna para comparaciones numéricas. Retorna: mismo formato que read_tabular_file pero solo con las filas que cumplen el filtro."
+      },
+      {
+        "name": "search_in_file",
+        "description": "Busca un texto en todas las columnas del archivo tabular (búsqueda case-insensitive). Retorna todas las celdas que contienen el texto buscado, con el contexto completo de la fila. Parámetros: path, query (texto a buscar), sheet (opcional), max_results (máximo de resultados, por defecto 100). Retorna: lista de matches con row_index, column, value y row (fila completa)."
+      },
+      {
+        "name": "convert_to_csv",
+        "description": "Convierte un archivo tabular (Excel, ODS, Parquet) a formato CSV. Retorna el contenido CSV completo como string, incluyendo encabezados. Útil para exportar datos o usar en otros sistemas que solo aceptan CSV. Parámetros: path, sheet (nombre de hoja para Excel/ODS, opcional), output_encoding (encoding del CSV de salida, por defecto 'utf-8'). Retorna: string con el contenido CSV completo."
+      },
+      {
+        "name": "get_column_stats",
+        "description": "Retorna estadísticas detalladas de una columna específica del archivo. Para columnas numéricas: mean, std, min, max, percentiles, skewness, kurtosis. Para columnas de texto: value_counts top-10, most_frequent, avg/min/max length. Para columnas de fecha: min_date, max_date, date_range_days. Para todas: null_count, null_percentage, unique_count, dtype, total_count. Parámetros: path, column (nombre exacto de la columna), sheet (opcional). Retorna: dict con stats adaptadas al tipo de la columna."
+      },
+      {
+        "name": "sort_rows",
+        "description": "Ordena las filas del archivo por una o más columnas. Parámetros: path, by (nombre de columna o lista), ascending (bool, default true), sheet (opcional). Retorna: mismo formato que read_tabular_file con las filas ordenadas."
+      },
+      {
+        "name": "drop_columns",
+        "description": "Elimina columnas específicas del archivo. Parámetros: path, columns (nombre o lista de columnas a eliminar), sheet (opcional). Retorna: mismo formato que read_tabular_file sin las columnas eliminadas."
+      },
+      {
+        "name": "select_columns",
+        "description": "Selecciona solo las columnas especificadas, descartando las demás. Parámetros: path, columns (nombre o lista de columnas a conservar), sheet (opcional). Retorna: mismo formato que read_tabular_file con solo las columnas seleccionadas."
+      },
+      {
+        "name": "rename_columns",
+        "description": "Renombra columnas del archivo usando un diccionario {nombre_antiguo: nombre_nuevo}. Parámetros: path, mapping (dict de renombrado), sheet (opcional). Retorna: mismo formato que read_tabular_file con las columnas renombradas."
+      },
+      {
+        "name": "fill_nulls",
+        "description": "Rellena valores nulos (NaN) con un valor dado. Parámetros: path, value (valor de relleno, default 0), columns (lista opcional de columnas a rellenar; si es None, rellena todas), sheet (opcional). Retorna: mismo formato que read_tabular_file con los nulos rellenados."
+      },
+      {
+        "name": "drop_nulls",
+        "description": "Elimina filas que contienen valores nulos. Parámetros: path, how ('any' = cualquier nulo, 'all' = todos nulos, default 'any'), subset (columnas específicas a considerar, opcional), sheet (opcional). Retorna: mismo formato que read_tabular_file sin las filas con nulos."
+      },
+      {
+        "name": "drop_duplicates",
+        "description": "Elimina filas duplicadas del archivo. Parámetros: path, subset (columnas a considerar para duplicados, opcional), keep ('first' = mantener primero, 'last' = mantener último, 'false' = eliminar todos), sheet (opcional). Retorna: mismo formato que read_tabular_file sin duplicados."
+      },
+      {
+        "name": "groupby_agg",
+        "description": "Agrupa filas por una o más columnas y aplica una función de agregación. Funciones soportadas: mean, sum, min, max, count, median, std, var, first, last, nunique. Parámetros: path, by (columna o lista de agrupación), agg_func (función de agregación), sheet (opcional). Retorna: mismo formato que read_tabular_file con el resultado agrupado."
+      },
+      {
+        "name": "pivot_table",
+        "description": "Crea una tabla pivot desde el archivo tabular. Parámetros: path, index (columna de filas), columns (columna de columnas), values (columna de valores), aggfunc (función de agregación, default 'mean'), sheet (opcional). Retorna: mismo formato que read_tabular_file con la tabla pivot."
+      },
+      {
+        "name": "melt_table",
+        "description": "Convierte el archivo de formato ancho a largo (unpivot/melt). Parámetros: path, id_vars (columnas que se mantienen), value_vars (columnas a despivotar, opcional), sheet (opcional). Retorna: mismo formato que read_tabular_file en formato largo."
+      },
+      {
+        "name": "sample_rows",
+        "description": "Retorna una muestra aleatoria de n filas del archivo. Parámetros: path, n (número de filas, default 10), random_state (semilla, opcional), sheet (opcional). Retorna: mismo formato que read_tabular_file con la muestra."
+      },
+      {
+        "name": "head_rows",
+        "description": "Retorna las primeras n filas del archivo. Parámetros: path, n (número de filas, default 10), sheet (opcional). Retorna: mismo formato que read_tabular_file."
+      },
+      {
+        "name": "tail_rows",
+        "description": "Retorna las últimas n filas del archivo. Parámetros: path, n (número de filas, default 10), sheet (opcional). Retorna: mismo formato que read_tabular_file."
+      },
+      {
+        "name": "convert_to_json",
+        "description": "Convierte un archivo tabular a formato JSON. Parámetros: path, sheet (opcional), orient ('records', 'index', 'columns', 'values', 'split'). Retorna: string JSON completo."
+      },
+      {
+        "name": "convert_to_markdown",
+        "description": "Convierte un archivo tabular a tabla Markdown. Parámetros: path, sheet (opcional), max_rows (límite de filas, default 50). Retorna: string con tabla Markdown."
+      },
+      {
+        "name": "get_duplicates_info",
+        "description": "Reporta filas duplicadas en el archivo con conteo y muestra. Parámetros: path, subset (columnas a considerar, opcional), sheet (opcional). Retorna: dict con total_rows, duplicate_rows, duplicate_percentage, sample_duplicates."
+      },
+      {
+        "name": "get_correlation",
+        "description": "Calcula la matriz de correlación entre columnas numéricas. Métodos soportados: pearson, spearman, kendall. Parámetros: path, method (default 'pearson'), sheet (opcional). Retorna: dict con la matriz de correlación."
+      }
+    ],
+    "env_prefix": "TABULAR_",
+    "env_vars": [
+      {
+        "field": "max_rows_preview",
+        "var": "TABULAR_MAX_ROWS_PREVIEW",
+        "default": "1000",
+        "description": "Máximo de filas retornadas en una respuesta sin paginación. Si el archivo tiene más filas, se trunca y se indica en 'truncated'. Variable de entorno: TABULAR_MAX_ROWS_PREVIEW."
+      },
+      {
+        "field": "max_file_size_mb",
+        "var": "TABULAR_MAX_FILE_SIZE_MB",
+        "default": "100",
+        "description": "Tamaño máximo permitido de archivo en MB. Archivos más grandes serán rechazados con un error descriptivo. Variable de entorno: TABULAR_MAX_FILE_SIZE_MB."
+      },
+      {
+        "field": "default_encoding",
+        "var": "TABULAR_DEFAULT_ENCODING",
+        "default": "utf-8",
+        "description": "Encoding por defecto para archivos CSV y TSV cuando no se puede detectar automáticamente con chardet. Ejemplos: 'utf-8', 'latin-1', 'cp1252'. Variable de entorno: TABULAR_DEFAULT_ENCODING."
+      },
+      {
+        "field": "sample_values_count",
+        "var": "TABULAR_SAMPLE_VALUES_COUNT",
+        "default": "5",
+        "description": "Número de valores de muestra a incluir por columna en la respuesta. Variable de entorno: TABULAR_SAMPLE_VALUES_COUNT."
+      },
+      {
+        "field": "chardet_confidence_threshold",
+        "var": "TABULAR_CHARDET_CONFIDENCE_THRESHOLD",
+        "default": "0.7",
+        "description": "Umbral mínimo de confianza para aceptar la detección de encoding con chardet. Si la confianza es menor, se usa default_encoding. Variable de entorno: TABULAR_CHARDET_CONFIDENCE_THRESHOLD."
+      },
+      {
+        "field": "allowed_root",
+        "var": "TABULAR_ALLOWED_ROOT",
+        "default": "",
+        "description": "Directorio raíz opcional al que se restringe el acceso a archivos. Variable de entorno: TABULAR_ALLOWED_ROOT."
+      }
+    ]
+  },
+  "mcp-terraform": {
+    "tools": [
+      {
+        "name": "tf_run_cmd",
+        "description": "Ejecuta un comando Terraform en el proyecto. Provee los argumentos (ej. 'plan' o 'init')."
+      }
+    ],
+    "env_prefix": "TF_",
+    "env_vars": [
+      {
+        "field": "project_path",
+        "var": "TF_PROJECT_PATH",
+        "default": "",
+        "description": "Ruta base donde están los archivos .tf."
+      }
+    ]
+  }
+}

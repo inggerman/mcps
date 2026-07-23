@@ -30,16 +30,29 @@ from mcp_shared.logging import get_logger, setup_logging
 from mcp_llm_router import __version__
 from mcp_llm_router.config import settings
 from mcp_llm_router.tools.router_tools import (
+    batch_route_tasks,
     call_cloud_model,
     call_local_model,
     check_lmstudio_health,
+    clear_routing_history,
+    compare_models,
+    estimate_cost,
     estimate_task_complexity,
+    export_routing_history,
+    get_model_info,
     get_routing_config,
     get_routing_history,
+    get_routing_history_filtered,
+    get_routing_stats,
+    get_routing_summary,
     list_local_models,
     record_routing_decision,
     route_task,
+    set_privacy_mode,
+    set_routing_threshold,
+    validate_routing_config,
 )
+from mcp_llm_router import resources as res
 
 # ---------------------------------------------------------------------------
 # Configuración de logging
@@ -311,6 +324,251 @@ def tool_call_cloud_model(
         max_tokens,
         settings.cloud_timeout_seconds,
     )
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    name="clear_routing_history",
+    description="Borra todo el historial de ruteo. Sin parametros.",
+)
+def tool_clear_routing_history() -> dict[str, Any]:
+    logger.info("clear_routing_history llamado")
+    return _handle(clear_routing_history, _HISTORY_PATH)
+
+
+@mcp.tool(
+    name="get_routing_stats",
+    description="Retorna estadisticas agregadas del historial: total, local/cloud count, avg complexity, distribucion.",
+)
+def tool_get_routing_stats() -> dict[str, Any]:
+    logger.info("get_routing_stats llamado")
+    return _handle(get_routing_stats, _HISTORY_PATH)
+
+
+@mcp.tool(
+    name="compare_models",
+    description="Ejecuta un prompt en local y nube y compara resultados. Parametros: prompt, local_model, system, temperature, max_tokens.",
+)
+def tool_compare_models(
+    prompt: str,
+    local_model: str = "",
+    system: str = "",
+    temperature: float = 0.7,
+    max_tokens: int = 1024,
+) -> dict[str, Any]:
+    target = local_model or settings.model_fast
+    logger.info("compare_models llamado", model=target)
+    return _handle(
+        compare_models,
+        prompt,
+        target,
+        settings.lmstudio_base_url,
+        settings.cloud_model,
+        settings.cloud_provider,
+        settings.cloud_api_key,
+        system,
+        temperature,
+        max_tokens,
+        settings.lmstudio_timeout_seconds,
+        settings.cloud_timeout_seconds,
+    )
+
+
+@mcp.tool(
+    name="set_routing_threshold",
+    description="Valida y retorna un nuevo umbral de complejidad (1-10). Parametros: new_threshold.",
+)
+def tool_set_routing_threshold(new_threshold: int) -> dict[str, Any]:
+    logger.info("set_routing_threshold llamado", new_threshold=new_threshold)
+    return _handle(set_routing_threshold, new_threshold, settings.complexity_threshold)
+
+
+@mcp.tool(
+    name="set_privacy_mode",
+    description="Activa o desactiva el modo privacidad. Parametros: enabled (bool).",
+)
+def tool_set_privacy_mode(enabled: bool) -> dict[str, Any]:
+    logger.info("set_privacy_mode llamado", enabled=enabled)
+    return _handle(set_privacy_mode, enabled)
+
+
+@mcp.tool(
+    name="get_model_info",
+    description="Obtiene info de un modelo en LM Studio. Parametros: model_name (requerido), timeout (default 5).",
+)
+def tool_get_model_info(model_name: str, timeout: int = 5) -> dict[str, Any]:
+    logger.info("get_model_info llamado", model=model_name)
+    return _handle(get_model_info, model_name, settings.lmstudio_base_url, timeout)
+
+
+@mcp.tool(
+    name="batch_route_tasks",
+    description="Ruta multiples prompts en lote. Parametros: prompts (list de strings). Retorna lista de decisiones.",
+)
+def tool_batch_route_tasks(prompts: list[str]) -> list[dict[str, Any]]:
+    logger.info("batch_route_tasks llamado", count=len(prompts))
+    return _handle(
+        batch_route_tasks,
+        prompts,
+        settings.complexity_threshold,
+        settings.max_local_tokens,
+        settings.privacy_mode,
+        settings.model_fast,
+        settings.model_code,
+        settings.model_reason,
+        settings.model_large_context,
+        settings.cloud_model,
+        settings.cloud_provider,
+    )
+
+
+@mcp.tool(
+    name="get_routing_history_filtered",
+    description="Historial filtrado por destination o task_type. Parametros: destination, task_type, limit.",
+)
+def tool_get_routing_history_filtered(
+    destination: str | None = None,
+    task_type: str | None = None,
+    limit: int = 50,
+) -> list[dict[str, Any]]:
+    logger.info("get_routing_history_filtered llamado")
+    return _handle(get_routing_history_filtered, _HISTORY_PATH, destination, task_type, limit)
+
+
+@mcp.tool(
+    name="estimate_cost",
+    description="Estima costo de procesar un prompt en local vs nube. Parametros: prompt, destination.",
+)
+def tool_estimate_cost(prompt: str, destination: str = "local") -> dict[str, Any]:
+    logger.info("estimate_cost llamado", prompt_length=len(prompt))
+    return _handle(
+        estimate_cost,
+        prompt,
+        destination,
+        settings.cloud_provider,
+        settings.cloud_model,
+    )
+
+
+@mcp.tool(
+    name="export_routing_history",
+    description="Exporta el historial en JSON o CSV. Parametros: format ('json' o 'csv', default 'json').",
+)
+def tool_export_routing_history(format: str = "json") -> str:
+    logger.info("export_routing_history llamado", format=format)
+    return _handle(export_routing_history, _HISTORY_PATH, format)
+
+
+@mcp.tool(
+    name="validate_routing_config",
+    description="Valida la configuracion del router y retorna errores/warnings.",
+)
+def tool_validate_routing_config() -> dict[str, Any]:
+    logger.info("validate_routing_config llamado")
+    return _handle(
+        validate_routing_config,
+        settings.complexity_threshold,
+        settings.max_local_tokens,
+        settings.model_fast,
+        settings.model_code,
+        settings.model_reason,
+        settings.model_large_context,
+        settings.cloud_model,
+        settings.cloud_provider,
+    )
+
+
+@mcp.tool(
+    name="get_routing_summary",
+    description="Retorna un resumen rapido del historial: total, ultimo destino, ultimo modelo.",
+)
+def tool_get_routing_summary() -> dict[str, Any]:
+    logger.info("get_routing_summary llamado")
+    return _handle(get_routing_summary, _HISTORY_PATH)
+
+
+# ---------------------------------------------------------------------------
+# Resources estaticos
+# ---------------------------------------------------------------------------
+
+
+@mcp.resource("router://configuration")
+def res_config() -> str:
+    return res.router_configuration()
+
+
+@mcp.resource("router://local-models")
+def res_local() -> str:
+    return res.router_local_models()
+
+
+@mcp.resource("router://cloud-models")
+def res_cloud() -> str:
+    return res.router_cloud_models()
+
+
+@mcp.resource("router://routing-logic")
+def res_logic() -> str:
+    return res.router_routing_logic()
+
+
+@mcp.resource("router://task-types")
+def res_tasks() -> str:
+    return res.router_task_types()
+
+
+@mcp.resource("router://best-practices")
+def res_best() -> str:
+    return res.router_best_practices()
+
+
+@mcp.resource("router://privacy-guide")
+def res_priv() -> str:
+    return res.router_privacy_guide()
+
+
+@mcp.resource("router://cost-optimization")
+def res_cost() -> str:
+    return res.router_cost_optimization()
+
+
+@mcp.resource("router://error-codes")
+def res_errors() -> str:
+    return res.router_error_codes()
+
+
+@mcp.resource("router://troubleshooting")
+def res_trouble() -> str:
+    return res.router_troubleshooting()
+
+
+@mcp.resource("router://quick-reference")
+def res_quick() -> str:
+    return res.router_quick_reference()
+
+
+@mcp.resource("router://performance-tips")
+def res_perf() -> str:
+    return res.router_performance_tips()
+
+
+@mcp.resource("router://examples")
+def res_examples() -> str:
+    return res.router_examples()
+
+
+@mcp.resource("router://model-comparison")
+def res_compare() -> str:
+    return res.router_model_comparison()
+
+
+@mcp.resource("router://api-reference")
+def res_api() -> str:
+    return res.router_api_reference()
 
 
 # ---------------------------------------------------------------------------

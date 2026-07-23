@@ -546,3 +546,102 @@ def get_country_list() -> list[dict]:
         )
 
     return result
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos — utilidades de calendario
+# ---------------------------------------------------------------------------
+
+
+def get_quarter_info(check_date: str) -> dict:
+    """Retorna informacion del trimestre (quarter) de una fecha."""
+    d = _date_from_str(check_date, "date")
+    quarter = (d.month - 1) // 3 + 1
+    quarter_start_month = (quarter - 1) * 3 + 1
+    quarter_end_month = quarter * 3
+    _, last_day = calendar.monthrange(d.year, quarter_end_month)
+    return {
+        "date": check_date,
+        "year": d.year,
+        "quarter": quarter,
+        "quarter_name": f"Q{quarter}",
+        "start_date": date(d.year, quarter_start_month, 1).isoformat(),
+        "end_date": date(d.year, quarter_end_month, last_day).isoformat(),
+    }
+
+
+def get_week_number(check_date: str) -> dict:
+    """Retorna el numero de semana ISO 8601 de una fecha."""
+    d = _date_from_str(check_date, "date")
+    iso_year, iso_week, iso_weekday = d.isocalendar()
+    return {
+        "date": check_date,
+        "iso_year": iso_year,
+        "iso_week": iso_week,
+        "iso_weekday": iso_weekday,
+        "weekday_name": d.strftime("%A"),
+    }
+
+
+def date_diff(start_date: str, end_date: str) -> dict:
+    """Calcula la diferencia en dias entre dos fechas."""
+    start = _date_from_str(start_date, "start_date")
+    end = _date_from_str(end_date, "end_date")
+    delta = end - start
+    return {
+        "start_date": start_date,
+        "end_date": end_date,
+        "days": delta.days,
+        "absolute_days": abs(delta.days),
+        "direction": "positive" if delta.days >= 0 else "negative",
+        "weeks": delta.days // 7,
+        "remaining_days": delta.days % 7,
+    }
+
+
+def format_date(check_date: str, fmt: str = "%Y-%m-%d") -> dict:
+    """Formatea una fecha en el formato especificado."""
+    d = _date_from_str(check_date, "date")
+    return {
+        "date": check_date,
+        "format": fmt,
+        "formatted": d.strftime(fmt),
+        "iso": d.isoformat(),
+        "day": d.day,
+        "month": d.month,
+        "year": d.year,
+        "weekday": d.strftime("%A"),
+        "month_name": d.strftime("%B"),
+    }
+
+
+def get_easter(year: int) -> dict:
+    """Calcula la fecha del Domingo de Pascua para un anio dado (algoritmo de Gauss)."""
+    if not 1583 <= year <= 9999:
+        raise InvalidValueError(
+            field="year",
+            value=year,
+            reason="El anio debe estar entre 1583 y 9999 para el calculo de Pascua.",
+        )
+    a = year % 19
+    b = year // 100
+    c = year % 100
+    d = b // 4
+    e = b % 4
+    f = (b + 8) // 25
+    g = (b - f + 1) // 3
+    h = (19 * a + b - d - g + 15) % 30
+    i = c // 4
+    k = c % 4
+    l = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * l) // 451
+    month = (h + l - 7 * m + 114) // 31
+    day = ((h + l - 7 * m + 114) % 31) + 1
+    easter_date = date(year, month, day)
+    return {
+        "year": year,
+        "easter_sunday": easter_date.isoformat(),
+        "month": month,
+        "day": day,
+        "weekday": easter_date.strftime("%A"),
+    }

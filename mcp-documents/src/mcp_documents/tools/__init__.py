@@ -1,3 +1,35 @@
-from mcp_documents.tools.document_tools import extract_document, get_document_metadata
+from mcp_documents.tools.document_tools import (
+    batch_extract,
+    compare_documents,
+    convert_to_markdown,
+    count_pages,
+    export_document_text,
+    extract_document,
+    extract_images_info,
+    extract_tables,
+    extract_text_only,
+    get_document_metadata,
+    get_document_stats,
+    get_document_summary,
+    list_documents,
+    search_in_document,
+    validate_document,
+)
 
-__all__ = ["extract_document", "get_document_metadata"]
+__all__ = [
+    "batch_extract",
+    "compare_documents",
+    "convert_to_markdown",
+    "count_pages",
+    "export_document_text",
+    "extract_document",
+    "extract_images_info",
+    "extract_tables",
+    "extract_text_only",
+    "get_document_metadata",
+    "get_document_stats",
+    "get_document_summary",
+    "list_documents",
+    "search_in_document",
+    "validate_document",
+]

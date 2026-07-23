@@ -373,3 +373,179 @@ def delete_entry(
         _audit(connection, "delete", category, entry_key)
         connection.commit()
     return {"category": category, "key": entry_key, "status": "deleted"}
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+def export_entries(
+    database_path: Path,
+    fernet: Fernet,
+    category: str | None = None,
+    include_sensitive: bool = False,
+    allow_highly_sensitive: bool = False,
+) -> dict[str, Any]:
+    """Exporta entradas en formato JSON plano."""
+    entries = list_entries(database_path, category, 200)
+    result = []
+    for entry in entries:
+        full = get_entry(database_path, fernet, entry["category"], entry["key"], include_sensitive, allow_highly_sensitive)
+        result.append(full)
+    return {"count": len(result), "entries": result}
+
+
+def import_entries(
+    database_path: Path,
+    fernet: Fernet,
+    entries: list[dict[str, Any]],
+    allow_write: bool,
+    allow_secrets: bool,
+) -> dict[str, Any]:
+    """Importa entradas desde un formato JSON plano."""
+    if not allow_write:
+        raise ValidationError(field="allow_write", message="La escritura esta deshabilitada.")
+    imported = 0
+    errors: list[str] = []
+    for entry in entries:
+        try:
+            upsert_entry(
+                database_path, fernet,
+                entry["category"], entry["key"], entry["value"],
+                entry.get("sensitivity", "private"),
+                entry.get("tags"),
+                entry.get("source", "import"),
+                allow_write, allow_secrets,
+            )
+            imported += 1
+        except Exception as exc:
+            errors.append(f"{entry.get('category', '?')}/{entry.get('key', '?')}: {exc}")
+    return {"imported": imported, "errors": errors}
+
+
+def get_audit_log(
+    database_path: Path,
+    limit: int = 50,
+    action: str | None = None,
+) -> list[dict[str, Any]]:
+    """Retorna el log de auditoria de la bóveda."""
+    initialize_database(database_path)
+    query = "SELECT action, category, entry_key, occurred_at FROM audit_log"
+    params: list[Any] = []
+    if action:
+        query += " WHERE action = ?"
+        params.append(action)
+    query += " ORDER BY occurred_at DESC LIMIT ?"
+    params.append(min(max(limit, 1), 200))
+    with closing(sqlite3.connect(database_path)) as connection:
+        rows = connection.execute(query, params).fetchall()
+    return [
+        {"action": row[0], "category": row[1], "entry_key": row[2], "occurred_at": row[3]}
+        for row in rows
+    ]
+
+
+def list_categories(database_path: Path) -> list[dict[str, Any]]:
+    """Lista categorias con conteo de entradas."""
+    initialize_database(database_path)
+    with closing(sqlite3.connect(database_path)) as connection:
+        rows = connection.execute(
+            "SELECT category, COUNT(*) FROM entries GROUP BY category ORDER BY category"
+        ).fetchall()
+    return [{"category": row[0], "count": row[1]} for row in rows]
+
+
+def list_tags(database_path: Path) -> list[str]:
+    """Lista todos los tags unicos usados en la bóveda."""
+    initialize_database(database_path)
+    with closing(sqlite3.connect(database_path)) as connection:
+        rows = connection.execute("SELECT tags FROM entries").fetchall()
+    all_tags: set[str] = set()
+    for row in rows:
+        try:
+            all_tags.update(json.loads(row[0]))
+        except (json.JSONDecodeError, TypeError):
+            pass
+    return sorted(all_tags)
+
+
+def backup_vault(database_path: Path, backup_path: Path) -> dict[str, Any]:
+    """Crea un backup de la base de datos de la bóveda."""
+    import shutil
+    initialize_database(database_path)
+    backup_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(database_path, backup_path)
+    return {"backup_path": str(backup_path), "status": "created", "size_bytes": backup_path.stat().st_size}
+
+
+def clear_category(
+    database_path: Path,
+    category: str,
+    allow_write: bool,
+) -> dict[str, Any]:
+    """Elimina todas las entradas de una categoria."""
+    if not allow_write:
+        raise ValidationError(field="allow_write", message="La escritura esta deshabilitada.")
+    initialize_database(database_path)
+    with closing(sqlite3.connect(database_path)) as connection:
+        cursor = connection.execute("DELETE FROM entries WHERE category = ?", (category.strip(),))
+        _audit(connection, "clear_category", category)
+        connection.commit()
+    return {"category": category, "deleted": cursor.rowcount, "status": "cleared"}
+
+
+def get_entry_history(
+    database_path: Path,
+    fernet: Fernet,
+    category: str,
+    entry_key: str,
+    include_sensitive: bool,
+    allow_highly_sensitive: bool,
+) -> dict[str, Any]:
+    """Obtiene el historial de cambios de una entrada (mock basado en audit log)."""
+    initialize_database(database_path)
+    with closing(sqlite3.connect(database_path)) as connection:
+        rows = connection.execute(
+            "SELECT action, occurred_at FROM audit_log WHERE category = ? AND entry_key = ? ORDER BY occurred_at DESC",
+            (category.strip(), entry_key.strip()),
+        ).fetchall()
+    return {
+        "category": category,
+        "key": entry_key,
+        "history": [
+            {"action": row[0], "occurred_at": row[1]}
+            for row in rows
+        ],
+    }
+
+
+def rotate_encryption_key(
+    database_path: Path,
+    old_fernet: Fernet,
+    new_key: bytes,
+    allow_write: bool,
+) -> dict[str, Any]:
+    """Rota la clave de cifrado: re-encripta todas las entradas con la nueva clave."""
+    if not allow_write:
+        raise ValidationError(field="allow_write", message="La escritura esta deshabilitada.")
+    new_fernet = Fernet(new_key)
+    initialize_database(database_path)
+    with closing(sqlite3.connect(database_path)) as connection:
+        connection.row_factory = sqlite3.Row
+        rows = connection.execute("SELECT id, encrypted_value FROM entries").fetchall()
+        rotated = 0
+        for row in rows:
+            try:
+                value = _decrypt(old_fernet, row["encrypted_value"])
+                new_encrypted = _encrypt(new_fernet, value)
+                connection.execute(
+                    "UPDATE entries SET encrypted_value = ? WHERE id = ?",
+                    (new_encrypted, row["id"]),
+                )
+                rotated += 1
+            except Exception:
+                pass
+        _audit(connection, "rotate_key")
+        connection.commit()
+    return {"rotated": rotated, "status": "success"}

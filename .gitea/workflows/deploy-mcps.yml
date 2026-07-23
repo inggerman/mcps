@@ -1,0 +1,229 @@
+name: Build & Deploy MCPs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "mcp-*/**"
+      - "mcp-shared/**"
+      - "k8s/**"
+      - ".gitea/workflows/deploy-mcps.yml"
+  workflow_dispatch:
+    inputs:
+      mcp_filter:
+        description: 'Only build specific MCP (e.g. mcp-github). Empty = all.'
+        required: false
+        default: ''
+
+env:
+  HARBOR_REGISTRY: harbor.mrrobot.fs
+  HARBOR_PROJECT: ghl
+  KUBECONFIG_SECRET: ${{ secrets.KUBECONFIG_B64 }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: harbor.mrrobot.fs
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Detect changed MCPs
+        id: detect
+        run: |
+          # If manual dispatch with filter, use that
+          if [ -n "${{ github.event.inputs.mcp_filter }}" ]; then
+            echo "changed=mcp-${{ github.event.inputs.mcp_filter }}" >> $GITHUB_OUTPUT
+            echo "  Manual filter: ${{ github.event.inputs.mcp_filter }}"
+            exit 0
+          fi
+          
+          # Get changed files from push
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} 2>/dev/null || echo "")
+          
+          if [ -z "$CHANGED_FILES" ]; then
+            # First push or force push — build all
+            MCPS=$(find . -maxdepth 1 -type d -name "mcp-*" -printf '%f\n' | sort | tr '\n' ' ')
+            echo "changed=$MCPS" >> $GITHUB_OUTPUT
+            echo "  Building all MCPs (no diff available)"
+          else
+            # Detect which MCPs changed
+            CHANGED_MCPS=""
+            for file in $CHANGED_FILES; do
+              mcp=$(echo "$file" | grep -oP '^mcp-[^/]+' | head -1)
+              if [ -n "$mcp" ] && echo "$CHANGED_MCPS" | grep -qv "$mcp"; then
+                CHANGED_MCPS="$CHANGED_MCPS $mcp"
+              fi
+            done
+            
+            # If mcp-shared changed, rebuild all (shared dependency)
+            if echo "$CHANGED_FILES" | grep -q "^mcp-shared/"; then
+              echo "  mcp-shared changed — rebuilding all MCPs"
+              MCPS=$(find . -maxdepth 1 -type d -name "mcp-*" -printf '%f\n' | sort | tr '\n' ' ')
+              echo "changed=$MCPS" >> $GITHUB_OUTPUT
+            elif [ -n "$CHANGED_MCPS" ]; then
+              echo "changed=$(echo $CHANGED_MCPS | tr ' ' '\n' | sort -u | tr '\n' ' ')" >> $GITHUB_OUTPUT
+              echo "  Changed MCPs: $CHANGED_MCPS"
+            else
+              echo "changed=" >> $GITHUB_OUTPUT
+              echo "  No MCP code changed — skipping build"
+            fi
+          fi
+
+      - name: Build and push MCP images
+        if: steps.detect.outputs.changed != ''
+        run: |
+          MCPS="${{ steps.detect.outputs.changed }}"
+          TOTAL=$(echo $MCPS | wc -w)
+          CURRENT=0
+          FAILED=0
+          BUILT_IMAGES=""
+          
+          for mcp_name in $MCPS; do
+            CURRENT=$((CURRENT + 1))
+            echo "[$CURRENT/$TOTAL] Building $mcp_name..."
+            
+            mcp_dir="./$mcp_name"
+            
+            # Check if Dockerfile exists
+            if [ ! -f "$mcp_dir/Dockerfile" ]; then
+              echo "  SKIP: No Dockerfile for $mcp_name"
+              continue
+            fi
+            
+            # Build image with SHA tag + latest
+            docker build \
+              --cache-from type=registry,ref=${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:buildcache \
+              --cache-to type=registry,ref=${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:buildcache,mode=max \
+              -t ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:${IMAGE_TAG} \
+              -t ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:latest \
+              -f $mcp_dir/Dockerfile . || {
+              echo "  BUILD FAILED for $mcp_name"
+              FAILED=$((FAILED + 1))
+              continue
+            }
+            
+            # Push both tags
+            docker push ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:${IMAGE_TAG} || {
+              echo "  PUSH FAILED (SHA) for $mcp_name"
+              FAILED=$((FAILED + 1))
+              continue
+            }
+            docker push ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:latest || {
+              echo "  PUSH FAILED (latest) for $mcp_name"
+              FAILED=$((FAILED + 1))
+              continue
+            }
+            
+            BUILT_IMAGES="$BUILT_IMAGES $mcp_name"
+            echo "  DONE $mcp_name (tag: ${IMAGE_TAG:0:8})"
+          done
+          
+          echo ""
+          echo "=== Build complete: $((TOTAL - FAILED))/$TOTAL succeeded ==="
+          echo "built_images=$BUILT_IMAGES" >> $GITHUB_ENV
+          
+          if [ $FAILED -gt 0 ]; then
+            echo "::warning::$FAILED images failed to build"
+          fi
+
+      - name: Setup kubectl
+        run: |
+          echo "$KUBECONFIG_SECRET" | base64 -d > /tmp/kubeconfig
+          export KUBECONFIG=/tmp/kubeconfig
+          kubectl version --client
+
+      - name: Deploy to Kubernetes
+        run: |
+          export KUBECONFIG=/tmp/kubeconfig
+          
+          # Apply namespace first
+          kubectl apply -f k8s/namespace.yaml 2>/dev/null || true
+          
+          # Apply all manifests
+          kubectl apply -f k8s/all-mcps.yaml
+          
+          # Restart only deployments whose images were rebuilt
+          if [ -n "$BUILT_IMAGES" ]; then
+            for mcp_name in $BUILT_IMAGES; do
+              echo "  Restarting $mcp_name to pick up new image..."
+              kubectl rollout restart deploy/$mcp_name -n mcps 2>/dev/null || true
+            done
+          fi
+          
+          # Wait for rollouts
+          for mcp in $(kubectl get deploy -n mcps -o name 2>/dev/null); do
+            mcp_name=$(echo $mcp | cut -d/ -f2)
+            echo "Waiting for $mcp_name rollout..."
+            kubectl rollout status deploy/$mcp_name -n mcps --timeout=180s || {
+              echo "  WARNING: $mcp_name rollout not ready"
+              kubectl logs deploy/$mcp_name -n mcps --tail=20 2>/dev/null || true
+            }
+          done
+          
+          echo ""
+          echo "=== Deployment complete ==="
+          kubectl get pods -n mcps -o wide
+
+      - name: Health check MCPs
+        run: |
+          export KUBECONFIG=/tmp/kubeconfig
+          echo "=== Health checks ==="
+          
+          # Get all MCP services
+          SERVICES=$(kubectl get svc -n mcps -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.clusterIP}{"\t"}{.spec.ports[0].port}{"\n"{end}}' 2>/dev/null)
+          
+          HEALTHY=0
+          UNHEALTHY=0
+          
+          while IFS=$'\t' read -r name ip port; do
+            if [ -z "$name" ]; then continue; fi
+            # Try to connect via a pod in the cluster
+            RESPONSE=$(kubectl run -n mcps healthcheck-$name --rm -i --restart=Never \
+              --image=curlimages/curl:8.12.0 --timeout=30s -- \
+              curl -s --connect-timeout 5 -X POST "http://${ip}:${port}/mcp" \
+              -H "Content-Type: application/json" \
+              -H "Accept: application/json, text/event-stream" \
+              -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"ci","version":"1.0"}},"id":1}' 2>/dev/null) || true
+            
+            if echo "$RESPONSE" | grep -q "serverInfo"; then
+              echo "  OK   $name"
+              HEALTHY=$((HEALTHY + 1))
+            else
+              echo "  FAIL $name"
+              UNHEALTHY=$((UNHEALTHY + 1))
+            fi
+          done <<< "$SERVICES"
+          
+          echo ""
+          echo "=== Health: $HEALTHY healthy, $UNHEALTHY unhealthy ==="
+
+      - name: Print MCP summary
+        run: |
+          export KUBECONFIG=/tmp/kubeconfig
+          echo "============================================"
+          echo "  MCP Servers deployed — SHA: ${IMAGE_TAG:0:8}"
+          echo "============================================"
+          echo ""
+          echo "  Accessible from local network at:"
+          echo "  http://mcp-XXX.mrrobot.fs/mcp"
+          echo ""
+          echo "  Services:"
+          kubectl get svc -n mcps 2>/dev/null || true
+          echo ""
+          echo "  Pods:"
+          kubectl get pods -n mcps 2>/dev/null || true
+          echo ""
+          echo "  Recent events:"
+          kubectl get events -n mcps --sort-by=.lastTimestamp 2>/dev/null | tail -10 || true
+          echo "============================================"

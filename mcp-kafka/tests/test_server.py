@@ -31,4 +31,8 @@ class TestServer:
 
     def test_tool_count(self) -> None:
         tools = asyncio.run(mcp.list_tools())
-        assert len(tools) >= 6
+        assert len(tools) == 18
+
+    def test_resources_registered(self) -> None:
+        resources = asyncio.run(mcp.list_resources())
+        assert len(resources) == 15

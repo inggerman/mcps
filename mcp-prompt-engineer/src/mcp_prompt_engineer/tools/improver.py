@@ -1096,3 +1096,303 @@ def get_prompt_template(use_case: str) -> dict[str, Any]:
         }
 
     return templates[use_case_lower]
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+def compare_prompts(prompt_a: str, prompt_b: str) -> dict[str, Any]:
+    """Compara dos prompts en base a analisis de claridad, tipo y tokens."""
+    analysis_a = analyze_prompt(prompt_a)
+    analysis_b = analyze_prompt(prompt_b)
+    return {
+        "prompt_a": {
+            "clarity_score": analysis_a["clarity_score"],
+            "prompt_type": analysis_a["prompt_type"],
+            "word_count": analysis_a["word_count"],
+            "token_count": analysis_a["token_count"],
+            "issues_count": len(analysis_a["issues"]),
+        },
+        "prompt_b": {
+            "clarity_score": analysis_b["clarity_score"],
+            "prompt_type": analysis_b["prompt_type"],
+            "word_count": analysis_b["word_count"],
+            "token_count": analysis_b["token_count"],
+            "issues_count": len(analysis_b["issues"]),
+        },
+        "winner": "a" if analysis_a["clarity_score"] > analysis_b["clarity_score"] else "b",
+        "score_delta": round(
+            abs(analysis_a["clarity_score"] - analysis_b["clarity_score"]), 1
+        ),
+    }
+
+
+def optimize_for_model(prompt: str, model: str) -> dict[str, Any]:
+    """Optimiza un prompt para un modelo especifico ajustando longitud y estilo."""
+    analysis = analyze_prompt(prompt, model)
+    token_info = estimate_tokens(prompt, model)
+    recommendations: list[str] = []
+
+    model_lower = model.lower()
+    if "gpt-4" in model_lower or "gpt4" in model_lower:
+        if analysis["word_count"] < 20:
+            recommendations.append("GPT-4 beneficia de prompts detallados; anade mas contexto.")
+        if not analysis["has_format_spec"]:
+            recommendations.append("GPT-4 responde bien a formatos estructurados especificos.")
+    elif "claude" in model_lower:
+        if not analysis["has_role"]:
+            recommendations.append("Claude responde muy bien a definiciones de rol explicitas.")
+        recommendations.append("Claude prefiere instrucciones en lenguaje natural sobre XML tags.")
+    elif "gpt-3.5" in model_lower:
+        if analysis["word_count"] > 500:
+            recommendations.append("GPT-3.5 tiene contexto limitado (16k); considera acortar el prompt.")
+        recommendations.append("GPT-3.5 beneficia de instrucciones muy directas y concisas.")
+
+    if token_info["text_length"] > 50000:
+        recommendations.append("Prompt muy largo; considera descomponer con decompose_task().")
+
+    if not recommendations:
+        recommendations.append("El prompt esta bien optimizado para el modelo objetivo.")
+
+    return {
+        "model": model,
+        "analysis": analysis,
+        "token_info": token_info,
+        "recommendations": recommendations,
+    }
+
+
+def add_constraints(prompt: str, constraints: list[str]) -> str:
+    """Anade restricciones a un prompt existente."""
+    if not constraints:
+        return prompt
+    lines = ["## Restricciones"]
+    for c in constraints:
+        lines.append(f"- {c.strip()}")
+    return f"{prompt}\n\n" + "\n".join(lines)
+
+
+def translate_prompt(prompt: str, target_lang: str) -> dict[str, Any]:
+    """Genera un template para traducir un prompt a otro idioma."""
+    lang_map = {
+        "en": "ingles",
+        "es": "espanol",
+        "fr": "frances",
+        "de": "aleman",
+        "pt": "portugues",
+        "it": "italiano",
+    }
+    lang_name = lang_map.get(target_lang.lower(), target_lang)
+    template = (
+        f"Translate the following prompt to {lang_name}:\n\n"
+        f"```\n{prompt}\n```\n\n"
+        f"Provide only the translated prompt, preserving structure and intent."
+    )
+    return {
+        "template": template,
+        "target_lang": target_lang,
+        "original_prompt": prompt,
+        "note": "Este es un template de traduccion. El modelo debe ejecutar la traduccion.",
+    }
+
+
+def score_prompt(prompt: str) -> dict[str, Any]:
+    """Retorna solo la puntuacion de claridad y un diagnostico rapido."""
+    analysis = analyze_prompt(prompt)
+    score = analysis["clarity_score"]
+    if score >= 8.0:
+        grade = "Excelente"
+    elif score >= 6.0:
+        grade = "Bueno"
+    elif score >= 4.0:
+        grade = "Regular"
+    elif score >= 2.0:
+        grade = "Pobre"
+    else:
+        grade = "Critico"
+    return {
+        "clarity_score": score,
+        "grade": grade,
+        "word_count": analysis["word_count"],
+        "prompt_type": analysis["prompt_type"],
+        "top_issues": [i["message"] for i in analysis["issues"][:3]],
+        "top_strengths": analysis["strengths"][:3],
+    }
+
+
+def extract_keywords(prompt: str) -> dict[str, Any]:
+    """Extrae palabras clave y conceptos del prompt."""
+    import re as _re
+
+    words = _re.findall(r"\b[a-zA-Z]{3,}\b", prompt.lower())
+    stop_words = {
+        "the", "and", "for", "are", "but", "not", "you", "all", "any", "can",
+        "her", "was", "one", "our", "out", "has", "have", "had", "did", "being",
+        "los", "las", "del", "por", "con", "una", "uno", "para", "como", "mas",
+        "pero", "sus", "este", "esta", "esto", "eso", "esa", "que", "una",
+    }
+    filtered = [w for w in words if w not in stop_words]
+    from collections import Counter
+
+    counts = Counter(filtered)
+    return {
+        "keywords": counts.most_common(10),
+        "total_unique_words": len(counts),
+        "total_words": len(words),
+    }
+
+
+def prompt_to_json_schema(prompt: str) -> dict[str, Any]:
+    """Infiere un JSON Schema basico a partir del prompt."""
+    analysis = analyze_prompt(prompt)
+    prompt_type = analysis["prompt_type"]
+
+    schema: dict[str, Any] = {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": False,
+    }
+
+    if prompt_type == "analytical":
+        schema["properties"] = {
+            "summary": {"type": "string"},
+            "analysis": {"type": "string"},
+            "conclusions": {"type": "array", "items": {"type": "string"}},
+        }
+    elif prompt_type == "creative":
+        schema["properties"] = {
+            "content": {"type": "string"},
+            "title": {"type": "string"},
+        }
+    elif prompt_type == "instruction":
+        schema["properties"] = {
+            "result": {"type": "string"},
+            "steps": {"type": "array", "items": {"type": "string"}},
+        }
+    elif prompt_type == "question":
+        schema["properties"] = {
+            "answer": {"type": "string"},
+            "confidence": {"type": "number"},
+        }
+    else:
+        schema["properties"] = {
+            "response": {"type": "string"},
+        }
+
+    schema["required"] = list(schema["properties"].keys())
+    return {
+        "prompt_type": prompt_type,
+        "inferred_schema": schema,
+        "note": "Schema inferido heuristicamente. Ajusta segun necesidades especificas.",
+    }
+
+
+def rewrite_for_audience(prompt: str, audience: str) -> str:
+    """Reescribe un prompt adaptandolo para una audiencia especifica."""
+    return (
+        f"## Audiencia objetivo\n"
+        f"{audience.strip()}\n\n"
+        f"## Prompt adaptado\n"
+        f"{prompt.strip()}\n\n"
+        f"Adapta tu respuesta para la audiencia indicada, ajustando tono, "
+        f"complejidad y terminologia segun sea apropiado."
+    )
+
+
+def merge_prompts(prompts: list[str]) -> str:
+    """Fusiona multiples prompts en uno solo estructurado."""
+    sections: list[str] = ["## Tarea combinada"]
+    for i, p in enumerate(prompts, 1):
+        sections.append(f"### Subtarea {i}\n{p.strip()}")
+    sections.append(
+        "Responde a todas las subtareas en orden, numerando cada seccion de tu respuesta."
+    )
+    return "\n\n".join(sections)
+
+
+def simplify_prompt(prompt: str) -> dict[str, Any]:
+    """Simplifica un prompt removiendo redundancias y acortando."""
+    import re as _re
+
+    simplified = prompt.strip()
+    changes: list[str] = []
+
+    # Remover espacios multiples
+    new = _re.sub(r" {2,}", " ", simplified)
+    if new != simplified:
+        changes.append("Se removieron espacios multiples.")
+    simplified = new
+
+    # Remover lineas vacias consecutivas
+    new = _re.sub(r"\n{3,}", "\n\n", simplified)
+    if new != simplified:
+        changes.append("Se redujeron saltos de linea excesivos.")
+    simplified = new
+
+    # Si es muy largo, tomar primera y ultima parte
+    words = simplified.split()
+    if len(words) > 200:
+        first_part = " ".join(words[:100])
+        last_part = " ".join(words[-50:])
+        simplified = f"{first_part}\n\n[...contenido condensado...]\n\n{last_part}"
+        changes.append("Se condenso el contenido manteniendo inicio y final.")
+
+    # Remover repeticiones de instrucciones
+    sentences = simplified.split(". ")
+    seen: set[str] = set()
+    unique: list[str] = []
+    for s in sentences:
+        s_clean = s.strip().lower()
+        if s_clean and s_clean not in seen:
+            seen.add(s_clean)
+            unique.append(s)
+    if len(unique) < len(sentences):
+        changes.append("Se removieron oraciones duplicadas.")
+    simplified = ". ".join(unique)
+
+    return {
+        "original": prompt,
+        "simplified": simplified,
+        "changes": changes or ["No se requirieron simplificaciones significativas."],
+        "original_words": len(prompt.split()),
+        "simplified_words": len(simplified.split()),
+    }
+
+
+def validate_prompt_quality(prompt: str) -> dict[str, Any]:
+    """Valida la calidad general de un prompt retornando un diagnostico completo."""
+    analysis = analyze_prompt(prompt)
+    score = analysis["clarity_score"]
+
+    checks: list[dict[str, Any]] = [
+        {"check": "has_role", "passed": analysis["has_role"], "weight": 0.8},
+        {"check": "has_examples", "passed": analysis["has_examples"], "weight": 1.2},
+        {"check": "has_format", "passed": analysis["has_format_spec"], "weight": 0.8},
+        {"check": "adequate_length", "passed": 20 <= analysis["word_count"] <= 500, "weight": 1.5},
+        {"check": "no_vague_words", "passed": len(analysis.get("vague_words_found", [])) == 0, "weight": 1.0},
+        {"check": "no_contradictions", "passed": len(analysis["issues"]) == 0 or
+            not any(i.get("code") == "CONTRADICTION" for i in analysis["issues"]), "weight": 1.0},
+    ]
+
+    passed_count = sum(1 for c in checks if c["passed"])
+    total_checks = len(checks)
+    quality_pct = round(passed_count / total_checks * 100, 1)
+
+    if quality_pct >= 80:
+        verdict = "apto"
+    elif quality_pct >= 60:
+        verdict = "apto_con_mejoras"
+    else:
+        verdict = "requiere_reescritura"
+
+    return {
+        "quality_percentage": quality_pct,
+        "verdict": verdict,
+        "checks_passed": passed_count,
+        "checks_total": total_checks,
+        "checks": checks,
+        "clarity_score": score,
+        "recommendations": analysis["suggestions"][:5],
+    }

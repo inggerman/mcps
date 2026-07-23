@@ -43,3 +43,8 @@ data/
 .env
 *.key
 *.pem
+
+# Large files
+mcp-all-images.tar
+*.tar
+

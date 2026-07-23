@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from typing import Any
 
@@ -94,3 +95,132 @@ def execute_query(
         "row_count": len(selected),
         "truncated": truncated,
     }
+
+
+def table_row_count(engine: Engine, table: str, schema: str | None = None) -> dict[str, Any]:
+    """Número de filas en una tabla."""
+    inspector = inspect(engine)
+    if table not in inspector.get_table_names(schema=schema):
+        raise ValidationError(field="table", message=f"La tabla '{table}' no existe.")
+    with engine.begin() as conn:
+        result = conn.execute(text(f"SELECT COUNT(*) AS count FROM {table}"))
+        count = result.scalar() or 0
+    return {"table": table, "row_count": int(count)}
+
+
+def table_sample(
+    engine: Engine, table: str, n: int = 10, schema: str | None = None,
+) -> dict[str, Any]:
+    """Muestra de n filas de una tabla."""
+    inspector = inspect(engine)
+    if table not in inspector.get_table_names(schema=schema):
+        raise ValidationError(field="table", message=f"La tabla '{table}' no existe.")
+    return execute_query(engine, f"SELECT * FROM {table} LIMIT {int(n)}", max_rows=int(n), read_only=True)
+
+
+def table_distinct_values(
+    engine: Engine, table: str, column: str, n: int = 50, schema: str | None = None,
+) -> dict[str, Any]:
+    """Valores distintos de una columna en una tabla."""
+    inspector = inspect(engine)
+    if table not in inspector.get_table_names(schema=schema):
+        raise ValidationError(field="table", message=f"La tabla '{table}' no existe.")
+    cols = {c["name"] for c in inspector.get_columns(table, schema=schema)}
+    if column not in cols:
+        raise ValidationError(field="column", message=f"La columna '{column}' no existe en '{table}'.")
+    result = execute_query(
+        engine, f"SELECT DISTINCT {column} AS val FROM {table} LIMIT {int(n)}",
+        max_rows=int(n), read_only=True,
+    )
+    return {
+        "table": table,
+        "column": column,
+        "values": [r["val"] for r in result["rows"]],
+        "count": len(result["rows"]),
+    }
+
+
+def get_table_stats(engine: Engine, table: str, schema: str | None = None) -> dict[str, Any]:
+    """Estadísticas básicas de una tabla (row count, column count, size for SQLite)."""
+    inspector = inspect(engine)
+    if table not in inspector.get_table_names(schema=schema):
+        raise ValidationError(field="table", message=f"La tabla '{table}' no existe.")
+    cols = inspector.get_columns(table, schema=schema)
+    with engine.begin() as conn:
+        count_result = conn.execute(text(f"SELECT COUNT(*) FROM {table}"))
+        row_count = count_result.scalar() or 0
+    return {
+        "table": table,
+        "row_count": int(row_count),
+        "column_count": len(cols),
+        "columns": [c["name"] for c in cols],
+    }
+
+
+def explain_query(engine: Engine, query: str, read_only: bool = True) -> dict[str, Any]:
+    """Ejecuta EXPLAIN QUERY PLAN (SQLite) o EXPLAIN (PostgreSQL)."""
+    dialect = engine.dialect.name
+    if dialect == "sqlite":
+        explain_sql = f"EXPLAIN QUERY PLAN {query}"
+    else:
+        explain_sql = f"EXPLAIN {query}"
+    return execute_query(engine, explain_sql, max_rows=100, read_only=False)
+
+
+def export_to_csv(
+    engine: Engine, table: str, max_rows: int = 1000, schema: str | None = None,
+) -> str:
+    """Exporta una tabla a formato CSV."""
+    inspector = inspect(engine)
+    if table not in inspector.get_table_names(schema=schema):
+        raise ValidationError(field="table", message=f"La tabla '{table}' no existe.")
+    result = execute_query(engine, f"SELECT * FROM {table}", max_rows=max_rows, read_only=True)
+    if not result["rows"]:
+        return ""
+    import csv
+    import io
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=result["columns"])
+    writer.writeheader()
+    for row in result["rows"]:
+        writer.writerow(row)
+    return output.getvalue()
+
+
+def export_to_json(
+    engine: Engine, table: str, max_rows: int = 1000, schema: str | None = None,
+) -> str:
+    """Exporta una tabla a formato JSON."""
+    inspector = inspect(engine)
+    if table not in inspector.get_table_names(schema=schema):
+        raise ValidationError(field="table", message=f"La tabla '{table}' no existe.")
+    result = execute_query(engine, f"SELECT * FROM {table}", max_rows=max_rows, read_only=True)
+    return json.dumps(result["rows"], indent=2, ensure_ascii=False, default=str)
+
+
+def get_schemas(engine: Engine) -> list[str]:
+    """Lista los schemas de la base de datos."""
+    inspector = inspect(engine)
+    return inspector.get_schema_names()
+
+
+def get_views(engine: Engine, schema: str | None = None) -> list[str]:
+    """Lista las vistas de la base de datos."""
+    inspector = inspect(engine)
+    return inspector.get_view_names(schema=schema)
+
+
+def query_to_markdown(
+    engine: Engine, query: str, max_rows: int = 50, read_only: bool = True,
+) -> str:
+    """Ejecuta una consulta y retorna el resultado como tabla Markdown."""
+    result = execute_query(engine, query, max_rows=max_rows, read_only=read_only)
+    if not result["rows"]:
+        return "*Sin resultados.*"
+    headers = "| " + " | ".join(str(c) for c in result["columns"]) + " |"
+    separator = "|" + "|".join(" --- " for _ in result["columns"]) + "|"
+    rows = []
+    for row in result["rows"]:
+        cells = "| " + " | ".join(str(v) for v in row.values()) + " |"
+        rows.append(cells)
+    return "\n".join([headers, separator, *rows])

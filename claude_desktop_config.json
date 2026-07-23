@@ -12,7 +12,8 @@
       ],
       "env": {
         "LOG_LEVEL": "INFO",
-        "LOG_FORMAT": "console"
+        "LOG_FORMAT": "console",
+        "TABULAR_ALLOWED_ROOT": "C:/Users/germa/Documents/IA/mcps"
       }
     },
     "mcp-calendar": {
@@ -43,7 +44,8 @@
       ],
       "env": {
         "LOG_LEVEL": "INFO",
-        "LOG_FORMAT": "console"
+        "LOG_FORMAT": "console",
+        "MCP_MARKDOWN_ALLOWED_ROOT": "C:/Users/germa/Documents/IA/mcps"
       }
     },
     "mcp-prompt-engineer": {
@@ -55,52 +57,6 @@
         "python",
         "-m",
         "mcp_prompt_engineer.server"
-      ],
-      "env": {
-        "LOG_LEVEL": "INFO",
-        "LOG_FORMAT": "console"
-      }
-    },
-    "mcp-kafka": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "C:/Users/germa/Documents/IA/mcps/mcp-kafka",
-        "run",
-        "python",
-        "-m",
-        "mcp_kafka.server"
-      ],
-      "env": {
-        "LOG_LEVEL": "INFO",
-        "LOG_FORMAT": "console",
-        "MCP_KAFKA_BOOTSTRAP_SERVERS": "localhost:9092"
-      }
-    },
-    "mcp-docker": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "C:/Users/germa/Documents/IA/mcps/mcp-docker",
-        "run",
-        "python",
-        "-m",
-        "mcp_docker.server"
-      ],
-      "env": {
-        "LOG_LEVEL": "INFO",
-        "LOG_FORMAT": "console"
-      }
-    },
-    "mcp-fetch": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "C:/Users/germa/Documents/IA/mcps/mcp-fetch",
-        "run",
-        "python",
-        "-m",
-        "mcp_fetch.server"
       ],
       "env": {
         "LOG_LEVEL": "INFO",
@@ -123,6 +79,52 @@
         "MCP_SO_AWS_REGION": "us-east-1"
       }
     },
+    "mcp-fetch": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-fetch",
+        "run",
+        "python",
+        "-m",
+        "mcp_fetch.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console"
+      }
+    },
+    "mcp-docker": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-docker",
+        "run",
+        "python",
+        "-m",
+        "mcp_docker.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console"
+      }
+    },
+    "mcp-kafka": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-kafka",
+        "run",
+        "python",
+        "-m",
+        "mcp_kafka.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "MCP_KAFKA_BOOTSTRAP_SERVERS": "localhost:9092"
+      }
+    },
     "mcp-project-memory": {
       "command": "uv",
       "args": [
@@ -136,7 +138,8 @@
       "env": {
         "LOG_LEVEL": "INFO",
         "LOG_FORMAT": "console",
-        "MEMORY_DIR": "C:/Users/germa/Documents/IA/mcps/.ai-memory",
+        "MEMORY_MEMORY_DIR": "C:/Users/germa/Documents/IA/mcps/.ai-memory",
+        "MEMORY_MEMORY_FILE": "project_memory.json",
         "MEMORY_PROJECT_NAME": "mcps",
         "MEMORY_PROJECT_ROOT": "C:/Users/germa/Documents/IA/mcps",
         "MEMORY_AUTO_SYNC": "false"
@@ -336,7 +339,14 @@
     },
     "mcp-database": {
       "command": "uv",
-      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-database", "run", "python", "-m", "mcp_database.server"],
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-database",
+        "run",
+        "python",
+        "-m",
+        "mcp_database.server"
+      ],
       "env": {
         "LOG_LEVEL": "INFO",
         "LOG_FORMAT": "console",
@@ -346,7 +356,14 @@
     },
     "mcp-filesystem": {
       "command": "uv",
-      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-filesystem", "run", "python", "-m", "mcp_filesystem.server"],
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-filesystem",
+        "run",
+        "python",
+        "-m",
+        "mcp_filesystem.server"
+      ],
       "env": {
         "LOG_LEVEL": "INFO",
         "LOG_FORMAT": "console",
@@ -356,7 +373,14 @@
     },
     "mcp-object-storage": {
       "command": "uv",
-      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-object-storage", "run", "python", "-m", "mcp_object_storage.server"],
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-object-storage",
+        "run",
+        "python",
+        "-m",
+        "mcp_object_storage.server"
+      ],
       "env": {
         "LOG_LEVEL": "INFO",
         "LOG_FORMAT": "console",
@@ -366,7 +390,14 @@
     },
     "mcp-openapi": {
       "command": "uv",
-      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-openapi", "run", "python", "-m", "mcp_openapi.server"],
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-openapi",
+        "run",
+        "python",
+        "-m",
+        "mcp_openapi.server"
+      ],
       "env": {
         "LOG_LEVEL": "INFO",
         "LOG_FORMAT": "console",
@@ -376,7 +407,14 @@
     },
     "mcp-documents": {
       "command": "uv",
-      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-documents", "run", "python", "-m", "mcp_documents.server"],
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-documents",
+        "run",
+        "python",
+        "-m",
+        "mcp_documents.server"
+      ],
       "env": {
         "LOG_LEVEL": "INFO",
         "LOG_FORMAT": "console",
@@ -385,7 +423,14 @@
     },
     "mcp-browser": {
       "command": "uv",
-      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-browser", "run", "python", "-m", "mcp_browser.server"],
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-browser",
+        "run",
+        "python",
+        "-m",
+        "mcp_browser.server"
+      ],
       "env": {
         "LOG_LEVEL": "INFO",
         "LOG_FORMAT": "console",
@@ -395,7 +440,14 @@
     },
     "mcp-kubernetes": {
       "command": "uv",
-      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-kubernetes", "run", "python", "-m", "mcp_kubernetes.server"],
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-kubernetes",
+        "run",
+        "python",
+        "-m",
+        "mcp_kubernetes.server"
+      ],
       "env": {
         "LOG_LEVEL": "INFO",
         "LOG_FORMAT": "console",
@@ -405,7 +457,14 @@
     },
     "mcp-observability": {
       "command": "uv",
-      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-observability", "run", "python", "-m", "mcp_observability.server"],
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-observability",
+        "run",
+        "python",
+        "-m",
+        "mcp_observability.server"
+      ],
       "env": {
         "LOG_LEVEL": "INFO",
         "LOG_FORMAT": "console",
@@ -415,12 +474,85 @@
     },
     "mcp-terraform": {
       "command": "uv",
-      "args": ["--directory", "C:/Users/germa/Documents/IA/mcps/mcp-terraform", "run", "python", "-m", "mcp_terraform.server"],
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-terraform",
+        "run",
+        "python",
+        "-m",
+        "mcp_terraform.server"
+      ],
       "env": {
         "LOG_LEVEL": "INFO",
         "LOG_FORMAT": "console",
         "TERRAFORM_ROOT": "C:/Users/germa/Documents/IA/mcps",
         "TERRAFORM_ALLOW_APPLY": "false"
+      }
+    },
+    "mcp-snyk": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-snyk",
+        "run",
+        "python",
+        "-m",
+        "mcp_snyk.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "SNYK_PROJECT_PATH": "C:/Users/germa/Documents/IA/mcps"
+      }
+    },
+    "mcp-sonar": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-sonar",
+        "run",
+        "python",
+        "-m",
+        "mcp_sonar.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "SONAR_PROJECT_PATH": "C:/Users/germa/Documents/IA/mcps",
+        "SONAR_HOST_URL": "http://localhost:9000"
+      }
+    },
+    "mcp-java-build": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-java-build",
+        "run",
+        "python",
+        "-m",
+        "mcp_java_build.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "JAVA_PROJECT_PATH": "C:/Users/germa/Documents/IA/mcps"
+      }
+    },
+    "mcp-agent-runner": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-agent-runner",
+        "run",
+        "python",
+        "-m",
+        "mcp_agent_runner.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "AGENT_PROJECT_PATH": "C:/Users/germa/Documents/IA/mcps",
+        "AGENT_N8N_WEBHOOK_BASE_URL": "http://localhost:5678/webhook"
       }
     },
     "mcp-personal-vault": {
@@ -441,6 +573,26 @@
         "PERSONAL_VAULT_ALLOW_WRITE": "true",
         "PERSONAL_VAULT_ALLOW_HIGHLY_SENSITIVE": "false",
         "PERSONAL_VAULT_ALLOW_SECRETS": "false"
+      }
+    },
+    "mcp-gob-mexico": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/Users/germa/Documents/IA/mcps/mcp-gob-mexico",
+        "run",
+        "python",
+        "-m",
+        "mcp_gob_mexico.server"
+      ],
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "LOG_FORMAT": "console",
+        "GOB_MX_INEGI_TOKEN": "",
+        "GOB_MX_BANXICO_TOKEN": "",
+        "GOB_MX_HTTP_TIMEOUT": "30",
+        "GOB_MX_MAX_RETRIES": "3",
+        "GOB_MX_CACHE_TTL": "300"
       }
     }
   }

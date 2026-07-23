@@ -25,13 +25,19 @@ from mcp_calendar.tools.business_days import (
     add_business_days,
     business_days_in_month,
     calculate_business_days,
+    date_diff,
+    format_date,
     get_country_list,
+    get_easter,
     get_holidays,
     get_mexico_holidays,
+    get_quarter_info,
+    get_week_number,
     is_business_day,
     next_business_day,
     previous_business_day,
 )
+from mcp_calendar import resources as res
 from mcp_calendar.tools.currency import (
     convert_currency,
     get_exchange_rate,
@@ -531,6 +537,161 @@ async def tool_get_rate_history(
 # ---------------------------------------------------------------------------
 # Factory + Entrypoint
 # ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos — Utilidades de calendario
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    name="get_quarter_info",
+    description="Retorna informacion del trimestre (Q1-Q4) de una fecha dada.",
+)
+def tool_get_quarter_info(check_date: str) -> dict[str, Any]:
+    try:
+        return get_quarter_info(check_date=check_date)
+    except McpError as exc:
+        _handle_mcp_error("get_quarter_info", exc)
+    except Exception as exc:
+        _handle_unexpected_error("get_quarter_info", exc)
+    return {}
+
+
+@mcp.tool(
+    name="get_week_number",
+    description="Retorna el numero de semana ISO 8601 de una fecha dada.",
+)
+def tool_get_week_number(check_date: str) -> dict[str, Any]:
+    try:
+        return get_week_number(check_date=check_date)
+    except McpError as exc:
+        _handle_mcp_error("get_week_number", exc)
+    except Exception as exc:
+        _handle_unexpected_error("get_week_number", exc)
+    return {}
+
+
+@mcp.tool(
+    name="date_diff",
+    description="Calcula la diferencia en dias entre dos fechas.",
+)
+def tool_date_diff(start_date: str, end_date: str) -> dict[str, Any]:
+    try:
+        return date_diff(start_date=start_date, end_date=end_date)
+    except McpError as exc:
+        _handle_mcp_error("date_diff", exc)
+    except Exception as exc:
+        _handle_unexpected_error("date_diff", exc)
+    return {}
+
+
+@mcp.tool(
+    name="format_date",
+    description="Formatea una fecha en el formato especificado (strftime).",
+)
+def tool_format_date(check_date: str, fmt: str = "%Y-%m-%d") -> dict[str, Any]:
+    try:
+        return format_date(check_date=check_date, fmt=fmt)
+    except McpError as exc:
+        _handle_mcp_error("format_date", exc)
+    except Exception as exc:
+        _handle_unexpected_error("format_date", exc)
+    return {}
+
+
+@mcp.tool(
+    name="get_easter",
+    description="Calcula la fecha del Domingo de Pascua para un anio dado.",
+)
+def tool_get_easter(year: int) -> dict[str, Any]:
+    try:
+        return get_easter(year=year)
+    except McpError as exc:
+        _handle_mcp_error("get_easter", exc)
+    except Exception as exc:
+        _handle_unexpected_error("get_easter", exc)
+    return {}
+
+
+# ---------------------------------------------------------------------------
+# Resources estaticos
+# ---------------------------------------------------------------------------
+
+
+@mcp.resource("calendar://configuration")
+def res_config() -> str:
+    return res.calendar_configuration()
+
+
+@mcp.resource("calendar://supported-countries")
+def res_countries() -> str:
+    return res.supported_countries()
+
+
+@mcp.resource("calendar://mexico-holidays-guide")
+def res_mx_holidays() -> str:
+    return res.mexico_holidays_guide()
+
+
+@mcp.resource("calendar://currency-api-info")
+def res_currency_api() -> str:
+    return res.currency_api_info()
+
+
+@mcp.resource("calendar://iso-date-format")
+def res_iso_format() -> str:
+    return res.iso_date_format_guide()
+
+
+@mcp.resource("calendar://business-days-tips")
+def res_bd_tips() -> str:
+    return res.business_days_tips()
+
+
+@mcp.resource("calendar://currency-conversion-tips")
+def res_cc_tips() -> str:
+    return res.currency_conversion_tips()
+
+
+@mcp.resource("calendar://common-workflows")
+def res_workflows() -> str:
+    return res.common_calendar_workflows()
+
+
+@mcp.resource("calendar://error-codes")
+def res_errors() -> str:
+    return res.calendar_error_codes()
+
+
+@mcp.resource("calendar://iso-week-info")
+def res_week_info() -> str:
+    return res.iso_week_info()
+
+
+@mcp.resource("calendar://quarter-info")
+def res_quarter() -> str:
+    return res.quarter_info()
+
+
+@mcp.resource("calendar://easter-calculation")
+def res_easter() -> str:
+    return res.easter_calculation()
+
+
+@mcp.resource("calendar://date-arithmetic-tips")
+def res_date_tips() -> str:
+    return res.date_arithmetic_tips()
+
+
+@mcp.resource("calendar://examples/business-days")
+def res_example_bd() -> str:
+    return res.example_business_days()
+
+
+@mcp.resource("calendar://examples/currency-conversion")
+def res_example_cc() -> str:
+    return res.example_currency_conversion()
 
 
 def create_server() -> FastMCP:

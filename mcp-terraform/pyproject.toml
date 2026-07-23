@@ -1,14 +1,14 @@
 [project]
 name = "mcp-terraform"
 version = "1.0.0"
-description = "MCP server for controlled Terraform workflows"
+description = "MCP server for Terraform IaC management"
 requires-python = ">=3.11"
 dependencies = [
     "fastmcp>=2.3",
-    "mcp-shared",
     "pydantic>=2.7",
     "pydantic-settings>=2.3",
     "structlog>=24.1",
+    "mcp-shared",
 ]
 
 [tool.uv.sources]
@@ -20,3 +20,12 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mcp_terraform"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*", "*/test_*"]

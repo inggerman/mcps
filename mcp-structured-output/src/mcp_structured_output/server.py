@@ -15,11 +15,28 @@ from mcp_shared.logging import get_logger, setup_logging
 
 from mcp_structured_output.config import settings
 from mcp_structured_output.tools import (
+    check_schema_compatibility,
+    count_schema_fields,
+    extract_schema_fields,
+    flatten_schema,
     generate_schema,
     invoke_structured,
+    list_schema_keywords,
+    merge_schemas,
     sanitize_schema,
+    schema_complexity,
+    schema_diff,
+    schema_to_json_example,
+    schema_to_markdown,
+    schema_to_openapi,
+    schema_to_python,
+    schema_to_table,
+    schema_to_typescript,
+    simplify_schema,
+    validate_json_against_schema,
     validate_schema,
 )
+from mcp_structured_output import resources as res
 
 # ---------------------------------------------------------------------------
 # Setup (antes de crear FastMCP)
@@ -237,6 +254,181 @@ def tool_sanitize_schema(schema: dict[str, Any]) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Entrypoint
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+def _handle(name: str, fn, *args, **kwargs):
+    try:
+        return fn(*args, **kwargs)
+    except McpError as exc:
+        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+    except Exception as exc:
+        logger.exception(f"Error inesperado en {name}", exc_info=exc)
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+
+
+@mcp.tool(name="schema_to_typescript", description="Convierte un JSON Schema a interfaces TypeScript.")
+def tool_schema_to_typescript(schema: dict[str, Any]) -> str:
+    return _handle("schema_to_typescript", schema_to_typescript, schema=schema)
+
+
+@mcp.tool(name="schema_to_python", description="Convierte un JSON Schema a una clase Pydantic.")
+def tool_schema_to_python(schema: dict[str, Any], class_name: str = "RootModel") -> str:
+    return _handle("schema_to_python", schema_to_python, schema=schema, class_name=class_name)
+
+
+@mcp.tool(name="flatten_schema", description="Aplana un schema resolviendo $ref internos.")
+def tool_flatten_schema(schema: dict[str, Any]) -> dict[str, Any]:
+    return _handle("flatten_schema", flatten_schema, schema=schema)
+
+
+@mcp.tool(name="merge_schemas", description="Combina multiples schemas en uno solo.")
+def tool_merge_schemas(schemas: list[dict[str, Any]]) -> dict[str, Any]:
+    return _handle("merge_schemas", merge_schemas, schemas=schemas)
+
+
+@mcp.tool(name="extract_schema_fields", description="Lista todos los campos de un schema con tipo y ruta.")
+def tool_extract_schema_fields(schema: dict[str, Any]) -> list[dict[str, Any]]:
+    return _handle("extract_schema_fields", extract_schema_fields, schema=schema)
+
+
+@mcp.tool(name="schema_to_markdown", description="Genera documentacion Markdown desde un JSON Schema.")
+def tool_schema_to_markdown(schema: dict[str, Any]) -> str:
+    return _handle("schema_to_markdown", schema_to_markdown, schema=schema)
+
+
+@mcp.tool(name="validate_json_against_schema", description="Valida una instancia JSON contra un JSON Schema.")
+def tool_validate_json_against_schema(instance: dict[str, Any], schema: dict[str, Any]) -> dict[str, Any]:
+    return _handle("validate_json_against_schema", validate_json_against_schema, instance=instance, schema=schema)
+
+
+@mcp.tool(name="schema_diff", description="Compara dos schemas y retorna las diferencias.")
+def tool_schema_diff(schema_a: dict[str, Any], schema_b: dict[str, Any]) -> dict[str, Any]:
+    return _handle("schema_diff", schema_diff, schema_a=schema_a, schema_b=schema_b)
+
+
+@mcp.tool(name="schema_complexity", description="Calcula metricas de complejidad de un schema.")
+def tool_schema_complexity(schema: dict[str, Any]) -> dict[str, Any]:
+    return _handle("schema_complexity", schema_complexity, schema=schema)
+
+
+@mcp.tool(name="simplify_schema", description="Simplifica un schema removiendo metadatos innecesarios.")
+def tool_simplify_schema(schema: dict[str, Any]) -> dict[str, Any]:
+    return _handle("simplify_schema", simplify_schema, schema=schema)
+
+
+@mcp.tool(name="schema_to_json_example", description="Genera un ejemplo JSON desde un JSON Schema.")
+def tool_schema_to_json_example(schema: dict[str, Any]) -> dict[str, Any]:
+    return _handle("schema_to_json_example", schema_to_json_example, schema=schema)
+
+
+@mcp.tool(name="list_schema_keywords", description="Lista todas las keywords usadas en un schema.")
+def tool_list_schema_keywords(schema: dict[str, Any]) -> list[str]:
+    return _handle("list_schema_keywords", list_schema_keywords, schema=schema)
+
+
+@mcp.tool(name="count_schema_fields", description="Cuenta el numero total de campos recursivamente.")
+def tool_count_schema_fields(schema: dict[str, Any]) -> dict[str, Any]:
+    return _handle("count_schema_fields", count_schema_fields, schema=schema)
+
+
+@mcp.tool(name="schema_to_table", description="Genera una representacion en tabla de un schema.")
+def tool_schema_to_table(schema: dict[str, Any]) -> str:
+    return _handle("schema_to_table", schema_to_table, schema=schema)
+
+
+@mcp.tool(name="check_schema_compatibility", description="Verifica compatibilidad con Bedrock y retorna un score.")
+def tool_check_schema_compatibility(schema: dict[str, Any]) -> dict[str, Any]:
+    return _handle("check_schema_compatibility", check_schema_compatibility, schema=schema)
+
+
+# ---------------------------------------------------------------------------
+# Resources estaticos
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(name="schema_to_openapi", description="Convierte un JSON Schema a un componente OpenAPI 3.1.")
+def tool_schema_to_openapi(schema: dict[str, Any], path: str = "/data") -> dict[str, Any]:
+    return _handle("schema_to_openapi", schema_to_openapi, schema=schema, path=path)
+
+
+@mcp.resource("structured-output://configuration")
+def res_config() -> str:
+    return res.structured_output_configuration()
+
+
+@mcp.resource("structured-output://supported-providers")
+def res_providers() -> str:
+    return res.supported_providers()
+
+
+@mcp.resource("structured-output://json-schema-basics")
+def res_basics() -> str:
+    return res.json_schema_basics()
+
+
+@mcp.resource("structured-output://bedrock-compatibility")
+def res_bedrock() -> str:
+    return res.bedrock_compatibility_guide()
+
+
+@mcp.resource("structured-output://validation-tips")
+def res_validation() -> str:
+    return res.schema_validation_tips()
+
+
+@mcp.resource("structured-output://generation-tips")
+def res_generation() -> str:
+    return res.schema_generation_tips()
+
+
+@mcp.resource("structured-output://sanitization-tips")
+def res_sanitization() -> str:
+    return res.schema_sanitization_tips()
+
+
+@mcp.resource("structured-output://common-workflows")
+def res_workflows() -> str:
+    return res.common_structured_output_workflows()
+
+
+@mcp.resource("structured-output://error-codes")
+def res_errors() -> str:
+    return res.structured_output_error_codes()
+
+
+@mcp.resource("structured-output://json-schema-types")
+def res_types() -> str:
+    return res.json_schema_types_reference()
+
+
+@mcp.resource("structured-output://bedrock-models")
+def res_models() -> str:
+    return res.bedrock_models_reference()
+
+
+@mcp.resource("structured-output://openai-compatible-guide")
+def res_openai() -> str:
+    return res.openai_compatible_guide()
+
+
+@mcp.resource("structured-output://schema-keywords")
+def res_keywords() -> str:
+    return res.schema_keywords_reference()
+
+
+@mcp.resource("structured-output://examples/generate-schema")
+def res_example_gen() -> str:
+    return res.example_generate_schema()
+
+
+@mcp.resource("structured-output://examples/invoke-structured")
+def res_example_invoke() -> str:
+    return res.example_invoke_structured()
+
 
 if __name__ == "__main__":
     if settings.mcp_transport == "streamable-http":

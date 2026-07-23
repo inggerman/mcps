@@ -687,3 +687,79 @@ def export_memory_snapshot(memory_path: Path) -> dict[str, Any]:
         El contenido completo del archivo de memoria como dict.
     """
     return _load_memory(memory_path)
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+def get_pending_tasks(memory_path: Path, priority: str | None = None) -> list[dict[str, Any]]:
+    """Retorna las tareas pendientes, opcionalmente filtradas por prioridad."""
+    memory = _load_memory(memory_path)
+    tasks = memory.get("pending_tasks", [])
+    if priority:
+        valid = ("high", "medium", "low")
+        if priority not in valid:
+            raise ValidationError(
+                field="priority", message=f"Prioridades validas: {', '.join(valid)}."
+            )
+        tasks = [t for t in tasks if t.get("priority") == priority]
+    priority_order = {"high": 0, "medium": 1, "low": 2}
+    return sorted(tasks, key=lambda t: priority_order.get(t.get("priority", "low"), 2))
+
+
+def get_completed_tasks(memory_path: Path, limit: int = 50) -> list[dict[str, Any]]:
+    """Retorna las tareas completadas, mas recientes primero."""
+    if limit < 1 or limit > 1000:
+        raise ValidationError(field="limit", message="El limite debe estar entre 1 y 1000.")
+    memory = _load_memory(memory_path)
+    tasks = memory.get("completed_tasks", [])
+    return list(reversed(tasks[-limit:]))
+
+
+def get_invariants(memory_path: Path) -> list[str]:
+    """Retorna la lista de invariantes del proyecto."""
+    memory = _load_memory(memory_path)
+    return memory.get("invariants", [])
+
+
+def add_invariant(memory_path: Path, invariant: str) -> dict[str, Any]:
+    """Agrega una invariante al proyecto."""
+    if not invariant or len(invariant.strip()) < 5:
+        raise ValidationError(
+            field="invariant", message="La invariante debe tener al menos 5 caracteres."
+        )
+    memory = _load_memory(memory_path)
+    invariants = memory.setdefault("invariants", [])
+    text = invariant.strip()
+    if text not in invariants:
+        invariants.append(text)
+        _save_memory(memory_path, memory)
+    return {"invariants": invariants, "added": text}
+
+
+def get_memory_stats(memory_path: Path) -> dict[str, Any]:
+    """Retorna estadisticas resumidas de la memoria del proyecto."""
+    memory = _load_memory(memory_path)
+    components = memory.get("components", {})
+    by_status: dict[str, int] = {}
+    for c in components.values():
+        s = c.get("status", "unknown")
+        by_status[s] = by_status.get(s, 0) + 1
+    decisions = memory.get("decisions", [])
+    active_decisions = sum(1 for d in decisions if d.get("status") == "active")
+    pending = memory.get("pending_tasks", [])
+    completed = memory.get("completed_tasks", [])
+    sessions = memory.get("sessions", [])
+    return {
+        "total_components": len(components),
+        "components_by_status": by_status,
+        "total_decisions": len(decisions),
+        "active_decisions": active_decisions,
+        "pending_tasks": len(pending),
+        "completed_tasks": len(completed),
+        "total_sessions": len(sessions),
+        "invariants_count": len(memory.get("invariants", [])),
+        "last_updated": memory.get("_meta", {}).get("last_updated"),
+    }

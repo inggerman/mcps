@@ -14,7 +14,23 @@ from mcp_shared.errors import McpError
 from mcp_shared.logging import get_logger, setup_logging
 
 from mcp_fetch.config import settings
-from mcp_fetch.tools import extract_text, fetch_json, fetch_post, fetch_url
+from mcp_fetch.tools import (
+    batch_fetch_json,
+    check_url,
+    convert_html_to_markdown,
+    download_file,
+    extract_links,
+    extract_metadata,
+    extract_tables,
+    extract_text,
+    fetch_head,
+    fetch_json,
+    fetch_post,
+    fetch_url,
+    fetch_with_auth,
+    fetch_with_retry,
+)
+from mcp_fetch import resources as res
 
 # ---------------------------------------------------------------------------
 # Setup
@@ -222,6 +238,244 @@ def tool_fetch_json(
     except Exception as exc:
         logger.exception("Error inesperado en fetch_json", exc_info=exc)
         raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(name="fetch_head")
+def tool_fetch_head(
+    url: str,
+    headers: dict[str, str] | None = None,
+    timeout: float | None = None,
+) -> dict[str, Any]:
+    try:
+        return fetch_head(url=url, headers=headers, timeout=timeout)
+    except McpError as exc:
+        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+    except Exception as exc:
+        logger.exception("Error inesperado en fetch_head", exc_info=exc)
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+
+
+@mcp.tool(name="check_url")
+def tool_check_url(url: str, timeout: float | None = None) -> dict[str, Any]:
+    try:
+        return check_url(url=url, timeout=timeout)
+    except McpError as exc:
+        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+    except Exception as exc:
+        logger.exception("Error inesperado en check_url", exc_info=exc)
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+
+
+@mcp.tool(name="fetch_with_auth")
+def tool_fetch_with_auth(
+    url: str,
+    auth_type: str = "bearer",
+    token: str = "",
+    headers: dict[str, str] | None = None,
+    timeout: float | None = None,
+) -> dict[str, Any]:
+    try:
+        return fetch_with_auth(url=url, auth_type=auth_type, token=token, headers=headers, timeout=timeout)
+    except McpError as exc:
+        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+    except Exception as exc:
+        logger.exception("Error inesperado en fetch_with_auth", exc_info=exc)
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+
+
+@mcp.tool(name="extract_links")
+def tool_extract_links(
+    url: str,
+    headers: dict[str, str] | None = None,
+    timeout: float | None = None,
+    filter_pattern: str | None = None,
+) -> dict[str, Any]:
+    try:
+        return extract_links(url=url, headers=headers, timeout=timeout, filter_pattern=filter_pattern)
+    except McpError as exc:
+        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+    except Exception as exc:
+        logger.exception("Error inesperado en extract_links", exc_info=exc)
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+
+
+@mcp.tool(name="extract_metadata")
+def tool_extract_metadata(
+    url: str,
+    headers: dict[str, str] | None = None,
+    timeout: float | None = None,
+) -> dict[str, Any]:
+    try:
+        return extract_metadata(url=url, headers=headers, timeout=timeout)
+    except McpError as exc:
+        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+    except Exception as exc:
+        logger.exception("Error inesperado en extract_metadata", exc_info=exc)
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+
+
+@mcp.tool(name="extract_tables")
+def tool_extract_tables(
+    url: str,
+    headers: dict[str, str] | None = None,
+    timeout: float | None = None,
+) -> dict[str, Any]:
+    try:
+        return extract_tables(url=url, headers=headers, timeout=timeout)
+    except McpError as exc:
+        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+    except Exception as exc:
+        logger.exception("Error inesperado en extract_tables", exc_info=exc)
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+
+
+@mcp.tool(name="fetch_with_retry")
+def tool_fetch_with_retry(
+    url: str,
+    max_retries: int = 3,
+    delay_seconds: float = 1.0,
+    headers: dict[str, str] | None = None,
+    timeout: float | None = None,
+) -> dict[str, Any]:
+    try:
+        return fetch_with_retry(url=url, max_retries=max_retries, delay_seconds=delay_seconds, headers=headers, timeout=timeout)
+    except McpError as exc:
+        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+    except Exception as exc:
+        logger.exception("Error inesperado en fetch_with_retry", exc_info=exc)
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+
+
+@mcp.tool(name="batch_fetch_json")
+def tool_batch_fetch_json(
+    urls: list[str],
+    headers: dict[str, str] | None = None,
+    timeout: float | None = None,
+) -> list[dict[str, Any]]:
+    try:
+        return batch_fetch_json(urls=urls, headers=headers, timeout=timeout)
+    except McpError as exc:
+        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+    except Exception as exc:
+        logger.exception("Error inesperado en batch_fetch_json", exc_info=exc)
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+
+
+@mcp.tool(name="convert_html_to_markdown")
+def tool_convert_html_to_markdown(
+    url: str,
+    headers: dict[str, str] | None = None,
+    timeout: float | None = None,
+) -> dict[str, Any]:
+    try:
+        return convert_html_to_markdown(url=url, headers=headers, timeout=timeout)
+    except McpError as exc:
+        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+    except Exception as exc:
+        logger.exception("Error inesperado en convert_html_to_markdown", exc_info=exc)
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+
+
+@mcp.tool(name="download_file")
+def tool_download_file(
+    url: str,
+    output_path: str,
+    headers: dict[str, str] | None = None,
+    timeout: float | None = None,
+    max_bytes: int | None = None,
+) -> dict[str, Any]:
+    try:
+        return download_file(url=url, output_path=output_path, headers=headers, timeout=timeout, max_bytes=max_bytes)
+    except McpError as exc:
+        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+    except Exception as exc:
+        logger.exception("Error inesperado en download_file", exc_info=exc)
+        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+
+
+# ---------------------------------------------------------------------------
+# Resources estáticos
+# ---------------------------------------------------------------------------
+
+
+@mcp.resource("fetch://http-status-codes")
+def res_http_status_codes() -> str:
+    return res.http_status_codes()
+
+
+@mcp.resource("fetch://http-methods")
+def res_http_methods() -> str:
+    return res.http_methods_guide()
+
+
+@mcp.resource("fetch://content-types")
+def res_content_types() -> str:
+    return res.content_types_guide()
+
+
+@mcp.resource("fetch://security-best-practices")
+def res_security() -> str:
+    return res.security_best_practices()
+
+
+@mcp.resource("fetch://api-auth-guide")
+def res_api_auth() -> str:
+    return res.api_authentication_guide()
+
+
+@mcp.resource("fetch://rest-conventions")
+def res_rest() -> str:
+    return res.rest_api_conventions()
+
+
+@mcp.resource("fetch://json-path-guide")
+def res_json_path() -> str:
+    return res.json_path_guide()
+
+
+@mcp.resource("fetch://html-extraction-tips")
+def res_html_tips() -> str:
+    return res.html_extraction_tips()
+
+
+@mcp.resource("fetch://common-api-examples")
+def res_api_examples() -> str:
+    return res.common_api_examples()
+
+
+@mcp.resource("fetch://configuration")
+def res_config() -> str:
+    return res.fetch_configuration()
+
+
+@mcp.resource("fetch://rate-limiting-tips")
+def res_rate_limit() -> str:
+    return res.rate_limiting_tips()
+
+
+@mcp.resource("fetch://error-handling")
+def res_error_handling() -> str:
+    return res.error_handling_guide()
+
+
+@mcp.resource("fetch://url-validation-rules")
+def res_url_rules() -> str:
+    return res.url_validation_rules()
+
+
+@mcp.resource("fetch://examples/fetch-url")
+def res_example_fetch() -> str:
+    return res.example_fetch_url()
+
+
+@mcp.resource("fetch://examples/fetch-json")
+def res_example_json() -> str:
+    return res.example_fetch_json()
 
 
 # ---------------------------------------------------------------------------

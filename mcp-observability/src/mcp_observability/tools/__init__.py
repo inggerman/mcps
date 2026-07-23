@@ -1,7 +1,35 @@
 from mcp_observability.tools.observability_tools import (
     check_endpoint,
+    check_multiple_endpoints,
+    generate_slo_report,
+    get_prometheus_metadata,
+    get_prometheus_series,
+    list_prometheus_alerts,
+    list_prometheus_rules,
+    list_prometheus_targets,
+    loki_label_values,
+    loki_labels,
+    loki_status,
+    prometheus_range_query,
+    prometheus_status,
     query_loki,
     query_prometheus,
 )
 
-__all__ = ["check_endpoint", "query_loki", "query_prometheus"]
+__all__ = [
+    "check_endpoint",
+    "check_multiple_endpoints",
+    "generate_slo_report",
+    "get_prometheus_metadata",
+    "get_prometheus_series",
+    "list_prometheus_alerts",
+    "list_prometheus_rules",
+    "list_prometheus_targets",
+    "loki_label_values",
+    "loki_labels",
+    "loki_status",
+    "prometheus_range_query",
+    "prometheus_status",
+    "query_loki",
+    "query_prometheus",
+]

@@ -10,7 +10,7 @@ YELLOW := \033[0;33m
 CYAN   := \033[0;36m
 RESET  := \033[0m
 
-SERVERS := mcp-tabular mcp-calendar mcp-markdown mcp-prompt-engineer mcp-structured-output mcp-fetch mcp-docker mcp-kafka mcp-project-memory mcp-llm-router mcp-git mcp-github mcp-code-quality mcp-architecture mcp-event-driven mcp-orchestrator mcp-best-practices mcp-ci-cd mcp-design-patterns mcp-security-champion mcp-database mcp-filesystem mcp-object-storage mcp-openapi mcp-documents mcp-browser mcp-kubernetes mcp-observability mcp-terraform mcp-personal-vault
+SERVERS := mcp-tabular mcp-calendar mcp-markdown mcp-prompt-engineer mcp-structured-output mcp-fetch mcp-docker mcp-kafka mcp-project-memory mcp-llm-router mcp-git mcp-github mcp-code-quality mcp-architecture mcp-event-driven mcp-orchestrator mcp-best-practices mcp-ci-cd mcp-design-patterns mcp-security-champion mcp-snyk mcp-sonar mcp-java-build mcp-terraform mcp-agent-runner mcp-database mcp-filesystem mcp-object-storage mcp-openapi mcp-documents mcp-browser mcp-kubernetes mcp-observability mcp-personal-vault
 
 ##@ Setup
 
@@ -85,6 +85,10 @@ test: ## Ejecuta todos los tests
 		--cov=mcp_ci_cd \
 		--cov=mcp_design_patterns \
 		--cov=mcp_security_champion \
+		--cov=mcp_snyk \
+		--cov=mcp_sonar \
+		--cov=mcp_java_build \
+		--cov=mcp_terraform \
 		--cov=mcp_database \
 		--cov=mcp_filesystem \
 		--cov=mcp_object_storage \
@@ -94,6 +98,7 @@ test: ## Ejecuta todos los tests
 		--cov=mcp_kubernetes \
 		--cov=mcp_observability \
 		--cov=mcp_terraform \
+		--cov=mcp_agent_runner \
 		--cov=mcp_personal_vault \
 		--cov-report=term-missing
 

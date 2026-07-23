@@ -14,12 +14,39 @@
 #   8006 — mcp-fetch
 #   8007 — mcp-docker
 #   8008 — mcp-kafka
+#   8009 — mcp-project-memory
+#   8010 — mcp-llm-router
+#   8011 — mcp-git
+#   8012 — mcp-github
+#   8013 — mcp-code-quality
+#   8014 — mcp-architecture
+#   8015 — mcp-event-driven
+#   8016 — mcp-orchestrator
+#   8017 — mcp-best-practices
+#   8018 — mcp-ci-cd
+#   8019 — mcp-design-patterns
+#   8020 — mcp-security-champion
+#   8021 — mcp-database
+#   8022 — mcp-filesystem
+#   8023 — mcp-object-storage
+#   8024 — mcp-openapi
+#   8025 — mcp-documents
+#   8026 — mcp-browser
+#   8027 — mcp-kubernetes
+#   8028 — mcp-observability
+#   8029 — mcp-terraform
+#   8030 — mcp-snyk
+#   8031 — mcp-sonar
+#   8032 — mcp-java-build
+#   8033 — mcp-agent-runner
+#   8034 — mcp-personal-vault
+#   8035 — mcp-gob-mexico
 # =============================================================================
 
 services:
 
   # ---------------------------------------------------------------------------
-  # MCP: Tabular (Excel, CSV, ODS, TSV, Parquet)
+  # MCP: Archivos tabulares (mcp-tabular)
   # ---------------------------------------------------------------------------
   mcp-tabular:
     build:
@@ -36,7 +63,7 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8001"
-      TABULAR_ALLOWED_ROOT: /data
+      TABULAR_ALLOWED_ROOT: "/data"
     ports:
       - "127.0.0.1:8001:8001"
     volumes:
@@ -53,7 +80,7 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Calendar (Días hábiles + Divisas via Frankfurter API)
+  # MCP: Días hábiles y divisas (mcp-calendar)
   # ---------------------------------------------------------------------------
   mcp-calendar:
     build:
@@ -84,7 +111,7 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Markdown
+  # MCP: Archivos Markdown (mcp-markdown)
   # ---------------------------------------------------------------------------
   mcp-markdown:
     build:
@@ -101,7 +128,7 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8003"
-      MCP_MARKDOWN_ALLOWED_ROOT: /data
+      MCP_MARKDOWN_ALLOWED_ROOT: "/data"
     ports:
       - "127.0.0.1:8003:8003"
     volumes:
@@ -118,7 +145,7 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Prompt Engineer
+  # MCP: Ingeniería de prompts (mcp-prompt-engineer)
   # ---------------------------------------------------------------------------
   mcp-prompt-engineer:
     build:
@@ -149,7 +176,38 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Fetch (HTTP GET, POST, HTML extraction, JSON parsing)
+  # MCP: Structured Output (LLMs JSON Schema) (mcp-structured-output)
+  # ---------------------------------------------------------------------------
+  mcp-structured-output:
+    build:
+      context: .
+      dockerfile: mcp-structured-output/Dockerfile
+      target: runtime
+    image: mcp-structured-output:latest
+    container_name: mcp-structured-output
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8005"
+    ports:
+      - "127.0.0.1:8005:8005"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8005), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=structured-output"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: HTTP y web scraping (mcp-fetch)
   # ---------------------------------------------------------------------------
   mcp-fetch:
     build:
@@ -180,38 +238,7 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Kafka (topics, consumer groups, produce, consume)
-  # ---------------------------------------------------------------------------
-  mcp-kafka:
-    build:
-      context: .
-      dockerfile: mcp-kafka/Dockerfile
-      target: runtime
-    image: mcp-kafka:latest
-    container_name: mcp-kafka
-    restart: unless-stopped
-    env_file:
-      - path: .env
-        required: false
-    environment:
-      MCP_TRANSPORT: streamable-http
-      MCP_HOST: "0.0.0.0"
-      MCP_PORT: "8008"
-    ports:
-      - "127.0.0.1:8008:8008"
-    healthcheck:
-      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8008), timeout=5)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
-    labels:
-      - "mcp.server=kafka"
-      - "mcp.version=1.0.0"
-      - "mcp.transport=streamable-http"
-
-  # ---------------------------------------------------------------------------
-  # MCP: Docker (containers, images, logs, exec)
+  # MCP: Gestión Docker (mcp-docker)
   # ---------------------------------------------------------------------------
   mcp-docker:
     profiles: ["privileged-tools"]
@@ -245,15 +272,15 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Structured Output (Bedrock + OpenAI-compatible)
+  # MCP: Apache Kafka (mcp-kafka)
   # ---------------------------------------------------------------------------
-  mcp-structured-output:
+  mcp-kafka:
     build:
       context: .
-      dockerfile: mcp-structured-output/Dockerfile
+      dockerfile: mcp-kafka/Dockerfile
       target: runtime
-    image: mcp-structured-output:latest
-    container_name: mcp-structured-output
+    image: mcp-kafka:latest
+    container_name: mcp-kafka
     restart: unless-stopped
     env_file:
       - path: .env
@@ -261,24 +288,22 @@ services:
     environment:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
-      MCP_PORT: "8005"
-      MCP_SO_AWS_REGION: ${MCP_SO_AWS_REGION:-us-east-1}
+      MCP_PORT: "8008"
     ports:
-      - "127.0.0.1:8005:8005"
+      - "127.0.0.1:8008:8008"
     healthcheck:
-      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8005), timeout=5)"]
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8008), timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 15s
     labels:
-      - "mcp.server=structured-output"
+      - "mcp.server=kafka"
       - "mcp.version=1.0.0"
       - "mcp.transport=streamable-http"
 
-
   # ---------------------------------------------------------------------------
-  # MCP: Project Memory (Memoria persistente de proyecto para agentes de IA)
+  # MCP: Memoria de proyecto persistente (mcp-project-memory)
   # ---------------------------------------------------------------------------
   mcp-project-memory:
     build:
@@ -295,8 +320,9 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8009"
-      MEMORY_DIR: /app/.ai-memory
-      MEMORY_PROJECT_NAME: mcps
+      MEMORY_DIR: "/app/.ai-memory"
+      MEMORY_FILE: "project_memory.json"
+      MEMORY_PROJECT_NAME: "mcps"
     ports:
       - "127.0.0.1:8009:8009"
     volumes:
@@ -313,7 +339,7 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: LLM Router (Ruteo inteligente local vs nube)
+  # MCP: Ruteo inteligente de LLMs (mcp-llm-router)
   # ---------------------------------------------------------------------------
   mcp-llm-router:
     build:
@@ -330,13 +356,12 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8010"
-      # host.docker.internal resuelve a la máquina host donde corre LM Studio
-      ROUTER_LMSTUDIO_BASE_URL: http://host.docker.internal:1234/v1
+      ROUTER_LMSTUDIO_BASE_URL: "http://host.docker.internal:1234/v1"
       ROUTER_COMPLEXITY_THRESHOLD: "6"
-      ROUTER_MODEL_FAST: qwen3-8b
-      ROUTER_MODEL_CODE: devstral-small-2507
-      ROUTER_MODEL_REASON: deepseek-r1-0528-qwen3-8b
-      ROUTER_MODEL_LARGE: qwen2.5-14b-instruct-1m
+      ROUTER_MODEL_FAST: "qwen3-8b"
+      ROUTER_MODEL_CODE: "devstral-small-2507"
+      ROUTER_MODEL_REASON: "deepseek-r1-0528-qwen3-8b"
+      ROUTER_MODEL_LARGE: "qwen2.5-14b-instruct-1m"
     ports:
       - "127.0.0.1:8010:8010"
     extra_hosts:
@@ -353,7 +378,7 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Git (Operaciones locales de Git con confirmación segura)
+  # MCP: Operaciones Git (mcp-git)
   # ---------------------------------------------------------------------------
   mcp-git:
     build:
@@ -370,13 +395,12 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8011"
-      GIT_REPO_PATH: /repo
-      GIT_DEFAULT_BRANCH: main
+      GIT_REPO_PATH: "/repo"
+      GIT_DEFAULT_BRANCH: "main"
       GIT_ALLOW_FORCE_PUSH: "false"
     ports:
       - "127.0.0.1:8011:8011"
     volumes:
-      # Monta el directorio de código actual como /repo
       - .:/repo
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8011), timeout=5)"]
@@ -390,7 +414,7 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: GitHub (Integraciones con la API de GitHub)
+  # MCP: Integración GitHub (mcp-github)
   # ---------------------------------------------------------------------------
   mcp-github:
     build:
@@ -407,7 +431,6 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8012"
-      GITHUB_API_URL: https://api.github.com
     ports:
       - "127.0.0.1:8012:8012"
     healthcheck:
@@ -422,7 +445,7 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Code Quality (Linters, Formateadores y Tests)
+  # MCP: Calidad de código (mcp-code-quality)
   # ---------------------------------------------------------------------------
   mcp-code-quality:
     build:
@@ -439,7 +462,7 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8013"
-      CQ_PROJECT_PATH: /repo
+      CQ_PROJECT_PATH: "/repo"
       CQ_LINTER_CMD: "uv run ruff check"
       CQ_FORMATTER_CMD: "uv run ruff format"
       CQ_TEST_CMD: "uv run pytest"
@@ -459,7 +482,7 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Architecture (Análisis de dependencias y SOLID)
+  # MCP: Análisis de arquitectura (mcp-architecture)
   # ---------------------------------------------------------------------------
   mcp-architecture:
     build:
@@ -476,7 +499,7 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8014"
-      ARCH_PROJECT_PATH: /repo
+      ARCH_PROJECT_PATH: "/repo"
     ports:
       - "127.0.0.1:8014:8014"
     volumes:
@@ -493,7 +516,7 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Event Driven (Esquemas y Coreografía)
+  # MCP: Event-driven architecture (mcp-event-driven)
   # ---------------------------------------------------------------------------
   mcp-event-driven:
     build:
@@ -510,7 +533,7 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8015"
-      EVENT_SCHEMAS_PATH: /schemas
+      EVENT_SCHEMAS_PATH: "/schemas"
     ports:
       - "127.0.0.1:8015:8015"
     volumes:
@@ -527,7 +550,7 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Orchestrator (Flujos y DAGs)
+  # MCP: Orquestación de DAGs (mcp-orchestrator)
   # ---------------------------------------------------------------------------
   mcp-orchestrator:
     build:
@@ -544,7 +567,7 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8016"
-      ORCH_DAGS_PATH: /dags
+      ORCH_DAGS_PATH: "/dags"
     ports:
       - "127.0.0.1:8016:8016"
     volumes:
@@ -561,7 +584,7 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Best Practices (Documentación Retroactiva)
+  # MCP: Documentación retroactiva (mcp-best-practices)
   # ---------------------------------------------------------------------------
   mcp-best-practices:
     build:
@@ -578,8 +601,8 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8017"
-      BP_PROJECT_PATH: /repo
-      BP_DOCS_PATH: /repo/docs
+      BP_PROJECT_PATH: "/repo"
+      BP_DOCS_PATH: "/repo/docs"
     ports:
       - "127.0.0.1:8017:8017"
     volumes:
@@ -596,7 +619,7 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: CI/CD (Pipelines Locales)
+  # MCP: Simulación de pipelines (mcp-ci-cd)
   # ---------------------------------------------------------------------------
   mcp-ci-cd:
     build:
@@ -613,7 +636,7 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8018"
-      CICD_PROJECT_PATH: /repo
+      CICD_PROJECT_PATH: "/repo"
     ports:
       - "127.0.0.1:8018:8018"
     volumes:
@@ -630,7 +653,7 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Design Patterns (Arquitectura y Patrones)
+  # MCP: Patrones de diseño (mcp-design-patterns)
   # ---------------------------------------------------------------------------
   mcp-design-patterns:
     build:
@@ -647,7 +670,7 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8019"
-      DP_PROJECT_PATH: /repo
+      DP_PROJECT_PATH: "/repo"
     ports:
       - "127.0.0.1:8019:8019"
     volumes:
@@ -664,7 +687,7 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Security Champion (OWASP y Financiero)
+  # MCP: Seguridad y compliance (mcp-security-champion)
   # ---------------------------------------------------------------------------
   mcp-security-champion:
     build:
@@ -681,7 +704,7 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8020"
-      SEC_PROJECT_PATH: /repo
+      SEC_PROJECT_PATH: "/repo"
     ports:
       - "127.0.0.1:8020:8020"
     volumes:
@@ -698,12 +721,13 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Database (SQL read-only by default)
+  # MCP: Consultas SQL (mcp-database)
   # ---------------------------------------------------------------------------
   mcp-database:
     build:
       context: .
       dockerfile: mcp-database/Dockerfile
+      target: runtime
     image: mcp-database:latest
     container_name: mcp-database
     restart: unless-stopped
@@ -714,7 +738,7 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8021"
-      DATABASE_URL: sqlite:////data/database.db
+      DATABASE_URL: "sqlite:////data/database.db"
       DATABASE_READ_ONLY: "true"
     ports:
       - "127.0.0.1:8021:8021"
@@ -732,12 +756,13 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Filesystem (sandboxed and read-only by default)
+  # MCP: Filesystem sandbox (mcp-filesystem)
   # ---------------------------------------------------------------------------
   mcp-filesystem:
     build:
       context: .
       dockerfile: mcp-filesystem/Dockerfile
+      target: runtime
     image: mcp-filesystem:latest
     container_name: mcp-filesystem
     restart: unless-stopped
@@ -748,7 +773,7 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8022"
-      FILESYSTEM_ROOT: /data
+      FILESYSTEM_ROOT: "/data"
       FILESYSTEM_ALLOW_WRITE: "false"
     ports:
       - "127.0.0.1:8022:8022"
@@ -766,13 +791,14 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Object Storage (S3 and MinIO)
+  # MCP: Object Storage S3/MinIO (mcp-object-storage)
   # ---------------------------------------------------------------------------
   mcp-object-storage:
     profiles: ["cloud"]
     build:
       context: .
       dockerfile: mcp-object-storage/Dockerfile
+      target: runtime
     image: mcp-object-storage:latest
     container_name: mcp-object-storage
     restart: unless-stopped
@@ -798,12 +824,13 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: OpenAPI
+  # MCP: OpenAPI client (mcp-openapi)
   # ---------------------------------------------------------------------------
   mcp-openapi:
     build:
       context: .
       dockerfile: mcp-openapi/Dockerfile
+      target: runtime
     image: mcp-openapi:latest
     container_name: mcp-openapi
     restart: unless-stopped
@@ -814,8 +841,8 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8024"
-      OPENAPI_SPEC: /data/openapi.yaml
-      OPENAPI_ALLOWED_ROOT: /data
+      OPENAPI_SPEC: "/data/openapi.yaml"
+      OPENAPI_ALLOWED_ROOT: "/data"
       OPENAPI_ALLOW_INVOKE: "false"
     ports:
       - "127.0.0.1:8024:8024"
@@ -833,12 +860,13 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Documents (PDF, DOCX and PPTX)
+  # MCP: Documentos PDF/DOCX/PPTX (mcp-documents)
   # ---------------------------------------------------------------------------
   mcp-documents:
     build:
       context: .
       dockerfile: mcp-documents/Dockerfile
+      target: runtime
     image: mcp-documents:latest
     container_name: mcp-documents
     restart: unless-stopped
@@ -849,7 +877,7 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8025"
-      DOCUMENTS_ROOT: /data
+      DOCUMENTS_ROOT: "/data"
     ports:
       - "127.0.0.1:8025:8025"
     volumes:
@@ -866,13 +894,14 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Browser (Playwright)
+  # MCP: Automatización web (mcp-browser)
   # ---------------------------------------------------------------------------
   mcp-browser:
     profiles: ["browser"]
     build:
       context: .
       dockerfile: mcp-browser/Dockerfile
+      target: runtime
     image: mcp-browser:latest
     container_name: mcp-browser
     restart: unless-stopped
@@ -884,7 +913,7 @@ services:
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8026"
       BROWSER_HEADLESS: "true"
-      BROWSER_OUTPUT_DIR: /data/browser
+      BROWSER_OUTPUT_DIR: "/data/browser"
     ports:
       - "127.0.0.1:8026:8026"
     volumes:
@@ -901,13 +930,14 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Kubernetes
+  # MCP: Kubernetes (mcp-kubernetes)
   # ---------------------------------------------------------------------------
   mcp-kubernetes:
     profiles: ["platform-tools"]
     build:
       context: .
       dockerfile: mcp-kubernetes/Dockerfile
+      target: runtime
     image: mcp-kubernetes:latest
     container_name: mcp-kubernetes
     restart: unless-stopped
@@ -935,13 +965,14 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Observability (Prometheus, Loki and health checks)
+  # MCP: Observabilidad (mcp-observability)
   # ---------------------------------------------------------------------------
   mcp-observability:
     profiles: ["platform-tools"]
     build:
       context: .
       dockerfile: mcp-observability/Dockerfile
+      target: runtime
     image: mcp-observability:latest
     container_name: mcp-observability
     restart: unless-stopped
@@ -954,8 +985,6 @@ services:
       MCP_PORT: "8028"
     ports:
       - "127.0.0.1:8028:8028"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8028), timeout=5)"]
       interval: 30s
@@ -968,13 +997,14 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Terraform
+  # MCP: Infraestructura como código (mcp-terraform)
   # ---------------------------------------------------------------------------
   mcp-terraform:
     profiles: ["platform-tools"]
     build:
       context: .
       dockerfile: mcp-terraform/Dockerfile
+      target: runtime
     image: mcp-terraform:latest
     container_name: mcp-terraform
     restart: unless-stopped
@@ -985,7 +1015,7 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
       MCP_PORT: "8029"
-      TERRAFORM_ROOT: /workspace
+      TERRAFORM_ROOT: "/workspace"
       TERRAFORM_ALLOW_APPLY: "false"
     ports:
       - "127.0.0.1:8029:8029"
@@ -1003,7 +1033,144 @@ services:
       - "mcp.transport=streamable-http"
 
   # ---------------------------------------------------------------------------
-  # MCP: Personal Vault (encrypted local context)
+  # MCP: Snyk SAST/SCA (mcp-snyk)
+  # ---------------------------------------------------------------------------
+  mcp-snyk:
+    build:
+      context: .
+      dockerfile: mcp-snyk/Dockerfile
+      target: runtime
+    image: mcp-snyk:latest
+    container_name: mcp-snyk
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8030"
+      SNYK_PROJECT_PATH: "/repo"
+    ports:
+      - "127.0.0.1:8030:8030"
+    volumes:
+      - .:/repo
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8030), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=snyk"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: SonarQube/SonarCloud (mcp-sonar)
+  # ---------------------------------------------------------------------------
+  mcp-sonar:
+    build:
+      context: .
+      dockerfile: mcp-sonar/Dockerfile
+      target: runtime
+    image: mcp-sonar:latest
+    container_name: mcp-sonar
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8031"
+      SONAR_PROJECT_PATH: "/repo"
+    ports:
+      - "127.0.0.1:8031:8031"
+    volumes:
+      - .:/repo
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8031), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=sonar"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Builds Java (mcp-java-build)
+  # ---------------------------------------------------------------------------
+  mcp-java-build:
+    build:
+      context: .
+      dockerfile: mcp-java-build/Dockerfile
+      target: runtime
+    image: mcp-java-build:latest
+    container_name: mcp-java-build
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8032"
+      JAVA_PROJECT_PATH: "/repo"
+    ports:
+      - "127.0.0.1:8032:8032"
+    volumes:
+      - .:/repo
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8032), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=java-build"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Orquestación de agentes (mcp-agent-runner)
+  # ---------------------------------------------------------------------------
+  mcp-agent-runner:
+    build:
+      context: .
+      dockerfile: mcp-agent-runner/Dockerfile
+      target: runtime
+    image: mcp-agent-runner:latest
+    container_name: mcp-agent-runner
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8033"
+      AGENT_PROJECT_PATH: "/repo"
+      AGENT_N8N_WEBHOOK_BASE_URL: "http://localhost:5678/webhook"
+    ports:
+      - "127.0.0.1:8033:8033"
+    volumes:
+      - .:/repo
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8033), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=agent-runner"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Bóveda personal cifrada (mcp-personal-vault)
   # ---------------------------------------------------------------------------
   mcp-personal-vault:
     profiles: ["personal"]
@@ -1020,18 +1187,18 @@ services:
     environment:
       MCP_TRANSPORT: streamable-http
       MCP_HOST: "0.0.0.0"
-      MCP_PORT: "8035"
-      PERSONAL_VAULT_DATABASE_PATH: /vault/personal.db
-      PERSONAL_VAULT_KEY_FILE: /vault/vault.key
+      MCP_PORT: "8034"
+      PERSONAL_VAULT_DATABASE_PATH: "/vault/personal.db"
+      PERSONAL_VAULT_KEY_FILE: "/vault/vault.key"
       PERSONAL_VAULT_ALLOW_WRITE: "true"
       PERSONAL_VAULT_ALLOW_HIGHLY_SENSITIVE: "false"
       PERSONAL_VAULT_ALLOW_SECRETS: "false"
     ports:
-      - "127.0.0.1:8035:8035"
+      - "127.0.0.1:8034:8034"
     volumes:
       - mcp-personal-vault:/vault
     healthcheck:
-      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8035), timeout=5)"]
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8034), timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -1041,6 +1208,39 @@ services:
       - "mcp.version=1.0.0"
       - "mcp.transport=streamable-http"
 
+  # ---------------------------------------------------------------------------
+  # MCP: APIs del Gobierno de Mexico (mcp-gob-mexico)
+  # ---------------------------------------------------------------------------
+  mcp-gob-mexico:
+    build:
+      context: .
+      dockerfile: mcp-gob-mexico/Dockerfile
+      target: runtime
+    image: mcp-gob-mexico:latest
+    container_name: mcp-gob-mexico
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8035"
+      GOB_MX_HTTP_TIMEOUT: "30"
+      GOB_MX_MAX_RETRIES: "3"
+      GOB_MX_CACHE_TTL: "300"
+    ports:
+      - "127.0.0.1:8035:8035"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8035), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=gob-mexico"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
 
 # ---------------------------------------------------------------------------
 # Volumes

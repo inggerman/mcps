@@ -234,3 +234,124 @@ def git_push(repo_path: Path, force: bool = False, allow_force: bool = False) ->
         # Intento con push origin HEAD
         args.extend(["origin", branch])
         return _run_git(args, repo_path)
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+def git_branch_list(repo_path: Path) -> dict[str, Any]:
+    """Lista todas las ramas locales y remotas."""
+    output = _run_git(["branch", "-a", "--format=%(refname:short) %(objectname:short)"], repo_path)
+    branches = []
+    for line in output.splitlines():
+        if line.strip():
+            parts = line.strip().split()
+            branches.append({"name": parts[0], "hash": parts[1] if len(parts) > 1 else ""})
+    return {"branches": branches, "count": len(branches)}
+
+
+def git_branch_delete(repo_path: Path, branch_name: str) -> str:
+    """Elimina una rama local."""
+    if not branch_name or not branch_name.strip():
+        raise ValidationError(field="branch_name", message="El nombre de la rama no puede estar vacio.")
+    _run_git(["branch", "-d", branch_name], repo_path)
+    return f"Rama '{branch_name}' eliminada."
+
+
+def git_merge(repo_path: Path, branch_name: str) -> str:
+    """Hace merge de una rama en la rama actual."""
+    if not branch_name or not branch_name.strip():
+        raise ValidationError(field="branch_name", message="El nombre de la rama no puede estar vacio.")
+    return _run_git(["merge", branch_name], repo_path)
+
+
+def git_stash(repo_path: Path, message: str = "") -> str:
+    """Guarda cambios temporales en stash."""
+    args = ["stash", "push"]
+    if message:
+        args.extend(["-m", message])
+    return _run_git(args, repo_path)
+
+
+def git_stash_list(repo_path: Path) -> list[dict[str, Any]]:
+    """Lista todos los stashes."""
+    output = _run_git(["stash", "list"], repo_path)
+    stashes = []
+    if output:
+        for i, line in enumerate(output.splitlines()):
+            stashes.append({"index": i, "description": line.strip()})
+    return stashes
+
+
+def git_stash_apply(repo_path: Path, index: int = 0) -> str:
+    """Aplica un stash sin eliminarlo."""
+    return _run_git(["stash", "apply", f"stash@{{{index}}}"], repo_path)
+
+
+def git_stash_drop(repo_path: Path, index: int = 0) -> str:
+    """Elimina un stash."""
+    return _run_git(["stash", "drop", f"stash@{{{index}}}"], repo_path)
+
+
+def git_tag(repo_path: Path, name: str, message: str = "") -> str:
+    """Crea un tag anotado."""
+    if not name or not name.strip():
+        raise ValidationError(field="name", message="El nombre del tag no puede estar vacio.")
+    args = ["tag", "-a", name]
+    if message:
+        args.extend(["-m", message])
+    else:
+        args.extend(["-m", f"Tag {name}"])
+    _run_git(args, repo_path)
+    return f"Tag '{name}' creado."
+
+
+def git_tag_list(repo_path: Path) -> list[dict[str, Any]]:
+    """Lista todos los tags."""
+    output = _run_git(["tag", "-l", "--format=%(refname:short) %(objectname:short)"], repo_path)
+    tags = []
+    for line in output.splitlines():
+        if line.strip():
+            parts = line.strip().split()
+            tags.append({"name": parts[0], "hash": parts[1] if len(parts) > 1 else ""})
+    return tags
+
+
+def git_tag_delete(repo_path: Path, name: str) -> str:
+    """Elimina un tag."""
+    if not name or not name.strip():
+        raise ValidationError(field="name", message="El nombre del tag no puede estar vacio.")
+    _run_git(["tag", "-d", name], repo_path)
+    return f"Tag '{name}' eliminado."
+
+
+def git_remote_list(repo_path: Path) -> list[dict[str, Any]]:
+    """Lista los remotos configurados."""
+    output = _run_git(["remote", "-v"], repo_path)
+    remotes: dict[str, dict[str, Any]] = {}
+    for line in output.splitlines():
+        if line.strip():
+            parts = line.strip().split()
+            if len(parts) >= 2:
+                name = parts[0]
+                url = parts[1]
+                direction = parts[2] if len(parts) > 2 else ""
+                if name not in remotes:
+                    remotes[name] = {"name": name, "fetch_url": "", "push_url": ""}
+                if "(fetch)" in direction:
+                    remotes[name]["fetch_url"] = url
+                elif "(push)" in direction:
+                    remotes[name]["push_url"] = url
+    return list(remotes.values())
+
+
+def git_remote_add(repo_path: Path, name: str, url: str) -> str:
+    """Anade un remoto."""
+    if not name or not name.strip():
+        raise ValidationError(field="name", message="El nombre del remoto no puede estar vacio.")
+    if not url or not url.strip():
+        raise ValidationError(field="url", message="La URL del remoto no puede estar vacia.")
+    _run_git(["remote", "add", name, url], repo_path)
+    return f"Remoto '{name}' anadido con URL: {url}"

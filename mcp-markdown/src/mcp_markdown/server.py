@@ -17,19 +17,28 @@ from mcp_shared.logging import setup_logging
 
 from mcp_markdown.config import settings
 from mcp_markdown.tools.markdown_tools import (
+    check_links,
+    count_words,
     extract_code_blocks,
     extract_headings,
+    extract_images,
     extract_links,
+    extract_tables,
     format_markdown,
     get_frontmatter,
+    get_section,
+    get_summary,
     get_toc,
     list_markdown_files,
     markdown_to_html,
     markdown_to_plain_text,
+    merge_markdown,
     read_markdown,
     search_in_markdown,
+    split_by_headings,
     validate_markdown,
 )
+from mcp_markdown import resources as res
 
 # ---------------------------------------------------------------------------
 # Logging estructurado
@@ -312,6 +321,155 @@ def tool_list_markdown_files(
 # ---------------------------------------------------------------------------
 # Entrypoint
 # ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    name="count_words",
+    description="Cuenta palabras, lineas y caracteres de un archivo Markdown.",
+)
+def tool_count_words(path: str) -> dict[str, Any]:
+    return count_words(path)
+
+
+@mcp.tool(
+    name="extract_images",
+    description="Extrae todas las imagenes de un archivo Markdown.",
+)
+def tool_extract_images(path: str) -> list[dict[str, Any]]:
+    return extract_images(path)
+
+
+@mcp.tool(
+    name="get_section",
+    description="Extrae el contenido de una seccion bajo un encabezado especifico.",
+)
+def tool_get_section(path: str, heading_text: str, case_sensitive: bool = False) -> dict[str, Any] | None:
+    return get_section(path, heading_text, case_sensitive=case_sensitive)
+
+
+@mcp.tool(
+    name="merge_markdown",
+    description="Combina multiples archivos Markdown en uno solo.",
+)
+def tool_merge_markdown(files: list[str], separator: str = "\n\n---\n\n") -> str:
+    return merge_markdown(files, separator=separator)
+
+
+@mcp.tool(
+    name="extract_tables",
+    description="Extrae todas las tablas Markdown de un archivo.",
+)
+def tool_extract_tables(path: str) -> list[dict[str, Any]]:
+    return extract_tables(path)
+
+
+@mcp.tool(
+    name="check_links",
+    description="Verifica los enlaces locales de un archivo Markdown.",
+)
+def tool_check_links(path: str) -> dict[str, Any]:
+    return check_links(path)
+
+
+@mcp.tool(
+    name="get_summary",
+    description="Genera un resumen del contenido de un archivo Markdown.",
+)
+def tool_get_summary(path: str, max_words: int = 100) -> dict[str, Any]:
+    return get_summary(path, max_words=max_words)
+
+
+@mcp.tool(
+    name="split_by_headings",
+    description="Divide un archivo Markdown en secciones por nivel de encabezado.",
+)
+def tool_split_by_headings(path: str, level: int = 2) -> list[dict[str, Any]]:
+    return split_by_headings(path, level=level)
+
+
+# ---------------------------------------------------------------------------
+# Resources estaticos
+# ---------------------------------------------------------------------------
+
+
+@mcp.resource("markdown://configuration")
+def res_config() -> str:
+    return res.markdown_configuration()
+
+
+@mcp.resource("markdown://syntax-guide")
+def res_syntax() -> str:
+    return res.markdown_syntax_guide()
+
+
+@mcp.resource("markdown://frontmatter-guide")
+def res_frontmatter() -> str:
+    return res.frontmatter_guide()
+
+
+@mcp.resource("markdown://extensions")
+def res_extensions() -> str:
+    return res.markdown_extensions()
+
+
+@mcp.resource("markdown://best-practices")
+def res_best_practices() -> str:
+    return res.markdown_best_practices()
+
+
+@mcp.resource("markdown://validation-tips")
+def res_validation() -> str:
+    return res.markdown_validation_tips()
+
+
+@mcp.resource("markdown://conversion-tips")
+def res_conversion() -> str:
+    return res.markdown_conversion_tips()
+
+
+@mcp.resource("markdown://common-workflows")
+def res_workflows() -> str:
+    return res.common_markdown_workflows()
+
+
+@mcp.resource("markdown://error-codes")
+def res_errors() -> str:
+    return res.markdown_error_codes()
+
+
+@mcp.resource("markdown://table-syntax")
+def res_tables() -> str:
+    return res.markdown_table_syntax()
+
+
+@mcp.resource("markdown://code-syntax")
+def res_code() -> str:
+    return res.markdown_code_syntax()
+
+
+@mcp.resource("markdown://link-syntax")
+def res_links() -> str:
+    return res.markdown_link_syntax()
+
+
+@mcp.resource("markdown://toc-guide")
+def res_toc() -> str:
+    return res.markdown_toc_guide()
+
+
+@mcp.resource("markdown://examples/read")
+def res_example_read() -> str:
+    return res.example_read_markdown()
+
+
+@mcp.resource("markdown://examples/validate")
+def res_example_validate() -> str:
+    return res.example_validate_markdown()
 
 
 def main() -> None:

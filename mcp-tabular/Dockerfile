@@ -64,6 +64,7 @@ USER mcpuser
 # Variables de entorno por defecto (sobreescribibles vía docker-compose o --env)
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app/src \
     LOG_LEVEL=INFO \
     LOG_FORMAT=json \
     MCP_TRANSPORT=stdio \

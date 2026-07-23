@@ -27,11 +27,24 @@ from mcp_git.tools.git_tools import (
     get_git_status,
     git_add,
     git_branch,
+    git_branch_delete,
+    git_branch_list,
+    git_merge,
     git_pull,
     git_push,
+    git_remote_add,
+    git_remote_list,
     git_reset,
+    git_stash,
+    git_stash_apply,
+    git_stash_drop,
+    git_stash_list,
+    git_tag,
+    git_tag_delete,
+    git_tag_list,
     prepare_commit,
 )
+from mcp_git import resources as res
 
 # ---------------------------------------------------------------------------
 # Configuración de logging
@@ -205,6 +218,199 @@ def tool_git_pull() -> str:
 def tool_git_push(force: bool = False) -> str:
     logger.info("git_push llamado", force=force)
     return _handle(git_push, settings.repo_path, force, settings.allow_force_push)
+
+
+# ---------------------------------------------------------------------------
+# Tools nuevos
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    name="git_branch_list",
+    description="Lista todas las ramas locales y remotas. Retorna: branches[], count.",
+)
+def tool_git_branch_list() -> dict[str, Any]:
+    logger.info("git_branch_list llamado")
+    return _handle(git_branch_list, settings.repo_path)
+
+
+@mcp.tool(
+    name="git_branch_delete",
+    description="Elimina una rama local. Parametros: branch_name (requerido).",
+)
+def tool_git_branch_delete(branch_name: str) -> str:
+    logger.info("git_branch_delete llamado", branch=branch_name)
+    return _handle(git_branch_delete, settings.repo_path, branch_name)
+
+
+@mcp.tool(
+    name="git_merge",
+    description="Hace merge de una rama en la rama actual. Parametros: branch_name (requerido).",
+)
+def tool_git_merge(branch_name: str) -> str:
+    logger.info("git_merge llamado", branch=branch_name)
+    return _handle(git_merge, settings.repo_path, branch_name)
+
+
+@mcp.tool(
+    name="git_stash",
+    description="Guarda cambios temporales en stash. Parametros: message (string opcional).",
+)
+def tool_git_stash(message: str = "") -> str:
+    logger.info("git_stash llamado")
+    return _handle(git_stash, settings.repo_path, message)
+
+
+@mcp.tool(
+    name="git_stash_list",
+    description="Lista todos los stashes guardados.",
+)
+def tool_git_stash_list() -> list[dict[str, Any]]:
+    logger.info("git_stash_list llamado")
+    return _handle(git_stash_list, settings.repo_path)
+
+
+@mcp.tool(
+    name="git_stash_apply",
+    description="Aplica un stash sin eliminarlo. Parametros: index (int, default 0).",
+)
+def tool_git_stash_apply(index: int = 0) -> str:
+    logger.info("git_stash_apply llamado", index=index)
+    return _handle(git_stash_apply, settings.repo_path, index)
+
+
+@mcp.tool(
+    name="git_stash_drop",
+    description="Elimina un stash. Parametros: index (int, default 0).",
+)
+def tool_git_stash_drop(index: int = 0) -> str:
+    logger.info("git_stash_drop llamado", index=index)
+    return _handle(git_stash_drop, settings.repo_path, index)
+
+
+@mcp.tool(
+    name="git_tag",
+    description="Crea un tag anotado. Parametros: name (requerido), message (string opcional).",
+)
+def tool_git_tag(name: str, message: str = "") -> str:
+    logger.info("git_tag llamado", tag=name)
+    return _handle(git_tag, settings.repo_path, name, message)
+
+
+@mcp.tool(
+    name="git_tag_list",
+    description="Lista todos los tags con su hash.",
+)
+def tool_git_tag_list() -> list[dict[str, Any]]:
+    logger.info("git_tag_list llamado")
+    return _handle(git_tag_list, settings.repo_path)
+
+
+@mcp.tool(
+    name="git_tag_delete",
+    description="Elimina un tag. Parametros: name (requerido).",
+)
+def tool_git_tag_delete(name: str) -> str:
+    logger.info("git_tag_delete llamado", tag=name)
+    return _handle(git_tag_delete, settings.repo_path, name)
+
+
+@mcp.tool(
+    name="git_remote_list",
+    description="Lista los remotos configurados con sus URLs.",
+)
+def tool_git_remote_list() -> list[dict[str, Any]]:
+    logger.info("git_remote_list llamado")
+    return _handle(git_remote_list, settings.repo_path)
+
+
+@mcp.tool(
+    name="git_remote_add",
+    description="Anade un remoto. Parametros: name (requerido), url (requerido).",
+)
+def tool_git_remote_add(name: str, url: str) -> str:
+    logger.info("git_remote_add llamado", name=name)
+    return _handle(git_remote_add, settings.repo_path, name, url)
+
+
+# ---------------------------------------------------------------------------
+# Resources estaticos
+# ---------------------------------------------------------------------------
+
+
+@mcp.resource("git://configuration")
+def res_config() -> str:
+    return res.git_configuration()
+
+
+@mcp.resource("git://workflow-guide")
+def res_workflow() -> str:
+    return res.git_workflow_guide()
+
+
+@mcp.resource("git://commit-best-practices")
+def res_commit() -> str:
+    return res.git_commit_best_practices()
+
+
+@mcp.resource("git://branching-strategy")
+def res_branching() -> str:
+    return res.git_branching_strategy()
+
+
+@mcp.resource("git://troubleshooting")
+def res_trouble() -> str:
+    return res.git_troubleshooting()
+
+
+@mcp.resource("git://quick-reference")
+def res_quick() -> str:
+    return res.git_quick_reference()
+
+
+@mcp.resource("git://security-guide")
+def res_sec() -> str:
+    return res.git_security_guide()
+
+
+@mcp.resource("git://error-codes")
+def res_errors() -> str:
+    return res.git_error_codes()
+
+
+@mcp.resource("git://examples")
+def res_examples() -> str:
+    return res.git_examples()
+
+
+@mcp.resource("git://merge-guide")
+def res_merge() -> str:
+    return res.git_merge_guide()
+
+
+@mcp.resource("git://stash-guide")
+def res_stash() -> str:
+    return res.git_stash_guide()
+
+
+@mcp.resource("git://tag-guide")
+def res_tag() -> str:
+    return res.git_tag_guide()
+
+
+@mcp.resource("git://remote-guide")
+def res_remote() -> str:
+    return res.git_remote_guide()
+
+
+@mcp.resource("git://rebase-guide")
+def res_rebase() -> str:
+    return res.git_rebase_guide()
+
+
+@mcp.resource("git://cherry-pick-guide")
+def res_cherry() -> str:
+    return res.git_cherry_pick_guide()
 
 
 # ---------------------------------------------------------------------------
