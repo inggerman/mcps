@@ -16,6 +16,7 @@ env:
   HARBOR_REGISTRY: 10.43.36.90:5000
   HARBOR_PROJECT: ghl
   IMAGE_TAG: ${{ github.sha }}
+  DOCKER_HOST: tcp://127.0.0.1:2375
 
 jobs:
   build-and-deploy:
@@ -23,18 +24,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure Docker for Harbor (insecure registry)
+      - name: Install Docker CLI
         run: |
-          sudo mkdir -p /etc/docker
-          echo '{"insecure-registries": ["10.43.36.90:5000"]}' | sudo tee /etc/docker/daemon.json
-          sudo service docker restart || true
+          apt-get update -qq && apt-get install -y -qq curl
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sh get-docker.sh
+          docker version
 
       - name: Login to Harbor
-        uses: docker/login-action@v3
-        with:
-          registry: 10.43.36.90:5000
-          username: ${{ secrets.HARBOR_USERNAME }}
-          password: ${{ secrets.HARBOR_PASSWORD }}
+        run: |
+          echo "${{ secrets.HARBOR_PASSWORD }}" | docker login 10.43.36.90:5000 -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
 
       - name: Detect changed MCPs
         id: detect
@@ -94,8 +93,6 @@ jobs:
             
             # Build image with SHA tag + latest
             docker build \
-              --cache-from type=registry,ref=${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:buildcache \
-              --cache-to type=registry,ref=${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:buildcache,mode=max \
               -t ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:${IMAGE_TAG} \
               -t ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:latest \
               -f $mcp_dir/Dockerfile . || {
@@ -128,11 +125,16 @@ jobs:
             echo "::warning::$FAILED images failed to build"
           fi
 
-      - name: Setup kubectl
+      - name: Install kubectl
+        run: |
+          curl -fsSL https://dl.k8s.io/release/v1.31.0/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl
+          chmod +x /usr/local/bin/kubectl
+          kubectl version --client
+
+      - name: Setup kubeconfig
         run: |
           echo "${{ secrets.KUBECONFIG_B64 }}" | base64 -d > /tmp/kubeconfig
-          export KUBECONFIG=/tmp/kubeconfig
-          kubectl version --client
+          chmod 600 /tmp/kubeconfig
 
       - name: Deploy to Kubernetes
         run: |
