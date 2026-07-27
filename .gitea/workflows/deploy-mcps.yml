@@ -10,11 +10,6 @@ on:
       - "k8s/**"
       - ".gitea/workflows/deploy-mcps.yml"
   workflow_dispatch:
-    inputs:
-      mcp_filter:
-        description: 'Only build specific MCP (e.g. mcp-github). Empty = all.'
-        required: false
-        default: ''
 
 env:
   HARBOR_REGISTRY: 10.43.36.90:5000
@@ -43,13 +38,6 @@ jobs:
       - name: Detect changed MCPs
         id: detect
         run: |
-          # If manual dispatch with filter, use that
-          if [ -n "${{ github.event.inputs.mcp_filter }}" ]; then
-            echo "changed=mcp-${{ github.event.inputs.mcp_filter }}" >> $GITHUB_OUTPUT
-            echo "  Manual filter: ${{ github.event.inputs.mcp_filter }}"
-            exit 0
-          fi
-          
           # Get changed files from push
           CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} 2>/dev/null || echo "")
           
