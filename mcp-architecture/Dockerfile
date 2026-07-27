@@ -1,5 +1,6 @@
 # =============================================================================
 # mcp-architecture — Dockerfile multi-stage, non-root, production-ready
+# CI/CD test trigger
 # =============================================================================
 
 FROM python:3.12-slim AS builder
