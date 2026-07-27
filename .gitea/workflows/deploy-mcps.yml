@@ -1,3 +1,4 @@
+# Build & Deploy MCPs — Gitea Actions CI/CD
 name: Build & Deploy MCPs
 
 on:
