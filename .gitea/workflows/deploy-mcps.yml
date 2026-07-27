@@ -13,10 +13,11 @@ on:
   workflow_dispatch:
 
 env:
-  HARBOR_REGISTRY: 10.43.36.90:5000
+  HARBOR_REGISTRY: harbor.mrrobot.fs
   HARBOR_PROJECT: ghl
   IMAGE_TAG: ${{ github.sha }}
   DOCKER_HOST: tcp://127.0.0.1:2375
+  DOCKER_BUILDKIT: "0"
 
 jobs:
   build-and-deploy:
@@ -33,7 +34,7 @@ jobs:
 
       - name: Login to Harbor
         run: |
-          echo "${{ secrets.HARBOR_PASSWORD }}" | docker login 10.43.36.90:5000 -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+          echo "${{ secrets.HARBOR_PASSWORD }}" | docker login harbor.mrrobot.fs -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
 
       - name: Detect changed MCPs
         id: detect
