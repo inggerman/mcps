@@ -1,0 +1,132 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gitea-runner
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitea-runner
+  namespace: gitea-runner
+  labels:
+    app: gitea-runner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gitea-runner
+  template:
+    metadata:
+      labels:
+        app: gitea-runner
+    spec:
+      containers:
+        - name: runner
+          image: gitea/act_runner:0.2.11
+          env:
+            - name: GITEA_INSTANCE_URL
+              value: "http://gitea-http-fixed.gitea.svc.cluster.local:3000"
+            - name: GITEA_RUNNER_REGISTRATION_TOKEN
+              value: "Px0u0bCRK00Mb20UsdR7mkoQjsct2aTvKFBBN9ZC"
+            - name: GITEA_RUNNER_NAME
+              value: "k3s-runner"
+            - name: GITEA_RUNNER_LABELS
+              value: "ubuntu-latest:docker://node:20-bullseye,self-hosted:docker://node:20-bullseye,linux:docker://node:20-bullseye"
+            - name: CONFIG_FILE
+              value: "/config/config.yaml"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: docker-certs
+              mountPath: /certs
+            - name: runner-data
+              mountPath: /data
+            - name: workspace
+              mountPath: /workspace
+          securityContext:
+            privileged: true
+        - name: docker
+          image: docker:dind
+          env:
+            - name: DOCKER_TLS_CERTDIR
+              value: ""
+            - name: DOCKER_DRIVER
+              value: overlay2
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: docker-certs
+              mountPath: /certs
+            - name: docker-data
+              mountPath: /var/lib/docker
+            - name: workspace
+              mountPath: /workspace
+      volumes:
+        - name: config
+          configMap:
+            name: runner-config
+        - name: docker-certs
+          emptyDir: {}
+        - name: docker-data
+          persistentVolumeClaim:
+            claimName: runner-docker-data
+        - name: runner-data
+          persistentVolumeClaim:
+            claimName: runner-data
+        - name: workspace
+          emptyDir: {}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runner-config
+  namespace: gitea-runner
+data:
+  config.yaml: |
+    log:
+      level: info
+    runner:
+      capacity: 2
+      timeout: 30m
+      insecure: false
+      fetch_timeout: 5s
+      fetch_interval: 2s
+    cache:
+      enabled: true
+      dir: "/data/cache"
+    container:
+      network: ""
+      privileged: true
+      options: ""
+      workdir_parent: "/workspace"
+      docker_host: "tcp://localhost:2375"
+      valid_volumes:
+        - "/workspace"
+        - "/certs"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: runner-docker-data
+  namespace: gitea-runner
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: runner-data
+  namespace: gitea-runner
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

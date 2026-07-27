@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "mcp-*/**"
-      - "mcp-shared/**"
+      - "shared/**"
       - "k8s/**"
       - ".gitea/workflows/deploy-mcps.yml"
   workflow_dispatch:
@@ -17,9 +17,8 @@ on:
         default: ''
 
 env:
-  HARBOR_REGISTRY: harbor.mrrobot.fs
+  HARBOR_REGISTRY: 10.43.36.90:5000
   HARBOR_PROJECT: ghl
-  KUBECONFIG_SECRET: ${{ secrets.KUBECONFIG_B64 }}
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
@@ -28,13 +27,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Configure Docker for Harbor (insecure registry)
+        run: |
+          sudo mkdir -p /etc/docker
+          echo '{"insecure-registries": ["10.43.36.90:5000"]}' | sudo tee /etc/docker/daemon.json
+          sudo service docker restart || true
 
       - name: Login to Harbor
         uses: docker/login-action@v3
         with:
-          registry: harbor.mrrobot.fs
+          registry: 10.43.36.90:5000
           username: ${{ secrets.HARBOR_USERNAME }}
           password: ${{ secrets.HARBOR_PASSWORD }}
 
@@ -66,9 +68,9 @@ jobs:
               fi
             done
             
-            # If mcp-shared changed, rebuild all (shared dependency)
-            if echo "$CHANGED_FILES" | grep -q "^mcp-shared/"; then
-              echo "  mcp-shared changed — rebuilding all MCPs"
+            # If shared changed, rebuild all (shared dependency)
+            if echo "$CHANGED_FILES" | grep -q "^shared/"; then
+              echo "  shared changed — rebuilding all MCPs"
               MCPS=$(find . -maxdepth 1 -type d -name "mcp-*" -printf '%f\n' | sort | tr '\n' ' ')
               echo "changed=$MCPS" >> $GITHUB_OUTPUT
             elif [ -n "$CHANGED_MCPS" ]; then
@@ -139,7 +141,7 @@ jobs:
 
       - name: Setup kubectl
         run: |
-          echo "$KUBECONFIG_SECRET" | base64 -d > /tmp/kubeconfig
+          echo "${{ secrets.KUBECONFIG_B64 }}" | base64 -d > /tmp/kubeconfig
           export KUBECONFIG=/tmp/kubeconfig
           kubectl version --client
 
