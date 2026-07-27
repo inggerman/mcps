@@ -1,4 +1,4 @@
-# Build & Deploy MCPs — Gitea Actions CI/CD (insecure registry CLI fix)
+# Build & Deploy MCPs — Gitea Actions CI/CD (dockerd direct start)
 name: Build & Deploy MCPs
 
 on:
