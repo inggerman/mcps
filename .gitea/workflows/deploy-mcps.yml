@@ -1,4 +1,4 @@
-# Build & Deploy MCPs — Gitea Actions CI/CD (Harbor insecure registry fix)
+# Build & Deploy MCPs — Gitea Actions CI/CD (insecure registry CLI fix)
 name: Build & Deploy MCPs
 
 on:
