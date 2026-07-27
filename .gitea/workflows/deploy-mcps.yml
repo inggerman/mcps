@@ -1,4 +1,4 @@
-# Build & Deploy MCPs — Gitea Actions CI/CD
+# Build & Deploy MCPs — Gitea Actions CI/CD (IPv6 fix)
 name: Build & Deploy MCPs
 
 on:
