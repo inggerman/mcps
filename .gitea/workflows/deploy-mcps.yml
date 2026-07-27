@@ -1,4 +1,4 @@
-# Build & Deploy MCPs — Gitea Actions CI/CD (IPv6 fix)
+# Build & Deploy MCPs — Gitea Actions CI/CD (Harbor insecure registry fix)
 name: Build & Deploy MCPs
 
 on:
