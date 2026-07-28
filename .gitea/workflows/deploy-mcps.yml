@@ -1,4 +1,4 @@
-# Build & Deploy MCPs — Gitea Actions CI/CD (dockerd direct start)
+# Build & Deploy MCPs — Gitea Actions CI/CD (GODEBUG ipv4 + daemon.json insecure)
 name: Build & Deploy MCPs
 
 on:
