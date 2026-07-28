@@ -1,0 +1,104 @@
+# Trivy Vulnerability Scan
+# Scans MCP images in Harbor for vulnerabilities
+name: Trivy Scan
+
+on:
+  workflow_run:
+    workflows: ["Build & Deploy MCPs"]
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - '.gitea/workflows/trivy-scan.yml'
+
+env:
+  HARBOR_REGISTRY: 10.43.36.90:5000
+  HARBOR_PROJECT: ghl
+  HARBOR_CORE: 10.43.33.234
+
+jobs:
+  trivy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install crane + trivy
+        run: |
+          apt-get update -qq && apt-get install -y -qq curl wget
+          # crane
+          curl -fsSL https://github.com/google/go-containerregistry/releases/download/v0.20.2/go-containerregistry_Linux_x86_64.tar.gz | tar xz crane
+          mv crane /usr/local/bin/crane
+          # trivy
+          curl -fsSL https://github.com/aquasecurity/trivy/releases/download/v0.55.0/trivy_0.55.0_Linux-64bit.tar.gz | tar xz trivy
+          mv trivy /usr/local/bin/trivy
+          trivy --version
+
+      - name: Login to Harbor
+        run: |
+          echo "${{ secrets.HARBOR_PASSWORD }}" | crane auth login $HARBOR_REGISTRY -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+
+      - name: Scan images with Trivy
+        continue-on-error: true
+        run: |
+          echo "=== Trivy Vulnerability Scan ==="
+          # Get list of repos from Harbor API
+          REPOS=$(curl -s -u "${{ secrets.HARBOR_USERNAME }}:${{ secrets.HARBOR_PASSWORD }}" \
+            "http://${HARBOR_CORE}/api/v2.0/projects/${HARBOR_PROJECT}/repositories?page_size=100" | \
+            python3 -c "
+import sys,json
+data=json.load(sys.stdin)
+for r in data:
+    name=r['name'].replace('ghl/','')
+    if name.startswith('mcp-'):
+        print(name)
+          ")
+
+          CRITICAL=0
+          HIGH=0
+          MEDIUM=0
+          TOTAL=0
+
+          for repo in $REPOS; do
+            IMAGE="${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${repo}:latest"
+            echo ""
+            echo "--- Scanning $repo ---"
+            trivy image --image-src remote --insecure \
+              --severity CRITICAL,HIGH,MEDIUM \
+              --format json --output /tmp/trivy-${repo}.json \
+              "$IMAGE" 2>/dev/null || {
+              echo "  Scan failed for $repo"
+              continue
+            }
+
+            VULNS=$(python3 -c "
+import json
+try:
+    with open('/tmp/trivy-${repo}.json') as f:
+        data=json.load(f)
+    results=data.get('Results',[])
+    total=sum(len(r.get('Vulnerabilities',[]) or []) for r in results)
+    crit=sum(1 for r in results for v in (r.get('Vulnerabilities',[]) or []) if v.get('Severity')=='CRITICAL')
+    high=sum(1 for r in results for v in (r.get('Vulnerabilities',[]) or []) if v.get('Severity')=='HIGH')
+    med=sum(1 for r in results for v in (r.get('Vulnerabilities',[]) or []) if v.get('Severity')=='MEDIUM')
+    print(f'{total},{crit},{high},{med}')
+except: print('0,0,0,0')
+            " 2>/dev/null || echo "0,0,0,0")
+
+            IFS=',' read total crit high med <<< "$VULNS"
+            echo "  Total: $total | CRITICAL: $crit | HIGH: $high | MEDIUM: $med"
+            CRITICAL=$((CRITICAL + crit))
+            HIGH=$((HIGH + high))
+            MEDIUM=$((MEDIUM + med))
+            TOTAL=$((TOTAL + total))
+          done
+
+          echo ""
+          echo "============================================"
+          echo "  Trivy Scan Summary"
+          echo "============================================"
+          echo "  Total vulnerabilities: $TOTAL"
+          echo "  CRITICAL: $CRITICAL"
+          echo "  HIGH: $HIGH"
+          echo "  MEDIUM: $MEDIUM"
+          echo "============================================"

@@ -1,0 +1,75 @@
+# YAML/JSON Schema Validation
+# Validates Kubernetes manifests and JSON config files
+name: Validate Manifests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'k8s/**'
+      - '**/*.yaml'
+      - '**/*.json'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          pip install --quiet pyyaml==6.0.2 jsonschema==4.23.0
+          # Install kubeval (kubectl-validate alternative)
+          curl -fsSL https://github.com/yannh/kubeval/releases/download/v0.16.1/kubeval-linux-amd64.tar.gz | tar xz kubeval
+          mv kubeval /usr/local/bin/kubeval
+
+      - name: Validate K8s manifests
+        continue-on-error: true
+        run: |
+          echo "=== K8s Manifest Validation ==="
+          if [ -d k8s ]; then
+            kubeval --strict --ignore-missing-schemas k8s/*.yaml 2>&1 || echo "Kubeval found issues (non-blocking)"
+          else
+            echo "No k8s/ directory found"
+          fi
+
+      - name: Validate YAML syntax
+        continue-on-error: true
+        run: |
+          echo "=== YAML Syntax Check ==="
+          ERRORS=0
+          for f in $(find . -name "*.yaml" -o -name "*.yml" | grep -v '.git/'); do
+            python3 -c "
+import yaml, sys
+try:
+    with open('$f') as fh:
+        list(yaml.safe_load_all(fh))
+except Exception as e:
+    print(f'  ERROR in $f: {e}')
+    sys.exit(1)
+            " || ERRORS=$((ERRORS + 1))
+          done
+          echo "YAML errors: $ERRORS"
+
+      - name: Validate JSON syntax
+        continue-on-error: true
+        run: |
+          echo "=== JSON Syntax Check ==="
+          ERRORS=0
+          for f in $(find . -name "*.json" -not -path './.git/*' -not -path './node_modules/*'); do
+            python3 -c "
+import json, sys
+try:
+    with open('$f') as fh:
+        json.load(fh)
+except Exception as e:
+    print(f'  ERROR in $f: {e}')
+    sys.exit(1)
+            " || ERRORS=$((ERRORS + 1))
+          done
+          echo "JSON errors: $ERRORS"
+
+      - name: Summary
+        run: echo "=== Validation complete ==="

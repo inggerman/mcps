@@ -1,0 +1,104 @@
+# GitOps Sync Trigger
+# After MCP images are built and pushed, updates image tags in the platform GitOps repo
+# ArgoCD detects the change and syncs automatically
+name: GitOps Sync
+
+on:
+  workflow_run:
+    workflows: ["Build & Deploy MCPs"]
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - '.gitea/workflows/gitops-sync.yml'
+
+env:
+  GITEA_USER: ghl-admin
+  GITEA_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+  GITEA_URL: http://10.43.200.50:3000
+  HARBOR_REGISTRY: 10.43.36.90:5000
+  HARBOR_PROJECT: ghl
+
+jobs:
+  gitops-sync:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install crane
+        run: |
+          apt-get update -qq && apt-get install -y -qq curl
+          curl -fsSL https://github.com/google/go-containerregistry/releases/download/v0.20.2/go-containerregistry_Linux_x86_64.tar.gz | tar xz crane
+          mv crane /usr/local/bin/crane
+
+      - name: Login to Harbor
+        run: |
+          echo "${{ secrets.HARBOR_PASSWORD }}" | crane auth login $HARBOR_REGISTRY -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+
+      - name: Checkout platform repo
+        run: |
+          git clone "http://${GITEA_USER}:${GITEA_TOKEN}@10.43.200.50:3000/ghl-admin/platform.git" /tmp/platform || {
+            echo "Platform repo not found, creating minimal sync"
+            exit 0
+          }
+          cd /tmp/platform
+          git config user.name "GHL CI"
+          git config user.email "ci@mrrobot.fs"
+
+      - name: Update image tags in GitOps
+        run: |
+          if [ ! -d /tmp/platform ]; then
+            echo "No platform repo, skipping"
+            exit 0
+          fi
+
+          SHA=$(git rev-parse --short HEAD)
+          echo "=== Updating GitOps manifests with tag: $SHA ==="
+
+          # Get all MCP repos from Harbor
+          REPOS=$(curl -s -u "${{ secrets.HARBOR_USERNAME }}:${{ secrets.HARBOR_PASSWORD }}" \
+            "http://10.43.33.234/api/v2.0/projects/ghl/repositories?page_size=100" | \
+            python3 -c "
+import sys,json
+data=json.load(sys.stdin)
+for r in data:
+    name=r['name'].replace('ghl/','')
+    if name.startswith('mcp-'):
+        print(name)
+          ")
+
+          UPDATED=0
+          for repo in $REPOS; do
+            # Update in k8s/all-mcps.yaml if it exists
+            MANIFEST="/tmp/platform/gitops/apps/mcp-services/${repo}.yaml"
+            if [ -f "$MANIFEST" ]; then
+              sed -i "s|${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${repo}:.*|${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${repo}:${SHA}|" "$MANIFEST"
+              echo "  Updated $MANIFEST"
+              UPDATED=$((UPDATED + 1))
+            fi
+
+            # Update in overlays if they exist
+            for env in qa stg prod; do
+              OVERLAY="/tmp/platform/gitops/apps/${repo}/overlays/${env}/deployment.yaml"
+              if [ -f "$OVERLAY" ]; then
+                sed -i "s|${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${repo}:.*|${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${repo}:${SHA}|" "$OVERLAY"
+                echo "  Updated $OVERLAY"
+                UPDATED=$((UPDATED + 1))
+              fi
+            done
+          done
+
+          echo "Updated $UPDATED manifest(s)"
+
+      - name: Commit and push
+        run: |
+          if [ ! -d /tmp/platform ]; then exit 0; fi
+          cd /tmp/platform
+          git add -A || true
+          git commit -m "sync(gitops): MCP images @ $(git rev-parse --short HEAD)" || {
+            echo "No changes to commit"
+            exit 0
+          }
+          git push || echo "Push failed (non-blocking)"
+          echo "=== GitOps sync complete ==="

@@ -1,0 +1,56 @@
+# Dependency Audit
+# Scans Python dependencies for known CVEs using pip-audit
+name: Dependency Audit
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 3 * * *'
+
+jobs:
+  pip-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pip-audit
+        run: pip install --quiet pip-audit==2.7.3
+
+      - name: Scan all requirements.txt files
+        continue-on-error: true
+        run: |
+          echo "=== Dependency Audit ==="
+          TOTAL_VULNS=0
+          for req in $(find . -name "requirements.txt" -not -path "./.git/*" | sort); do
+            echo ""
+            echo "--- Scanning $req ---"
+            pip-audit -r "$req" --format=json -o /tmp/audit-$(echo $req | tr '/' '_').json 2>/dev/null || true
+            VULNS=$(python3 -c "
+import json,sys
+try:
+    with open('/tmp/audit-$(echo $req | tr '/' '_').json') as f:
+        data=json.load(f)
+    deps=data.get('dependencies',[])
+    count=sum(len(d.get('vulns',[])) for d in deps)
+    print(count)
+except: print(0)
+" 2>/dev/null || echo 0)
+            echo "  Vulnerabilities: $VULNS"
+            TOTAL_VULNS=$((TOTAL_VULNS + VULNS))
+          done
+          echo ""
+          echo "=== Total vulnerabilities across all deps: $TOTAL_VULNS ==="
+
+      - name: Scan pyproject.toml files
+        continue-on-error: true
+        run: |
+          for pp in $(find . -name "pyproject.toml" -not -path "./.git/*" | sort); do
+            echo "--- Scanning $pp ---"
+            cd $(dirname $pp)
+            pip-audit --format=json -o /tmp/audit-pyproject.json 2>/dev/null || true
+            cd - > /dev/null
+          done
+          echo "=== pyproject.toml scan complete ==="

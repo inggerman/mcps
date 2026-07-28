@@ -1,0 +1,79 @@
+# Test Suite + Coverage
+# Runs pytest with coverage on all MCP servers that have tests
+name: Tests & Coverage
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pytest + coverage
+        run: |
+          pip install --quiet pytest==8.3.3 pytest-cov==5.0.0
+
+      - name: Run tests for all MCPs
+        continue-on-error: true
+        run: |
+          echo "=== Test Suite + Coverage ==="
+          TOTAL_PASS=0
+          TOTAL_FAIL=0
+          TOTAL_COV=0
+          TESTED=0
+
+          for mcp_dir in $(find . -maxdepth 1 -type d -name "mcp-*" | sort); do
+            mcp_name=$(basename $mcp_dir)
+            if [ -d "$mcp_dir/tests" ] || [ -f "$mcp_dir/test_*.py" ] || [ -f "$mcp_dir/src/test_*.py" ]; then
+              echo ""
+              echo "--- Testing $mcp_name ---"
+              cd $mcp_dir
+
+              # Install deps if requirements.txt exists
+              if [ -f requirements.txt ]; then
+                pip install --quiet -r requirements.txt 2>/dev/null || true
+              fi
+
+              # Run pytest
+              python3 -m pytest --cov=src --cov-report=term-missing --cov-report=json:/tmp/cov-${mcp_name}.json \
+                --tb=short -q 2>/dev/null && {
+                echo "  PASS"
+                TOTAL_PASS=$((TOTAL_PASS + 1))
+              } || {
+                echo "  FAIL (or no tests)"
+                TOTAL_FAIL=$((TOTAL_FAIL + 1))
+              }
+
+              # Extract coverage
+              if [ -f /tmp/cov-${mcp_name}.json ]; then
+                COV=$(python3 -c "
+import json
+try:
+    with open('/tmp/cov-${mcp_name}.json') as f:
+        data=json.load(f)
+    print(data.get('totals',{}).get('percent_covered',0))
+except: print(0)
+                " 2>/dev/null || echo 0)
+                echo "  Coverage: ${COV}%"
+                TOTAL_COV=$(python3 -c "print((${TOTAL_COV} + ${COV}) / 2)" 2>/dev/null || echo 0)
+              fi
+
+              TESTED=$((TESTED + 1))
+              cd - > /dev/null
+            fi
+          done
+
+          echo ""
+          echo "============================================"
+          echo "  Test Summary"
+          echo "============================================"
+          echo "  MCPs tested: $TESTED"
+          echo "  Passed: $TOTAL_PASS"
+          echo "  Failed: $TOTAL_FAIL"
+          echo "  Avg coverage: ${TOTAL_COV}%"
+          echo "============================================"

@@ -1,0 +1,58 @@
+# SAST — Static Application Security Testing
+# Runs bandit + semgrep on all Python files
+name: SAST
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  sast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bandit
+        run: pip install --quiet bandit==1.7.10
+
+      - name: Install semgrep
+        run: pip install --quiet semgrep==1.96.0
+
+      - name: Bandit scan
+        continue-on-error: true
+        run: |
+          echo "=== Bandit scan ==="
+          bandit -r . -f json -o /tmp/bandit-report.json --skip B101,B110,B311,B601,B602 || true
+          if [ -f /tmp/bandit-report.json ]; then
+            python3 -c "
+import json
+with open('/tmp/bandit-report.json') as f:
+    data = json.load(f)
+results = data.get('results', [])
+print(f'Issues: {len(results)} (HIGH: {data[\"metrics\"][\"_totals\"][\"SEVERITY.HIGH\"]}, MEDIUM: {data[\"metrics\"][\"_totals\"][\"SEVERITY.MEDIUM\"]}, LOW: {data[\"metrics\"][\"_totals\"][\"SEVERITY.LOW\"]})')
+for r in results[:10]:
+    print(f'  [{r[\"issue_severity\"]}] {r[\"test_id\"]} in {r[\"filename\"]}:{r[\"line_number\"]}')
+" 2>/dev/null || echo "Bandit scan completed"
+          fi
+
+      - name: Semgrep scan
+        continue-on-error: true
+        run: |
+          echo "=== Semgrep scan ==="
+          semgrep scan --config=auto --json --output=/tmp/semgrep-report.json . || true
+          if [ -f /tmp/semgrep-report.json ]; then
+            python3 -c "
+import json
+with open('/tmp/semgrep-report.json') as f:
+    data = json.load(f)
+results = data.get('results', [])
+print(f'Issues: {len(results)}')
+for r in results[:10]:
+    print(f'  [{r[\"extra\"][\"severity\"]}] {r[\"check_id\"]} in {r[\"path\"]}:{r[\"start\"][\"line\"]}')
+" 2>/dev/null || echo "Semgrep scan completed"
+          fi
+
+      - name: Summary
+        run: echo "=== SAST complete (non-blocking) ==="

@@ -1,0 +1,42 @@
+# Python Lint & Format Check
+# Runs ruff check + ruff format check + mypy on all Python files
+name: Lint & Format
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ruff + mypy
+        run: |
+          pip install --quiet ruff==0.6.9 mypy==1.13.0
+
+      - name: Ruff check
+        continue-on-error: true
+        run: |
+          echo "=== Ruff check ==="
+          ruff check . --output-format=github || echo "Ruff found issues (non-blocking)"
+
+      - name: Ruff format check
+        continue-on-error: true
+        run: |
+          echo "=== Ruff format check ==="
+          ruff format --check . || echo "Formatting issues found (non-blocking)"
+
+      - name: Mypy type check
+        continue-on-error: true
+        run: |
+          echo "=== Mypy type check ==="
+          mypy --ignore-missing-imports --no-error-summary mcp-*/src/ 2>/dev/null || echo "Mypy found type issues (non-blocking)"
+
+      - name: Summary
+        run: |
+          echo "=== Lint & Format complete ==="
+          echo "All checks are non-blocking initially. Enable blocking mode after cleanup."

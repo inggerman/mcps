@@ -1,0 +1,83 @@
+# Multi-arch Image Build
+# Builds amd64 + arm64 images and creates a manifest list in Harbor
+name: Multi-arch Build
+
+on:
+  push:
+    tags: ['v*']
+    branches: [main]
+    paths:
+      - '.gitea/workflows/multi-arch.yml'
+
+env:
+  HARBOR_REGISTRY: 10.43.36.90:5000
+  HARBOR_PROJECT: ghl
+
+jobs:
+  multi-arch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Docker CLI + crane
+        run: |
+          apt-get update -qq && apt-get install -y -qq curl
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sh get-docker.sh
+          curl -fsSL https://github.com/google/go-containerregistry/releases/download/v0.20.2/go-containerregistry_Linux_x86_64.tar.gz | tar xz crane
+          mv crane /usr/local/bin/crane
+
+      - name: Login to Harbor
+        run: |
+          echo "${{ secrets.HARBOR_PASSWORD }}" | crane auth login $HARBOR_REGISTRY -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+
+      - name: Build multi-arch for selected MCPs
+        continue-on-error: true
+        run: |
+          export DOCKER_BUILDKIT=0
+          SHA=$(git rev-parse --short HEAD)
+
+          # Only build multi-arch for a subset of lightweight MCPs
+          MCP_LIST="mcp-filesystem mcp-calendar mcp-fetch mcp-markdown"
+
+          for mcp_name in $MCP_LIST; do
+            mcp_dir=$(find . -maxdepth 1 -type d -name "$mcp_name" | head -1)
+            if [ -z "$mcp_dir" ] || [ ! -f "$mcp_dir/Dockerfile" ]; then
+              echo "  SKIP $mcp_name (no Dockerfile)"
+              continue
+            fi
+
+            echo ""
+            echo "=== Building multi-arch for $mcp_name ==="
+
+            # Build amd64
+            docker build --platform linux/amd64 \
+              -t ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:amd64-${SHA} \
+              -f $mcp_dir/Dockerfile . || { echo "  BUILD FAILED amd64"; continue; }
+
+            # Build arm64 (cross-compile may fail for some images, non-blocking)
+            docker build --platform linux/arm64 \
+              -t ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:arm64-${SHA} \
+              -f $mcp_dir/Dockerfile . || { echo "  BUILD FAILED arm64 (skipping)"; continue; }
+
+            # Save and push both architectures
+            docker save -o /tmp/${mcp_name}-amd64.tar ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:amd64-${SHA}
+            crane push /tmp/${mcp_name}-amd64.tar ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:amd64-${SHA} --insecure
+
+            docker save -o /tmp/${mcp_name}-arm64.tar ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:arm64-${SHA}
+            crane push /tmp/${mcp_name}-arm64.tar ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:arm64-${SHA} --insecure
+
+            # Create manifest list
+            crane manifest set ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:${SHA} \
+              ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:amd64-${SHA} \
+              ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:arm64-${SHA} --insecure || true
+
+            crane manifest set ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:latest \
+              ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:amd64-${SHA} \
+              ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:arm64-${SHA} --insecure || true
+
+            rm -f /tmp/${mcp_name}-*.tar
+            echo "  DONE $mcp_name (multi-arch)"
+          done
+
+          echo "=== Multi-arch build complete ==="

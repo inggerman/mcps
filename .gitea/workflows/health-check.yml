@@ -1,0 +1,74 @@
+# MCP Health Check E2E
+# Performs HTTP health checks against all MCP services in the cluster
+name: MCP Health Check
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - '.gitea/workflows/health-check.yml'
+  workflow_run:
+    workflows: ["Build & Deploy MCPs"]
+    types: [completed]
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubectl + curl
+        run: |
+          curl -fsSL https://dl.k8s.io/release/v1.31.0/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl
+          chmod +x /usr/local/bin/kubectl
+          kubectl version --client
+
+      - name: Setup kubeconfig
+        run: |
+          echo "${{ secrets.KUBECONFIG_B64 }}" | base64 -d > /tmp/kubeconfig
+          chmod 600 /tmp/kubeconfig
+
+      - name: Health check all MCPs
+        continue-on-error: true
+        run: |
+          export KUBECONFIG=/tmp/kubeconfig
+          echo "=== MCP Health Checks ==="
+
+          SERVICES=$(kubectl get svc -n mcps -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.clusterIP}{"\t"}{.spec.ports[0].port}{"\n"}{end}' 2>/dev/null || echo "")
+
+          HEALTHY=0
+          UNHEALTHY=0
+          TOTAL=0
+
+          while IFS=$'\t' read -r name ip port; do
+            if [ -z "$name" ]; then continue; fi
+            TOTAL=$((TOTAL + 1))
+
+            # Try direct curl from the job container (host network)
+            RESPONSE=$(curl -s --connect-timeout 5 -X POST "http://${ip}:${port}/mcp" \
+              -H "Content-Type: application/json" \
+              -H "Accept: application/json, text/event-stream" \
+              -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"ci-health","version":"1.0"}},"id":1}' 2>/dev/null || echo "FAIL")
+
+            if echo "$RESPONSE" | grep -q "serverInfo"; then
+              echo "  OK   $name (${ip}:${port})"
+              HEALTHY=$((HEALTHY + 1))
+            else
+              echo "  FAIL $name (${ip}:${port})"
+              UNHEALTHY=$((UNHEALTHY + 1))
+            fi
+          done <<< "$SERVICES"
+
+          echo ""
+          echo "============================================"
+          echo "  Health: $HEALTHY/$TOTAL healthy, $UNHEALTHY unhealthy"
+          echo "============================================"
+
+      - name: Cluster pod status
+        continue-on-error: true
+        run: |
+          export KUBECONFIG=/tmp/kubeconfig
+          echo "=== Pod Status ==="
+          kubectl get pods -n mcps --no-headers 2>/dev/null | awk '{print $1, $3, $5}' || echo "Could not get pods"
