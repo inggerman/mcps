@@ -14,9 +14,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install pytest + coverage
+      - name: Install Python + pytest + coverage
         run: |
-          pip install --quiet pytest==8.3.3 pytest-cov==5.0.0
+          apt-get update -qq && apt-get install -y -qq python3 python3-pip
+          pip install --quiet --break-system-packages pytest==8.3.3 pytest-cov==5.0.0
 
       - name: Run tests for all MCPs
         continue-on-error: true
