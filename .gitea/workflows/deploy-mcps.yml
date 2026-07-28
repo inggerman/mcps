@@ -1,4 +1,4 @@
-# Build & Deploy MCPs — Gitea Actions CI/CD (GODEBUG ipv4 + daemon.json insecure)
+# Build & Deploy MCPs — Gitea Actions CI/CD (resolv.conf + DNS fix)
 name: Build & Deploy MCPs
 
 on:
