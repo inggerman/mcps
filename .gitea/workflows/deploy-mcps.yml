@@ -25,16 +25,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Docker CLI
+      - name: Install Docker CLI + crane
         run: |
           apt-get update -qq && apt-get install -y -qq curl
           curl -fsSL https://get.docker.com -o get-docker.sh
           sh get-docker.sh
           docker version
+          # Install crane for pushing to insecure Harbor registry
+          curl -fsSL https://github.com/google/go-containerregistry/releases/download/v0.20.2/go-containerregistry_Linux_x86_64.tar.gz | tar xz crane
+          mv crane /usr/local/bin/crane
+          crane version
 
       - name: Login to Harbor
         run: |
-          echo "${{ secrets.HARBOR_PASSWORD }}" | docker login 10.43.36.90:5000 -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+          echo "${{ secrets.HARBOR_PASSWORD }}" | crane auth login 10.43.36.90:5000 -u "${{ secrets.HARBOR_USERNAME }}" --password-stdin
 
       - name: Detect changed MCPs
         id: detect
@@ -102,17 +106,21 @@ jobs:
               continue
             }
             
-            # Push both tags
-            docker push ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:${IMAGE_TAG} || {
-              echo "  PUSH FAILED (SHA) for $mcp_name"
-              FAILED=$((FAILED + 1))
-              continue
-            }
-            docker push ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:latest || {
+            # Push with crane (handles insecure HTTP registry correctly)
+            docker save -o /tmp/${mcp_name}.tar ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:latest
+            crane push /tmp/${mcp_name}.tar ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:latest --insecure || {
               echo "  PUSH FAILED (latest) for $mcp_name"
               FAILED=$((FAILED + 1))
+              rm -f /tmp/${mcp_name}.tar
               continue
             }
+            crane tag ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${mcp_name}:latest ${IMAGE_TAG} --insecure || {
+              echo "  TAG FAILED (SHA) for $mcp_name"
+              FAILED=$((FAILED + 1))
+              rm -f /tmp/${mcp_name}.tar
+              continue
+            }
+            rm -f /tmp/${mcp_name}.tar
             
             BUILT_IMAGES="$BUILT_IMAGES $mcp_name"
             echo "  DONE $mcp_name (tag: ${IMAGE_TAG:0:8})"
