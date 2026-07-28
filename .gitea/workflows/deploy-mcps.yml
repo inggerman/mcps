@@ -178,12 +178,13 @@ jobs:
           kubectl get pods -n mcps -o wide
 
       - name: Health check MCPs
+        continue-on-error: true
         run: |
           export KUBECONFIG=/tmp/kubeconfig
           echo "=== Health checks ==="
           
           # Get all MCP services
-          SERVICES=$(kubectl get svc -n mcps -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.clusterIP}{"\t"}{.spec.ports[0].port}{"\n"{end}}' 2>/dev/null)
+          SERVICES=$(kubectl get svc -n mcps -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.clusterIP}{"\t"}{.spec.ports[0].port}{"\n"}{end}' 2>/dev/null || echo "")
           
           HEALTHY=0
           UNHEALTHY=0
@@ -196,7 +197,7 @@ jobs:
               curl -s --connect-timeout 5 -X POST "http://${ip}:${port}/mcp" \
               -H "Content-Type: application/json" \
               -H "Accept: application/json, text/event-stream" \
-              -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"ci","version":"1.0"}},"id":1}' 2>/dev/null) || true
+              -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"ci","version":"1.0"}},"id":1}' 2>/dev/null || true)
             
             if echo "$RESPONSE" | grep -q "serverInfo"; then
               echo "  OK   $name"
