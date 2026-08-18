@@ -40,6 +40,27 @@ MCPS = [
     {"name": "mcp-agent-runner", "port": 8033, "env": {"AGENT_PROJECT_PATH": "/repo", "AGENT_N8N_WEBHOOK_BASE_URL": "http://localhost:5678/webhook"}, "volumes": []},
     {"name": "mcp-personal-vault", "port": 8034, "env": {"PERSONAL_VAULT_DATABASE_PATH": "/vault/personal.db", "PERSONAL_VAULT_KEY_FILE": "/vault/vault.key", "PERSONAL_VAULT_ALLOW_WRITE": "true", "PERSONAL_VAULT_ALLOW_HIGHLY_SENSITIVE": "false", "PERSONAL_VAULT_ALLOW_SECRETS": "false"}, "volumes": [{"name": "mcp-personal-vault", "mountPath": "/vault", "readOnly": False}]},
     {"name": "mcp-gob-mexico", "port": 8035, "env": {"GOB_MX_HTTP_TIMEOUT": "30", "GOB_MX_MAX_RETRIES": "3", "GOB_MX_CACHE_TTL": "300"}, "volumes": []},
+    # Fase 9 — Infra MCPs (core, 8036-8045)
+    {"name": "mcp-argocd", "port": 8036, "env": {"ARGOCD_VERIFY_SSL": "false"}, "volumes": []},
+    {"name": "mcp-harbor", "port": 8037, "env": {"HARBOR_VERIFY_SSL": "false", "HARBOR_PROJECT": "ghl"}, "volumes": []},
+    {"name": "mcp-gitea", "port": 8038, "env": {"GITEA_VERIFY_SSL": "false"}, "volumes": []},
+    {"name": "mcp-n8n", "port": 8039, "env": {}, "volumes": []},
+    {"name": "mcp-vault-secrets", "port": 8040, "env": {"VAULT_VERIFY_SSL": "false"}, "volumes": []},
+    {"name": "mcp-postgres", "port": 8041, "env": {"POSTGRES_ALLOW_WRITE": "false"}, "volumes": []},
+    {"name": "mcp-redis", "port": 8042, "env": {"REDIS_ALLOW_WRITE": "false"}, "volumes": []},
+    {"name": "mcp-rabbitmq", "port": 8043, "env": {"RABBITMQ_ALLOW_PUBLISH": "false"}, "volumes": []},
+    {"name": "mcp-vector-search", "port": 8044, "env": {"QDRANT_URL": "http://qdrant.qdrant.svc.cluster.local:6333", "VECTOR_SEARCH_EMBEDDING_URL": "http://host.docker.internal:1234/v1", "VECTOR_SEARCH_ALLOW_WRITE": "false"}, "volumes": []},
+    {"name": "mcp-notify", "port": 8045, "env": {}, "volumes": []},
+    # Fase 10 — Infra MCPs (script-derived, 8046-8054)
+    {"name": "mcp-cluster-doctor", "port": 8046, "env": {}, "volumes": []},
+    {"name": "mcp-image-builder", "port": 8047, "env": {"IMAGE_BUILDER_VERIFY_SSL": "false", "IMAGE_BUILDER_HARBOR_PROJECT": "ghl"}, "volumes": []},
+    {"name": "mcp-log-explorer", "port": 8048, "env": {}, "volumes": []},
+    {"name": "mcp-config-sync", "port": 8049, "env": {"CONFIG_SYNC_ALLOW_WRITE": "false"}, "volumes": []},
+    {"name": "mcp-health-monitor", "port": 8050, "env": {}, "volumes": []},
+    {"name": "mcp-network-doctor", "port": 8051, "env": {}, "volumes": []},
+    {"name": "mcp-storage-doctor", "port": 8052, "env": {}, "volumes": []},
+    {"name": "mcp-deploy-tracker", "port": 8053, "env": {}, "volumes": []},
+    {"name": "mcp-node-ops", "port": 8054, "env": {"NODE_OPS_ALLOW_WRITE": "false"}, "volumes": []},
 ]
 
 NAMESPACE = "mcps"

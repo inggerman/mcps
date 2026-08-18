@@ -2507,6 +2507,1271 @@ spec:
     name: http
   type: ClusterIP
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-argocd
+  namespace: mcps
+  labels:
+    app: mcp-argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-argocd
+  template:
+    metadata:
+      labels:
+        app: mcp-argocd
+    spec:
+      containers:
+      - name: mcp-argocd
+        image: harbor.mrrobot.fs/ghl/mcp-argocd:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8036
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8036'
+        - name: ARGOCD_VERIFY_SSL
+          value: 'false'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8036
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8036
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-argocd
+  namespace: mcps
+  labels:
+    app: mcp-argocd
+spec:
+  selector:
+    app: mcp-argocd
+  ports:
+  - port: 8036
+    targetPort: 8036
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-harbor
+  namespace: mcps
+  labels:
+    app: mcp-harbor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-harbor
+  template:
+    metadata:
+      labels:
+        app: mcp-harbor
+    spec:
+      containers:
+      - name: mcp-harbor
+        image: harbor.mrrobot.fs/ghl/mcp-harbor:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8037
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8037'
+        - name: HARBOR_VERIFY_SSL
+          value: 'false'
+        - name: HARBOR_PROJECT
+          value: ghl
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8037
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8037
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-harbor
+  namespace: mcps
+  labels:
+    app: mcp-harbor
+spec:
+  selector:
+    app: mcp-harbor
+  ports:
+  - port: 8037
+    targetPort: 8037
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-gitea
+  namespace: mcps
+  labels:
+    app: mcp-gitea
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-gitea
+  template:
+    metadata:
+      labels:
+        app: mcp-gitea
+    spec:
+      containers:
+      - name: mcp-gitea
+        image: harbor.mrrobot.fs/ghl/mcp-gitea:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8038
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8038'
+        - name: GITEA_VERIFY_SSL
+          value: 'false'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8038
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8038
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-gitea
+  namespace: mcps
+  labels:
+    app: mcp-gitea
+spec:
+  selector:
+    app: mcp-gitea
+  ports:
+  - port: 8038
+    targetPort: 8038
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-n8n
+  namespace: mcps
+  labels:
+    app: mcp-n8n
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-n8n
+  template:
+    metadata:
+      labels:
+        app: mcp-n8n
+    spec:
+      containers:
+      - name: mcp-n8n
+        image: harbor.mrrobot.fs/ghl/mcp-n8n:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8039
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8039'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8039
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8039
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-n8n
+  namespace: mcps
+  labels:
+    app: mcp-n8n
+spec:
+  selector:
+    app: mcp-n8n
+  ports:
+  - port: 8039
+    targetPort: 8039
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-vault-secrets
+  namespace: mcps
+  labels:
+    app: mcp-vault-secrets
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-vault-secrets
+  template:
+    metadata:
+      labels:
+        app: mcp-vault-secrets
+    spec:
+      containers:
+      - name: mcp-vault-secrets
+        image: harbor.mrrobot.fs/ghl/mcp-vault-secrets:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8040
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8040'
+        - name: VAULT_VERIFY_SSL
+          value: 'false'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8040
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8040
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-vault-secrets
+  namespace: mcps
+  labels:
+    app: mcp-vault-secrets
+spec:
+  selector:
+    app: mcp-vault-secrets
+  ports:
+  - port: 8040
+    targetPort: 8040
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-postgres
+  namespace: mcps
+  labels:
+    app: mcp-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-postgres
+  template:
+    metadata:
+      labels:
+        app: mcp-postgres
+    spec:
+      containers:
+      - name: mcp-postgres
+        image: harbor.mrrobot.fs/ghl/mcp-postgres:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8041
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8041'
+        - name: POSTGRES_ALLOW_WRITE
+          value: 'false'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8041
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8041
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-postgres
+  namespace: mcps
+  labels:
+    app: mcp-postgres
+spec:
+  selector:
+    app: mcp-postgres
+  ports:
+  - port: 8041
+    targetPort: 8041
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-redis
+  namespace: mcps
+  labels:
+    app: mcp-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-redis
+  template:
+    metadata:
+      labels:
+        app: mcp-redis
+    spec:
+      containers:
+      - name: mcp-redis
+        image: harbor.mrrobot.fs/ghl/mcp-redis:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8042
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8042'
+        - name: REDIS_ALLOW_WRITE
+          value: 'false'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8042
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8042
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-redis
+  namespace: mcps
+  labels:
+    app: mcp-redis
+spec:
+  selector:
+    app: mcp-redis
+  ports:
+  - port: 8042
+    targetPort: 8042
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-rabbitmq
+  namespace: mcps
+  labels:
+    app: mcp-rabbitmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-rabbitmq
+  template:
+    metadata:
+      labels:
+        app: mcp-rabbitmq
+    spec:
+      containers:
+      - name: mcp-rabbitmq
+        image: harbor.mrrobot.fs/ghl/mcp-rabbitmq:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8043
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8043'
+        - name: RABBITMQ_ALLOW_PUBLISH
+          value: 'false'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8043
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8043
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-rabbitmq
+  namespace: mcps
+  labels:
+    app: mcp-rabbitmq
+spec:
+  selector:
+    app: mcp-rabbitmq
+  ports:
+  - port: 8043
+    targetPort: 8043
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-vector-search
+  namespace: mcps
+  labels:
+    app: mcp-vector-search
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-vector-search
+  template:
+    metadata:
+      labels:
+        app: mcp-vector-search
+    spec:
+      containers:
+      - name: mcp-vector-search
+        image: harbor.mrrobot.fs/ghl/mcp-vector-search:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8044
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8044'
+        - name: QDRANT_URL
+          value: http://qdrant.qdrant.svc.cluster.local:6333
+        - name: VECTOR_SEARCH_EMBEDDING_URL
+          value: http://host.docker.internal:1234/v1
+        - name: VECTOR_SEARCH_ALLOW_WRITE
+          value: 'false'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8044
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8044
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-vector-search
+  namespace: mcps
+  labels:
+    app: mcp-vector-search
+spec:
+  selector:
+    app: mcp-vector-search
+  ports:
+  - port: 8044
+    targetPort: 8044
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-notify
+  namespace: mcps
+  labels:
+    app: mcp-notify
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-notify
+  template:
+    metadata:
+      labels:
+        app: mcp-notify
+    spec:
+      containers:
+      - name: mcp-notify
+        image: harbor.mrrobot.fs/ghl/mcp-notify:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8045
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8045'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8045
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8045
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-notify
+  namespace: mcps
+  labels:
+    app: mcp-notify
+spec:
+  selector:
+    app: mcp-notify
+  ports:
+  - port: 8045
+    targetPort: 8045
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-cluster-doctor
+  namespace: mcps
+  labels:
+    app: mcp-cluster-doctor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-cluster-doctor
+  template:
+    metadata:
+      labels:
+        app: mcp-cluster-doctor
+    spec:
+      containers:
+      - name: mcp-cluster-doctor
+        image: harbor.mrrobot.fs/ghl/mcp-cluster-doctor:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8046
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8046'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8046
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8046
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-cluster-doctor
+  namespace: mcps
+  labels:
+    app: mcp-cluster-doctor
+spec:
+  selector:
+    app: mcp-cluster-doctor
+  ports:
+  - port: 8046
+    targetPort: 8046
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-image-builder
+  namespace: mcps
+  labels:
+    app: mcp-image-builder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-image-builder
+  template:
+    metadata:
+      labels:
+        app: mcp-image-builder
+    spec:
+      containers:
+      - name: mcp-image-builder
+        image: harbor.mrrobot.fs/ghl/mcp-image-builder:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8047
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8047'
+        - name: IMAGE_BUILDER_VERIFY_SSL
+          value: 'false'
+        - name: IMAGE_BUILDER_HARBOR_PROJECT
+          value: ghl
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8047
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8047
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-image-builder
+  namespace: mcps
+  labels:
+    app: mcp-image-builder
+spec:
+  selector:
+    app: mcp-image-builder
+  ports:
+  - port: 8047
+    targetPort: 8047
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-log-explorer
+  namespace: mcps
+  labels:
+    app: mcp-log-explorer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-log-explorer
+  template:
+    metadata:
+      labels:
+        app: mcp-log-explorer
+    spec:
+      containers:
+      - name: mcp-log-explorer
+        image: harbor.mrrobot.fs/ghl/mcp-log-explorer:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8048
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8048'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8048
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8048
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-log-explorer
+  namespace: mcps
+  labels:
+    app: mcp-log-explorer
+spec:
+  selector:
+    app: mcp-log-explorer
+  ports:
+  - port: 8048
+    targetPort: 8048
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-config-sync
+  namespace: mcps
+  labels:
+    app: mcp-config-sync
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-config-sync
+  template:
+    metadata:
+      labels:
+        app: mcp-config-sync
+    spec:
+      containers:
+      - name: mcp-config-sync
+        image: harbor.mrrobot.fs/ghl/mcp-config-sync:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8049
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8049'
+        - name: CONFIG_SYNC_ALLOW_WRITE
+          value: 'false'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8049
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8049
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-config-sync
+  namespace: mcps
+  labels:
+    app: mcp-config-sync
+spec:
+  selector:
+    app: mcp-config-sync
+  ports:
+  - port: 8049
+    targetPort: 8049
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-health-monitor
+  namespace: mcps
+  labels:
+    app: mcp-health-monitor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-health-monitor
+  template:
+    metadata:
+      labels:
+        app: mcp-health-monitor
+    spec:
+      containers:
+      - name: mcp-health-monitor
+        image: harbor.mrrobot.fs/ghl/mcp-health-monitor:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8050
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8050'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8050
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8050
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-health-monitor
+  namespace: mcps
+  labels:
+    app: mcp-health-monitor
+spec:
+  selector:
+    app: mcp-health-monitor
+  ports:
+  - port: 8050
+    targetPort: 8050
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-network-doctor
+  namespace: mcps
+  labels:
+    app: mcp-network-doctor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-network-doctor
+  template:
+    metadata:
+      labels:
+        app: mcp-network-doctor
+    spec:
+      containers:
+      - name: mcp-network-doctor
+        image: harbor.mrrobot.fs/ghl/mcp-network-doctor:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8051
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8051'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8051
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8051
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-network-doctor
+  namespace: mcps
+  labels:
+    app: mcp-network-doctor
+spec:
+  selector:
+    app: mcp-network-doctor
+  ports:
+  - port: 8051
+    targetPort: 8051
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-storage-doctor
+  namespace: mcps
+  labels:
+    app: mcp-storage-doctor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-storage-doctor
+  template:
+    metadata:
+      labels:
+        app: mcp-storage-doctor
+    spec:
+      containers:
+      - name: mcp-storage-doctor
+        image: harbor.mrrobot.fs/ghl/mcp-storage-doctor:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8052
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8052'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8052
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8052
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-storage-doctor
+  namespace: mcps
+  labels:
+    app: mcp-storage-doctor
+spec:
+  selector:
+    app: mcp-storage-doctor
+  ports:
+  - port: 8052
+    targetPort: 8052
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-deploy-tracker
+  namespace: mcps
+  labels:
+    app: mcp-deploy-tracker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-deploy-tracker
+  template:
+    metadata:
+      labels:
+        app: mcp-deploy-tracker
+    spec:
+      containers:
+      - name: mcp-deploy-tracker
+        image: harbor.mrrobot.fs/ghl/mcp-deploy-tracker:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8053
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8053'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8053
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8053
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-deploy-tracker
+  namespace: mcps
+  labels:
+    app: mcp-deploy-tracker
+spec:
+  selector:
+    app: mcp-deploy-tracker
+  ports:
+  - port: 8053
+    targetPort: 8053
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-node-ops
+  namespace: mcps
+  labels:
+    app: mcp-node-ops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-node-ops
+  template:
+    metadata:
+      labels:
+        app: mcp-node-ops
+    spec:
+      containers:
+      - name: mcp-node-ops
+        image: harbor.mrrobot.fs/ghl/mcp-node-ops:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8054
+        env:
+        - name: MCP_TRANSPORT
+          value: streamable-http
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: '8054'
+        - name: NODE_OPS_ALLOW_WRITE
+          value: 'false'
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8054
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8054
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-node-ops
+  namespace: mcps
+  labels:
+    app: mcp-node-ops
+spec:
+  selector:
+    app: mcp-node-ops
+  ports:
+  - port: 8054
+    targetPort: 8054
+    name: http
+  type: ClusterIP
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -2867,3 +4132,193 @@ spec:
             name: mcp-gob-mexico
             port:
               number: 8035
+  - host: mcp-argocd.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-argocd
+            port:
+              number: 8036
+  - host: mcp-harbor.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-harbor
+            port:
+              number: 8037
+  - host: mcp-gitea.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-gitea
+            port:
+              number: 8038
+  - host: mcp-n8n.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-n8n
+            port:
+              number: 8039
+  - host: mcp-vault-secrets.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-vault-secrets
+            port:
+              number: 8040
+  - host: mcp-postgres.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-postgres
+            port:
+              number: 8041
+  - host: mcp-redis.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-redis
+            port:
+              number: 8042
+  - host: mcp-rabbitmq.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-rabbitmq
+            port:
+              number: 8043
+  - host: mcp-vector-search.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-vector-search
+            port:
+              number: 8044
+  - host: mcp-notify.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-notify
+            port:
+              number: 8045
+  - host: mcp-cluster-doctor.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-cluster-doctor
+            port:
+              number: 8046
+  - host: mcp-image-builder.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-image-builder
+            port:
+              number: 8047
+  - host: mcp-log-explorer.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-log-explorer
+            port:
+              number: 8048
+  - host: mcp-config-sync.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-config-sync
+            port:
+              number: 8049
+  - host: mcp-health-monitor.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-health-monitor
+            port:
+              number: 8050
+  - host: mcp-network-doctor.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-network-doctor
+            port:
+              number: 8051
+  - host: mcp-storage-doctor.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-storage-doctor
+            port:
+              number: 8052
+  - host: mcp-deploy-tracker.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-deploy-tracker
+            port:
+              number: 8053
+  - host: mcp-node-ops.mrrobot.fs
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-node-ops
+            port:
+              number: 8054

@@ -1,0 +1,220 @@
+{
+  "mcpServers": {
+    "mcp-tabular": {
+      "url": "http://mcp-tabular.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-calendar": {
+      "url": "http://mcp-calendar.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-markdown": {
+      "url": "http://mcp-markdown.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-prompt-engineer": {
+      "url": "http://mcp-prompt-engineer.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-structured-output": {
+      "url": "http://mcp-structured-output.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-fetch": {
+      "url": "http://mcp-fetch.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-docker": {
+      "url": "http://mcp-docker.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-kafka": {
+      "url": "http://mcp-kafka.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-project-memory": {
+      "url": "http://mcp-project-memory.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-llm-router": {
+      "url": "http://mcp-llm-router.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-git": {
+      "url": "http://mcp-git.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-github": {
+      "url": "http://mcp-github.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-code-quality": {
+      "url": "http://mcp-code-quality.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-architecture": {
+      "url": "http://mcp-architecture.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-event-driven": {
+      "url": "http://mcp-event-driven.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-orchestrator": {
+      "url": "http://mcp-orchestrator.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-best-practices": {
+      "url": "http://mcp-best-practices.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-ci-cd": {
+      "url": "http://mcp-ci-cd.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-design-patterns": {
+      "url": "http://mcp-design-patterns.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-security-champion": {
+      "url": "http://mcp-security-champion.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-database": {
+      "url": "http://mcp-database.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-filesystem": {
+      "url": "http://mcp-filesystem.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-object-storage": {
+      "url": "http://mcp-object-storage.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-openapi": {
+      "url": "http://mcp-openapi.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-documents": {
+      "url": "http://mcp-documents.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-browser": {
+      "url": "http://mcp-browser.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-kubernetes": {
+      "url": "http://mcp-kubernetes.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-observability": {
+      "url": "http://mcp-observability.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-terraform": {
+      "url": "http://mcp-terraform.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-snyk": {
+      "url": "http://mcp-snyk.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-sonar": {
+      "url": "http://mcp-sonar.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-java-build": {
+      "url": "http://mcp-java-build.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-agent-runner": {
+      "url": "http://mcp-agent-runner.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-personal-vault": {
+      "url": "http://mcp-personal-vault.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-gob-mexico": {
+      "url": "http://mcp-gob-mexico.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-argocd": {
+      "url": "http://mcp-argocd.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-harbor": {
+      "url": "http://mcp-harbor.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-gitea": {
+      "url": "http://mcp-gitea.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-n8n": {
+      "url": "http://mcp-n8n.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-vault-secrets": {
+      "url": "http://mcp-vault-secrets.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-postgres": {
+      "url": "http://mcp-postgres.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-redis": {
+      "url": "http://mcp-redis.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-rabbitmq": {
+      "url": "http://mcp-rabbitmq.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-vector-search": {
+      "url": "http://mcp-vector-search.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-notify": {
+      "url": "http://mcp-notify.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-cluster-doctor": {
+      "url": "http://mcp-cluster-doctor.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-image-builder": {
+      "url": "http://mcp-image-builder.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-log-explorer": {
+      "url": "http://mcp-log-explorer.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-config-sync": {
+      "url": "http://mcp-config-sync.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-health-monitor": {
+      "url": "http://mcp-health-monitor.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-network-doctor": {
+      "url": "http://mcp-network-doctor.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-storage-doctor": {
+      "url": "http://mcp-storage-doctor.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-deploy-tracker": {
+      "url": "http://mcp-deploy-tracker.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-node-ops": {
+      "url": "http://mcp-node-ops.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    }
+  }
+}

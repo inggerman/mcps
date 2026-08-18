@@ -1242,6 +1242,647 @@ services:
       - "mcp.version=1.0.0"
       - "mcp.transport=streamable-http"
 
+  # ---------------------------------------------------------------------------
+  # MCP: ArgoCD (mcp-argocd)
+  # ---------------------------------------------------------------------------
+  mcp-argocd:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-argocd/Dockerfile
+      target: runtime
+    image: mcp-argocd:latest
+    container_name: mcp-argocd
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8036"
+      ARGOCD_VERIFY_SSL: "false"
+    ports:
+      - "127.0.0.1:8036:8036"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8036), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=argocd"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Harbor registry (mcp-harbor)
+  # ---------------------------------------------------------------------------
+  mcp-harbor:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-harbor/Dockerfile
+      target: runtime
+    image: mcp-harbor:latest
+    container_name: mcp-harbor
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8037"
+      HARBOR_VERIFY_SSL: "false"
+      HARBOR_PROJECT: "ghl"
+    ports:
+      - "127.0.0.1:8037:8037"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8037), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=harbor"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Gitea (mcp-gitea)
+  # ---------------------------------------------------------------------------
+  mcp-gitea:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-gitea/Dockerfile
+      target: runtime
+    image: mcp-gitea:latest
+    container_name: mcp-gitea
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8038"
+      GITEA_VERIFY_SSL: "false"
+    ports:
+      - "127.0.0.1:8038:8038"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8038), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=gitea"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: N8N workflows (mcp-n8n)
+  # ---------------------------------------------------------------------------
+  mcp-n8n:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-n8n/Dockerfile
+      target: runtime
+    image: mcp-n8n:latest
+    container_name: mcp-n8n
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8039"
+    ports:
+      - "127.0.0.1:8039:8039"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8039), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=n8n"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Vault secrets (mcp-vault-secrets)
+  # ---------------------------------------------------------------------------
+  mcp-vault-secrets:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-vault-secrets/Dockerfile
+      target: runtime
+    image: mcp-vault-secrets:latest
+    container_name: mcp-vault-secrets
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8040"
+      VAULT_VERIFY_SSL: "false"
+    ports:
+      - "127.0.0.1:8040:8040"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8040), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=vault-secrets"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: PostgreSQL (mcp-postgres)
+  # ---------------------------------------------------------------------------
+  mcp-postgres:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-postgres/Dockerfile
+      target: runtime
+    image: mcp-postgres:latest
+    container_name: mcp-postgres
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8041"
+      POSTGRES_ALLOW_WRITE: "false"
+    ports:
+      - "127.0.0.1:8041:8041"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8041), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=postgres"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Redis (mcp-redis)
+  # ---------------------------------------------------------------------------
+  mcp-redis:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-redis/Dockerfile
+      target: runtime
+    image: mcp-redis:latest
+    container_name: mcp-redis
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8042"
+      REDIS_ALLOW_WRITE: "false"
+    ports:
+      - "127.0.0.1:8042:8042"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8042), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=redis"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: RabbitMQ (mcp-rabbitmq)
+  # ---------------------------------------------------------------------------
+  mcp-rabbitmq:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-rabbitmq/Dockerfile
+      target: runtime
+    image: mcp-rabbitmq:latest
+    container_name: mcp-rabbitmq
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8043"
+      RABBITMQ_ALLOW_PUBLISH: "false"
+    ports:
+      - "127.0.0.1:8043:8043"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8043), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=rabbitmq"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Vector search / Qdrant (mcp-vector-search)
+  # ---------------------------------------------------------------------------
+  mcp-vector-search:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-vector-search/Dockerfile
+      target: runtime
+    image: mcp-vector-search:latest
+    container_name: mcp-vector-search
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8044"
+      QDRANT_URL: "http://qdrant.qdrant.svc.cluster.local:6333"
+      VECTOR_SEARCH_EMBEDDING_URL: "http://host.docker.internal:1234/v1"
+      VECTOR_SEARCH_ALLOW_WRITE: "false"
+    ports:
+      - "127.0.0.1:8044:8044"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8044), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=vector-search"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Notifications (mcp-notify)
+  # ---------------------------------------------------------------------------
+  mcp-notify:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-notify/Dockerfile
+      target: runtime
+    image: mcp-notify:latest
+    container_name: mcp-notify
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8045"
+    ports:
+      - "127.0.0.1:8045:8045"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8045), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=notify"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Cluster doctor (mcp-cluster-doctor)
+  # ---------------------------------------------------------------------------
+  mcp-cluster-doctor:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-cluster-doctor/Dockerfile
+      target: runtime
+    image: mcp-cluster-doctor:latest
+    container_name: mcp-cluster-doctor
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8046"
+    ports:
+      - "127.0.0.1:8046:8046"
+    volumes:
+      - ${KUBECONFIG_DIR:-./data/kube}:/home/mcpuser/.kube:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8046), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=cluster-doctor"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Image builder (mcp-image-builder)
+  # ---------------------------------------------------------------------------
+  mcp-image-builder:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-image-builder/Dockerfile
+      target: runtime
+    image: mcp-image-builder:latest
+    container_name: mcp-image-builder
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8047"
+      IMAGE_BUILDER_VERIFY_SSL: "false"
+      IMAGE_BUILDER_HARBOR_PROJECT: "ghl"
+    ports:
+      - "127.0.0.1:8047:8047"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8047), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=image-builder"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Log explorer (mcp-log-explorer)
+  # ---------------------------------------------------------------------------
+  mcp-log-explorer:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-log-explorer/Dockerfile
+      target: runtime
+    image: mcp-log-explorer:latest
+    container_name: mcp-log-explorer
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8048"
+    ports:
+      - "127.0.0.1:8048:8048"
+    volumes:
+      - ${KUBECONFIG_DIR:-./data/kube}:/home/mcpuser/.kube:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8048), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=log-explorer"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Config sync (mcp-config-sync)
+  # ---------------------------------------------------------------------------
+  mcp-config-sync:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-config-sync/Dockerfile
+      target: runtime
+    image: mcp-config-sync:latest
+    container_name: mcp-config-sync
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8049"
+      CONFIG_SYNC_ALLOW_WRITE: "false"
+    ports:
+      - "127.0.0.1:8049:8049"
+    volumes:
+      - ${KUBECONFIG_DIR:-./data/kube}:/home/mcpuser/.kube:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8049), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=config-sync"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Health monitor (mcp-health-monitor)
+  # ---------------------------------------------------------------------------
+  mcp-health-monitor:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-health-monitor/Dockerfile
+      target: runtime
+    image: mcp-health-monitor:latest
+    container_name: mcp-health-monitor
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8050"
+    ports:
+      - "127.0.0.1:8050:8050"
+    volumes:
+      - ${KUBECONFIG_DIR:-./data/kube}:/home/mcpuser/.kube:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8050), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=health-monitor"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Network doctor (mcp-network-doctor)
+  # ---------------------------------------------------------------------------
+  mcp-network-doctor:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-network-doctor/Dockerfile
+      target: runtime
+    image: mcp-network-doctor:latest
+    container_name: mcp-network-doctor
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8051"
+    ports:
+      - "127.0.0.1:8051:8051"
+    volumes:
+      - ${KUBECONFIG_DIR:-./data/kube}:/home/mcpuser/.kube:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8051), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=network-doctor"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Storage doctor (mcp-storage-doctor)
+  # ---------------------------------------------------------------------------
+  mcp-storage-doctor:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-storage-doctor/Dockerfile
+      target: runtime
+    image: mcp-storage-doctor:latest
+    container_name: mcp-storage-doctor
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8052"
+    ports:
+      - "127.0.0.1:8052:8052"
+    volumes:
+      - ${KUBECONFIG_DIR:-./data/kube}:/home/mcpuser/.kube:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8052), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=storage-doctor"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Deploy tracker (mcp-deploy-tracker)
+  # ---------------------------------------------------------------------------
+  mcp-deploy-tracker:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-deploy-tracker/Dockerfile
+      target: runtime
+    image: mcp-deploy-tracker:latest
+    container_name: mcp-deploy-tracker
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8053"
+    ports:
+      - "127.0.0.1:8053:8053"
+    volumes:
+      - ${KUBECONFIG_DIR:-./data/kube}:/home/mcpuser/.kube:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8053), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=deploy-tracker"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
+  # ---------------------------------------------------------------------------
+  # MCP: Node ops (mcp-node-ops)
+  # ---------------------------------------------------------------------------
+  mcp-node-ops:
+    profiles: ["platform-tools"]
+    build:
+      context: .
+      dockerfile: mcp-node-ops/Dockerfile
+      target: runtime
+    image: mcp-node-ops:latest
+    container_name: mcp-node-ops
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8054"
+      NODE_OPS_ALLOW_WRITE: "false"
+    ports:
+      - "127.0.0.1:8054:8054"
+    volumes:
+      - ${KUBECONFIG_DIR:-./data/kube}:/home/mcpuser/.kube:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8054), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "mcp.server=node-ops"
+      - "mcp.version=1.0.0"
+      - "mcp.transport=streamable-http"
+
 # ---------------------------------------------------------------------------
 # Volumes
 # ---------------------------------------------------------------------------

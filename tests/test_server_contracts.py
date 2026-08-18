@@ -33,6 +33,27 @@ SERVERS = [
     ("mcp_kubernetes.server", "mcp-kubernetes"),
     ("mcp_observability.server", "mcp-observability"),
     ("mcp_terraform.server", "mcp-terraform"),
+    # Fase 9 — Infra MCPs (core)
+    ("mcp_argocd.server", "mcp-argocd"),
+    ("mcp_harbor.server", "mcp-harbor"),
+    ("mcp_gitea.server", "mcp-gitea"),
+    ("mcp_n8n.server", "mcp-n8n"),
+    ("mcp_vault_secrets.server", "mcp-vault-secrets"),
+    ("mcp_postgres.server", "mcp-postgres"),
+    ("mcp_redis.server", "mcp-redis"),
+    ("mcp_rabbitmq.server", "mcp-rabbitmq"),
+    ("mcp_vector_search.server", "mcp-vector-search"),
+    ("mcp_notify.server", "mcp-notify"),
+    # Fase 10 — Infra MCPs (script-derived)
+    ("mcp_cluster_doctor.server", "mcp-cluster-doctor"),
+    ("mcp_image_builder.server", "mcp-image-builder"),
+    ("mcp_log_explorer.server", "mcp-log-explorer"),
+    ("mcp_config_sync.server", "mcp-config-sync"),
+    ("mcp_health_monitor.server", "mcp-health-monitor"),
+    ("mcp_network_doctor.server", "mcp-network-doctor"),
+    ("mcp_storage_doctor.server", "mcp-storage-doctor"),
+    ("mcp_deploy_tracker.server", "mcp-deploy-tracker"),
+    ("mcp_node_ops.server", "mcp-node-ops"),
 ]
 
 

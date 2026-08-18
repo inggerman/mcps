@@ -50,6 +50,27 @@ members = [
     "mcp-personal-vault",
     # Gobierno de Mexico
     "mcp-gob-mexico",
+    # Fase 9 — Infra MCPs (core)
+    "mcp-argocd",
+    "mcp-harbor",
+    "mcp-gitea",
+    "mcp-n8n",
+    "mcp-vault-secrets",
+    "mcp-postgres",
+    "mcp-redis",
+    "mcp-rabbitmq",
+    "mcp-vector-search",
+    "mcp-notify",
+    # Fase 10 — Infra MCPs (script-derived)
+    "mcp-cluster-doctor",
+    "mcp-image-builder",
+    "mcp-log-explorer",
+    "mcp-config-sync",
+    "mcp-health-monitor",
+    "mcp-network-doctor",
+    "mcp-storage-doctor",
+    "mcp-deploy-tracker",
+    "mcp-node-ops",
 ]
 
 [tool.ruff]
