@@ -215,6 +215,14 @@
     "mcp-node-ops": {
       "url": "http://mcp-node-ops.mrrobot.fs/mcp",
       "transport": "streamable-http"
+    },
+    "mcp-documentation": {
+      "url": "http://mcp-documentation.mrrobot.fs/mcp",
+      "transport": "streamable-http"
+    },
+    "mcp-smart-home": {
+      "url": "http://mcp-smart-home.mrrobot.fs/mcp",
+      "transport": "streamable-http"
     }
   }
 }
