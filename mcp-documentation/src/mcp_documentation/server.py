@@ -498,4 +498,7 @@ def tool_close_investigation(path: str, status: str, conclusions: str, lessons: 
 # ===========================================================================
 
 if __name__ == "__main__":
-    mcp.run(transport=settings.mcp_transport)
+    if settings.mcp_transport == "streamable-http":
+        mcp.run(transport="streamable-http", host=settings.mcp_host, port=settings.mcp_port)
+    else:
+        mcp.run(transport="stdio")

@@ -121,3 +121,7 @@ class DocumentationSettings(BaseMcpSettings):
         if self.custom_categories_path is not None:
             return self.custom_categories_path
         return self.root_path / ".categories.json"
+
+
+# Instancia singleton de configuración
+settings = DocumentationSettings()

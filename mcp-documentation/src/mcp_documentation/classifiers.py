@@ -126,7 +126,7 @@ def classify_text(text: str, custom_path: Path | None = None) -> str:
 
 
 def classify_from_frontmatter(frontmatter: dict[str, Any]) -> str | None:
- """Extrae clasificación desde el frontmatter si existe."""
+    """Extrae clasificación desde el frontmatter si existe."""
     if not frontmatter:
         return None
     type_val = frontmatter.get("type")
