@@ -61,6 +61,8 @@ MCPS = [
     {"name": "mcp-storage-doctor", "port": 8052, "env": {}, "volumes": []},
     {"name": "mcp-deploy-tracker", "port": 8053, "env": {}, "volumes": []},
     {"name": "mcp-node-ops", "port": 8054, "env": {"NODE_OPS_ALLOW_WRITE": "false"}, "volumes": []},
+    # Fase 11 — Documentation MCP
+    {"name": "mcp-documentation", "port": 8055, "env": {"DOC_ROOT_PATH": "/data/mcp-doc", "DOC_AUTO_CLASSIFY": "true"}, "volumes": [{"name": "mcp-documentation", "mountPath": "/data", "readOnly": False}]},
 ]
 
 NAMESPACE = "mcps"
