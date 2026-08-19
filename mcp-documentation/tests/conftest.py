@@ -111,7 +111,10 @@ def mock_settings(tmp_root: Path):
                             with patch("mcp_documentation.tools.session_tools.settings", settings):
                                 with patch("mcp_documentation.tools.diagram_tools.settings", settings):
                                     with patch("mcp_documentation.tools.investigation_tools.settings", settings):
-                                        yield settings
+                                        with patch("mcp_documentation.tools.versioning_tools.settings", settings):
+                                            with patch("mcp_documentation.tools.health_tools.settings", settings):
+                                                with patch("mcp_documentation.tools.backup_tools.settings", settings):
+                                                    yield settings
 
 
 @pytest.fixture

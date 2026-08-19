@@ -13,6 +13,7 @@ from mcp_documentation.classifiers import (
     get_directory_for_category,
 )
 from mcp_documentation.config import settings
+from mcp_documentation.versioning import audit, save_version
 
 
 def _now_iso() -> str:
@@ -105,6 +106,7 @@ def create_document(
     file_content = _serialize_frontmatter(fm, content)
 
     file_path.write_text(file_content, encoding="utf-8")
+    audit(settings.root_path, "create", str(file_path.relative_to(settings.root_path) if file_path.is_relative_to(settings.root_path) else file_path), {"title": title, "type": doc_type})
 
     return {
         "path": str(file_path),
@@ -127,11 +129,13 @@ def update_document(path: str, content: str, update_timestamp: bool = True) -> d
     raw = resolved.read_text(encoding="utf-8", errors="replace")
     post = frontmatter.loads(raw)
 
+    save_version(settings.root_path, resolved, action="update")
     post.content = content
     if update_timestamp:
         post.metadata["timestamp"] = _now_iso()
 
     resolved.write_text(frontmatter.dumps(post), encoding="utf-8")
+    audit(settings.root_path, "update", path)
 
     return {
         "path": str(resolved),
@@ -151,10 +155,12 @@ def append_to_document(path: str, content: str, separator: str = "\n\n") -> dict
     raw = resolved.read_text(encoding="utf-8", errors="replace")
     post = frontmatter.loads(raw)
 
+    save_version(settings.root_path, resolved, action="append")
     post.content = post.content.rstrip() + separator + content
     post.metadata["timestamp"] = _now_iso()
 
     resolved.write_text(frontmatter.dumps(post), encoding="utf-8")
+    audit(settings.root_path, "append", path)
 
     return {
         "path": str(resolved),
@@ -174,10 +180,12 @@ def update_frontmatter(path: str, updates: dict[str, Any]) -> dict[str, Any]:
     raw = resolved.read_text(encoding="utf-8", errors="replace")
     post = frontmatter.loads(raw)
 
+    save_version(settings.root_path, resolved, action="frontmatter_update")
     post.metadata.update(updates)
     post.metadata["timestamp"] = _now_iso()
 
     resolved.write_text(frontmatter.dumps(post), encoding="utf-8")
+    audit(settings.root_path, "frontmatter_update", path, {"keys": list(updates.keys())})
 
     return {
         "path": str(resolved),
@@ -205,10 +213,12 @@ def add_tags(path: str, tags: list[str]) -> dict[str, Any]:
         if tag not in existing:
             existing.append(tag)
 
+    save_version(settings.root_path, resolved, action="add_tags")
     post.metadata["tags"] = existing
     post.metadata["timestamp"] = _now_iso()
 
     resolved.write_text(frontmatter.dumps(post), encoding="utf-8")
+    audit(settings.root_path, "add_tags", path, {"tags_added": tags})
 
     return {
         "path": str(resolved),
@@ -224,7 +234,9 @@ def delete_document(path: str) -> dict[str, Any]:
     if not resolved.exists():
         raise FileNotFoundError(f"Archivo no encontrado: {resolved}")
 
+    save_version(settings.root_path, resolved, action="delete")
     resolved.unlink()
+    audit(settings.root_path, "delete", path)
 
     return {
         "path": str(resolved),
@@ -341,8 +353,10 @@ def move_document(path: str, new_category: str, new_filename: str = "") -> dict[
     post.metadata["type"] = new_category
     post.metadata["timestamp"] = _now_iso()
 
+    save_version(settings.root_path, resolved, action="move")
     target_path.write_text(frontmatter.dumps(post), encoding="utf-8")
     resolved.unlink()
+    audit(settings.root_path, "move", path, {"new_path": str(target_path), "new_category": new_category})
 
     return {
         "old_path": str(resolved),

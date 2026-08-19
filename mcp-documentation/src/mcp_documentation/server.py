@@ -86,6 +86,22 @@ from mcp_documentation.tools.investigation_tools import (
     close_investigation,
     create_investigation,
 )
+from mcp_documentation.tools.versioning_tools import (
+    compare_versions_tool,
+    get_audit_log_tool,
+    get_document_history_tool,
+    restore_document_version_tool,
+)
+from mcp_documentation.tools.health_tools import (
+    get_metrics_tool,
+    health_check_tool,
+)
+from mcp_documentation.tools.backup_tools import (
+    backup_documents_tool,
+    export_documents_tool,
+    list_backups_tool,
+    restore_backup_tool,
+)
 
 logger = setup_logging(
     log_level=settings.log_level,
@@ -112,10 +128,14 @@ mcp = FastMCP(
         "forensic, reference, troubleshooting, deployment, decision (ADR).\n"
         "TODO documento creado debe incluir timestamp ISO 8601 en frontmatter.\n"
         "Path base configurable (DOC_ROOT_PATH), default C:/mcp-doc/.\n"
-        "Herramientas: 50 tools en 8 grupos: lectura, escritura, transformación, "
-        "clasificación, indexación/búsqueda, sesiones, diagramas, investigaciones.\n"
+        "Herramientas: 59 tools en 11 grupos: lectura, escritura, transformación, "
+        "clasificación, indexación/búsqueda, sesiones, diagramas, investigaciones, "
+        "versionado+audit, health+metrics, backup+export.\n"
         "PATRÓN DE SESIÓN: 1) start_session → 2) log_session_event/track_change durante trabajo "
-        "→ 3) detect_problems/suggest_solutions → 4) end_session (genera bitacora auto)."
+        "→ 3) detect_problems/suggest_solutions → 4) end_session (genera bitacora auto).\n"
+        "VERSIONADO: cada update/append/delete guarda snapshot automático en .versions/. "
+        "Audit log en .audit.log registra todas las operaciones.\n"
+        "BACKUP: backup_documents crea ZIP completo, export_documents filtra por categoría/directorio."
     ),
     lifespan=lifespan,
 )
@@ -491,6 +511,72 @@ def tool_add_evidence(path: str, evidence_type: str, description: str, reference
 def tool_close_investigation(path: str, status: str, conclusions: str, lessons: str = "") -> dict[str, Any]:
     log.info("close_investigation llamado", path=path, status=status)
     return _handle(close_investigation, path, status, conclusions, lessons)
+
+
+# ===========================================================================
+# Grupo 9: Versioning + Audit Tools (4)
+# ===========================================================================
+
+@mcp.tool(name="get_document_history", description="Retorna historial completo de versiones de un documento: snapshots, fechas, tamaños.")
+def tool_get_document_history(path: str) -> list[dict[str, Any]]:
+    log.info("get_document_history llamado", path=path)
+    return _handle(get_document_history_tool, path)
+
+
+@mcp.tool(name="restore_document_version", description="Restaura una versión específica de un documento (guarda snapshot actual antes de restaurar).")
+def tool_restore_document_version(path: str, version: int) -> dict[str, Any]:
+    log.info("restore_document_version llamado", path=path, version=version)
+    return _handle(restore_document_version_tool, path, version)
+
+
+@mcp.tool(name="compare_versions", description="Compara dos versiones de un documento y retorna diff unificado.")
+def tool_compare_versions(path: str, version_a: int, version_b: int) -> dict[str, Any]:
+    log.info("compare_versions llamado", path=path, a=version_a, b=version_b)
+    return _handle(compare_versions_tool, path, version_a, version_b)
+
+
+@mcp.tool(name="get_audit_log", description="Consulta el audit log con filtros: action (create/update/delete/version_saved/...), target (file path).")
+def tool_get_audit_log(limit: int = 50, action: str = "", target: str = "") -> list[dict[str, Any]]:
+    log.info("get_audit_log llamado", limit=limit, action=action)
+    return _handle(get_audit_log_tool, limit, action or None, target or None)
+
+
+# ===========================================================================
+# Grupo 10: Health + Metrics Tools (2)
+# ===========================================================================
+
+@mcp.tool(name="health_check", description="Verifica salud del servidor: filesystem, índice FTS5, documentos, sesiones, versiones, audit log.")
+def tool_health_check() -> dict[str, Any]:
+    log.info("health_check llamado")
+    return _handle(health_check_tool)
+
+
+@mcp.tool(name="get_metrics", description="Retorna métricas en formato Prometheus text exposition (docs_total, sessions, versions, audit, health).")
+def tool_get_metrics() -> str:
+    log.info("get_metrics llamado")
+    return _handle(get_metrics_tool)
+
+
+# ===========================================================================
+# Grupo 11: Backup + Export Tools (3)
+# ===========================================================================
+
+@mcp.tool(name="backup_documents", description="Crea backup ZIP completo del document store. Incluye versiones y audit log por defecto.")
+def tool_backup_documents(include_versions: bool = True, include_audit: bool = True) -> dict[str, Any]:
+    log.info("backup_documents llamado", include_versions=include_versions)
+    return _handle(backup_documents_tool, include_versions, include_audit)
+
+
+@mcp.tool(name="restore_backup", description="Restaura documentos desde un backup ZIP. Acepta path absoluto o nombre relativo a .backups/.")
+def tool_restore_backup(backup_file: str) -> dict[str, Any]:
+    log.info("restore_backup llamado", backup_file=backup_file)
+    return _handle(restore_backup_tool, backup_file)
+
+
+@mcp.tool(name="export_documents", description="Exporta documentos a ZIP con filtros opcionales por categoría o directorio.")
+def tool_export_documents(output_path: str = "", category: str = "", directory: str = "") -> dict[str, Any]:
+    log.info("export_documents llamado", category=category, directory=directory)
+    return _handle(export_documents_tool, output_path, category, directory)
 
 
 # ===========================================================================
