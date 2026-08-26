@@ -4,7 +4,14 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 COPY shared /workspace/shared
 COPY mcp-personal-vault/pyproject.toml ./
 COPY mcp-personal-vault/src ./src
-RUN uv pip install --system --no-cache --no-sources /workspace/shared .
+RUN uv pip install --system --no-cache /workspace/shared && \
+    uv pip install --system --no-cache \
+    "fastmcp>=2.3" \
+    "cryptography>=42.0" \
+    "pydantic>=2.7" \
+    "pydantic-settings>=2.3" \
+    "structlog>=24.1" \
+    "rich>=13.7"
 
 FROM python:3.12-slim AS runtime
 WORKDIR /app
