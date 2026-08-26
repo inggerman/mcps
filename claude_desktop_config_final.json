@@ -1,0 +1,265 @@
+{
+  "coworkUserFilesPath": "C:\\Users\\germa\\Documents\\Claude",
+  "preferences": {
+    "launchPreviewPersistedWorkspaces": [],
+    "launchPreviewSessionScopedSessions": [],
+    "localAgentModeTrustedFolders": [
+      "C:\\Users\\germa\\Documents\\CovafDataRefineryBack"
+    ],
+    "dispatchCodeTasksPermissionMode": "plan",
+    "coworkScheduledTasksEnabled": false,
+    "coworkHipaaRestricted": false,
+    "ccdScheduledTasksEnabled": false,
+    "sidebarMode": "chat",
+    "bypassPermissionsGateByAccount": {
+      "9e10a612-c016-4cda-a978-1171e987e747": false,
+      "1b6becf7-03e5-4c70-b9a1-aeb4ef863a74": false
+    },
+    "coworkWebSearchEnabled": true,
+    "coworkModelAutoFallbackByAccount": {
+      "9e10a612-c016-4cda-a978-1171e987e747": true,
+      "1b6becf7-03e5-4c70-b9a1-aeb4ef863a74": true
+    },
+    "keepAwakeEnabled": true,
+    "coworkOnboardingResumeStep": null,
+    "chicagoEnabled": true,
+    "remoteToolsDeviceName": "german",
+    "epitaxyPrefs": {
+      "starred-local-code-sessions": [],
+      "starred-cowork-spaces": [],
+      "starred-session-groups": [],
+      "dframe-local-slice": {
+        "pinnedOrder": [],
+        "homeProjectsPinnedOrder": []
+      },
+      "cc-landing-worktree-enabled": false,
+      "epitaxy-perm-mode-acks.9e10a612-c016-4cda-a978-1171e987e747": [
+        "C:\\Users\\germa\\Documents\\engineering\\photos-manager:auto",
+        "C:\\Users\\germa\\Documents\\engineering\\IA\\COVAF\\IA_IMPL_COVAF\\datarefineryia-api:auto"
+      ],
+      "epitaxy-folder-permission-mode.9e10a612-c016-4cda-a978-1171e987e747": {
+        "C:\\Users\\germa\\Documents\\engineering\\photos-manager": "auto",
+        "C:\\Users\\germa\\Documents\\engineering\\IA\\COVAF\\IA_IMPL_COVAF\\datarefineryia-api": "auto"
+      },
+      "desktop-frame.paneStore.v1": {
+        "state": {
+          "extraPanesByMode": {},
+          "colWeightsByMode": {},
+          "rowSplit": 0.5,
+          "draftNonce": 0
+        },
+        "version": 4
+      },
+      "ccd-sessions-filter": {
+        "state": {
+          "selectedProjects": []
+        },
+        "version": 0
+      },
+      "ccd-effort-level": "medium",
+      "epitaxy-tasks-store": {
+        "state": {
+          "rowFields": [
+            {
+              "id": "title",
+              "visible": true
+            },
+            {
+              "id": "summary",
+              "visible": true
+            },
+            {
+              "id": "repo",
+              "visible": false
+            },
+            {
+              "id": "diff",
+              "visible": true
+            },
+            {
+              "id": "time",
+              "visible": true
+            }
+          ],
+          "collapsedGroups": {},
+          "groupBy": "status",
+          "groupFilters": {},
+          "layout": "list",
+          "staleThresholdDays": 7,
+          "splitRatio": 60,
+          "prRowFields": [
+            {
+              "id": "title",
+              "visible": true
+            },
+            {
+              "id": "repository",
+              "visible": true
+            },
+            {
+              "id": "modified",
+              "visible": true
+            },
+            {
+              "id": "status",
+              "visible": true
+            },
+            {
+              "id": "auto_toggles",
+              "visible": true
+            }
+          ],
+          "collapsedPrGroups": {},
+          "autoAdvanceAfterAction": false,
+          "defaultSessionViewMode": "transcript",
+          "sidebarCollapsed": true,
+          "sidebarWidth": 240
+        },
+        "version": 16
+      },
+      "dframe-group-scopes": {}
+    }
+  },
+  "mcpServers": {
+    "mcp-tabular": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-tabular.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-calendar": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-calendar.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-markdown": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-markdown.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-prompt-engineer": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-prompt-engineer.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-structured-output": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-structured-output.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-fetch": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-fetch.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-docker": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-docker.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-kafka": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-kafka.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-project-memory": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-project-memory.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-llm-router": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-llm-router.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-git": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-git.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-github": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-github.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-code-quality": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-code-quality.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-architecture": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-architecture.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-event-driven": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-event-driven.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-orchestrator": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-orchestrator.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-best-practices": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-best-practices.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-ci-cd": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-ci-cd.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-design-patterns": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-design-patterns.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-security-champion": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-security-champion.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-database": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-database.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-filesystem": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-filesystem.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-object-storage": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-object-storage.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-openapi": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-openapi.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-documents": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-documents.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-browser": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-browser.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-kubernetes": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-kubernetes.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-observability": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-observability.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-terraform": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-terraform.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-snyk": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-snyk.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-sonar": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-sonar.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-java-build": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-java-build.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-agent-runner": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-agent-runner.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-personal-vault": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-personal-vault.mrrobot.fs/mcp", "--allow-http"]
+    },
+    "mcp-gob-mexico": {
+      "command": "mcp-remote",
+      "args": ["http://mcp-gob-mexico.mrrobot.fs/mcp", "--allow-http"]
+    }
+  }
+}

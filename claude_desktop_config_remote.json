@@ -1,0 +1,144 @@
+{
+  "mcpServers": {
+    "mcp-tabular": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-tabular.mrrobot.fs/mcp"]
+    },
+    "mcp-calendar": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-calendar.mrrobot.fs/mcp"]
+    },
+    "mcp-markdown": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-markdown.mrrobot.fs/mcp"]
+    },
+    "mcp-prompt-engineer": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-prompt-engineer.mrrobot.fs/mcp"]
+    },
+    "mcp-structured-output": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-structured-output.mrrobot.fs/mcp"]
+    },
+    "mcp-fetch": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-fetch.mrrobot.fs/mcp"]
+    },
+    "mcp-docker": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-docker.mrrobot.fs/mcp"]
+    },
+    "mcp-kafka": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-kafka.mrrobot.fs/mcp"]
+    },
+    "mcp-project-memory": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-project-memory.mrrobot.fs/mcp"]
+    },
+    "mcp-llm-router": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-llm-router.mrrobot.fs/mcp"]
+    },
+    "mcp-git": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-git.mrrobot.fs/mcp"]
+    },
+    "mcp-github": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-github.mrrobot.fs/mcp"]
+    },
+    "mcp-code-quality": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-code-quality.mrrobot.fs/mcp"]
+    },
+    "mcp-architecture": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-architecture.mrrobot.fs/mcp"]
+    },
+    "mcp-event-driven": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-event-driven.mrrobot.fs/mcp"]
+    },
+    "mcp-orchestrator": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-orchestrator.mrrobot.fs/mcp"]
+    },
+    "mcp-best-practices": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-best-practices.mrrobot.fs/mcp"]
+    },
+    "mcp-ci-cd": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-ci-cd.mrrobot.fs/mcp"]
+    },
+    "mcp-design-patterns": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-design-patterns.mrrobot.fs/mcp"]
+    },
+    "mcp-security-champion": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-security-champion.mrrobot.fs/mcp"]
+    },
+    "mcp-database": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-database.mrrobot.fs/mcp"]
+    },
+    "mcp-filesystem": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-filesystem.mrrobot.fs/mcp"]
+    },
+    "mcp-object-storage": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-object-storage.mrrobot.fs/mcp"]
+    },
+    "mcp-openapi": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-openapi.mrrobot.fs/mcp"]
+    },
+    "mcp-documents": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-documents.mrrobot.fs/mcp"]
+    },
+    "mcp-browser": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-browser.mrrobot.fs/mcp"]
+    },
+    "mcp-kubernetes": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-kubernetes.mrrobot.fs/mcp"]
+    },
+    "mcp-observability": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-observability.mrrobot.fs/mcp"]
+    },
+    "mcp-terraform": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-terraform.mrrobot.fs/mcp"]
+    },
+    "mcp-snyk": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-snyk.mrrobot.fs/mcp"]
+    },
+    "mcp-sonar": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-sonar.mrrobot.fs/mcp"]
+    },
+    "mcp-java-build": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-java-build.mrrobot.fs/mcp"]
+    },
+    "mcp-agent-runner": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-agent-runner.mrrobot.fs/mcp"]
+    },
+    "mcp-personal-vault": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-personal-vault.mrrobot.fs/mcp"]
+    },
+    "mcp-gob-mexico": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://mcp-gob-mexico.mrrobot.fs/mcp"]
+    }
+  }
+}

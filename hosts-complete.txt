@@ -1,0 +1,97 @@
+
+# Copyright (c) 1993-2009 Microsoft Corp.
+#
+# This is a sample HOSTS file used by Microsoft TCP/IP for Windows.
+#
+# This file contains the mappings of IP addresses to host names. Each
+# entry should be kept on an individual line. The IP address should
+# be placed in the first column followed by the corresponding host name.
+# The IP address and the host name should be separated by at least one
+# space.
+#
+# Additionally, comments (such as these) may be inserted on individual
+# lines or following the machine name denoted by a "#" symbol.
+#
+# For example:
+#
+#      102.54.94.97     rhino.acme.com          # source server
+#       38.25.63.10     x.acme.com              # x client host
+
+# localhost name resolution is handled within DNS itself.
+#  127.0.0.1       localhost
+#  ::1             localhost
+
+# MCP Servers (local)
+127.0.0.1 mcp-tabular.mrrobot.fs
+127.0.0.1 mcp-calendar.mrrobot.fs
+127.0.0.1 mcp-markdown.mrrobot.fs
+127.0.0.1 mcp-prompt-engineer.mrrobot.fs
+127.0.0.1 mcp-structured-output.mrrobot.fs
+127.0.0.1 mcp-fetch.mrrobot.fs
+127.0.0.1 mcp-docker.mrrobot.fs
+127.0.0.1 mcp-kafka.mrrobot.fs
+127.0.0.1 mcp-project-memory.mrrobot.fs
+127.0.0.1 mcp-llm-router.mrrobot.fs
+127.0.0.1 mcp-git.mrrobot.fs
+127.0.0.1 mcp-github.mrrobot.fs
+127.0.0.1 mcp-code-quality.mrrobot.fs
+127.0.0.1 mcp-architecture.mrrobot.fs
+127.0.0.1 mcp-event-driven.mrrobot.fs
+127.0.0.1 mcp-orchestrator.mrrobot.fs
+127.0.0.1 mcp-best-practices.mrrobot.fs
+127.0.0.1 mcp-ci-cd.mrrobot.fs
+127.0.0.1 mcp-design-patterns.mrrobot.fs
+127.0.0.1 mcp-security-champion.mrrobot.fs
+127.0.0.1 mcp-database.mrrobot.fs
+127.0.0.1 mcp-filesystem.mrrobot.fs
+127.0.0.1 mcp-object-storage.mrrobot.fs
+127.0.0.1 mcp-openapi.mrrobot.fs
+127.0.0.1 mcp-documents.mrrobot.fs
+127.0.0.1 mcp-browser.mrrobot.fs
+127.0.0.1 mcp-kubernetes.mrrobot.fs
+127.0.0.1 mcp-observability.mrrobot.fs
+127.0.0.1 mcp-terraform.mrrobot.fs
+127.0.0.1 mcp-snyk.mrrobot.fs
+127.0.0.1 mcp-sonar.mrrobot.fs
+127.0.0.1 mcp-java-build.mrrobot.fs
+127.0.0.1 mcp-agent-runner.mrrobot.fs
+127.0.0.1 mcp-personal-vault.mrrobot.fs
+127.0.0.1 mcp-gob-mexico.mrrobot.fs
+127.0.0.1 mcp-inspector.mrrobot.fs
+127.0.0.1 mcp-inspector-proxy.mrrobot.fs
+
+# K3s Cluster - Kong Ingress via Tailscale (stable across reboots)
+100.68.63.120 gitea.mrrobot.fs
+100.68.63.120 harbor.mrrobot.fs
+100.68.63.120 argocd.mrrobot.fs
+100.68.63.120 grafana.mrrobot.fs
+100.68.63.120 prometheus.mrrobot.fs
+100.68.63.120 alertmanager.mrrobot.fs
+100.68.63.120 n8n.mrrobot.fs
+100.68.63.120 minio.mrrobot.fs
+100.68.63.120 minio-api.mrrobot.fs
+100.68.63.120 kubecost.mrrobot.fs
+100.68.63.120 headlamp.mrrobot.fs
+100.68.63.120 vault.mrrobot.fs
+100.68.63.120 sonar.mrrobot.fs
+100.68.63.120 rabbitmq.mrrobot.fs
+100.68.63.120 pgadmin.mrrobot.fs
+100.68.63.120 mongo-express.mrrobot.fs
+100.68.63.120 backstage.mrrobot.fs
+100.68.63.120 demo.mrrobot.fs
+100.68.63.120 demo-qa.mrrobot.fs
+100.68.63.120 demo-stg.mrrobot.fs
+100.68.63.120 workflows.mrrobot.fs
+100.68.63.120 hubble.mrrobot.fs
+100.68.63.120 loki.mrrobot.fs
+100.68.63.120 tempo.mrrobot.fs
+# TailscaleHostsSectionStart
+# This section contains MagicDNS entries for Tailscale.
+# Do not edit this section manually.
+
+100.73.65.63 desktop-c6jr6us.tail901264.ts.net. desktop-c6jr6us
+100.97.134.127 german.tail901264.ts.net. german
+100.105.42.27 k3s-server.tail901264.ts.net. k3s-server
+100.68.63.120 k3s-worker.tail901264.ts.net. k3s-worker
+100.107.138.37 s24-ultra-de-germn.tail901264.ts.net. s24-ultra-de-germn
+# TailscaleHostsSectionEnd

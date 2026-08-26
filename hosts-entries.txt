@@ -1,0 +1,26 @@
+
+# K3s Cluster - Kong Ingress (Tailscale)
+100.68.63.120 gitea.mrrobot.fs
+100.68.63.120 harbor.mrrobot.fs
+100.68.63.120 argocd.mrrobot.fs
+100.68.63.120 grafana.mrrobot.fs
+100.68.63.120 prometheus.mrrobot.fs
+100.68.63.120 alertmanager.mrrobot.fs
+100.68.63.120 n8n.mrrobot.fs
+100.68.63.120 minio.mrrobot.fs
+100.68.63.120 minio-api.mrrobot.fs
+100.68.63.120 kubecost.mrrobot.fs
+100.68.63.120 headlamp.mrrobot.fs
+100.68.63.120 vault.mrrobot.fs
+100.68.63.120 sonar.mrrobot.fs
+100.68.63.120 rabbitmq.mrrobot.fs
+100.68.63.120 pgadmin.mrrobot.fs
+100.68.63.120 mongo-express.mrrobot.fs
+100.68.63.120 backstage.mrrobot.fs
+100.68.63.120 demo.mrrobot.fs
+100.68.63.120 demo-qa.mrrobot.fs
+100.68.63.120 demo-stg.mrrobot.fs
+100.68.63.120 workflows.mrrobot.fs
+100.68.63.120 hubble.mrrobot.fs
+100.68.63.120 loki.mrrobot.fs
+100.68.63.120 tempo.mrrobot.fs

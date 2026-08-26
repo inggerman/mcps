@@ -4,7 +4,8 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 COPY shared /workspace/shared
 COPY mcp-prompt-engineer/pyproject.toml ./
 COPY mcp-prompt-engineer/src ./src
-RUN uv pip install --system --no-cache --no-sources /workspace/shared .
+RUN uv pip install --system --no-cache /workspace/shared && \
+    uv pip install --system --no-cache .
 
 FROM python:3.11-slim AS runtime
 WORKDIR /app
