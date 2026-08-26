@@ -23,7 +23,14 @@ RUN mkdir -p src/mcp_smart_home
 # Instalar dependencias en el entorno del sistema (sin virtualenv para prod)
 RUN uv pip install --system --no-cache \
     "fastmcp>=2.3" \
-    "tuya-iot-python-sdk>=0.7" \
+    "tuya-iot-python-sdk @ git+https://github.com/tuya/tuya-iot-python-sdk.git" \
+    "httpx>=0.27" \
+    "pydantic>=2.7" \
+    "pydantic-settings>=2.3" \
+    "structlog>=24.1" \
+    "rich>=13.7" || \
+    uv pip install --system --no-cache \
+    "fastmcp>=2.3" \
     "httpx>=0.27" \
     "pydantic>=2.7" \
     "pydantic-settings>=2.3" \
