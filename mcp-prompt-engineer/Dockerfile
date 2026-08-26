@@ -5,7 +5,15 @@ COPY shared /workspace/shared
 COPY mcp-prompt-engineer/pyproject.toml ./
 COPY mcp-prompt-engineer/src ./src
 RUN uv pip install --system --no-cache /workspace/shared && \
-    uv pip install --system --no-cache .
+    uv pip install --system --no-cache \
+    "fastmcp>=2.3" \
+    "tiktoken>=0.7" \
+    "langdetect>=1.0.9" \
+    "jinja2>=3.1" \
+    "pydantic>=2.7" \
+    "pydantic-settings>=2.3" \
+    "structlog>=24.1" \
+    "rich>=13.7"
 
 FROM python:3.11-slim AS runtime
 WORKDIR /app
