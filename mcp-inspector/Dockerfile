@@ -4,6 +4,11 @@ WORKDIR /app
 
 RUN npm install -g @modelcontextprotocol/inspector@latest
 
+# Fix: create dummy powershell.exe to prevent WSL2 open() detection crash
+RUN mkdir -p /mnt/c/Windows/System32/WindowsPowerShell/v1.0 && \
+    printf "#!/bin/sh\nexit 0\n" > /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe && \
+    chmod +x /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe
+
 ENV HOST=0.0.0.0
 ENV CLIENT_PORT=8000
 ENV SERVER_PORT=8001
