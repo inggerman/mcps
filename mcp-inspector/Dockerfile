@@ -2,6 +2,9 @@ FROM node:22-slim
 
 WORKDIR /app
 
+# Fix npm cache permissions
+RUN mkdir -p /.npm && chown -R 1001:0 /.npm
+
 RUN npm install -g @modelcontextprotocol/inspector@latest
 
 # Fix: create dummy powershell.exe to prevent WSL2 open() detection crash
@@ -16,5 +19,7 @@ ENV DANGEROUSLY_BIND_ALL_INTERFACES=true
 ENV BROWSER=none
 ENV SHELL=/bin/sh
 EXPOSE 8000 8001
+
+USER 1001
 
 CMD ["npx", "@modelcontextprotocol/inspector", "--port", "8000", "--host", "0.0.0.0"]
