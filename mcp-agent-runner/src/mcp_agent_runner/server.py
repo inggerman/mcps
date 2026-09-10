@@ -13,7 +13,7 @@ from typing import Any
 
 import structlog
 from fastmcp import FastMCP
-from mcp.shared.exceptions import McpError as SdkMcpError
+from mcp.shared.exceptions import MCPError as SdkMcpError
 from mcp.types import ErrorData
 from mcp_shared.errors import McpError
 from mcp_shared.logging import get_logger, setup_logging

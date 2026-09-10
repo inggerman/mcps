@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from typing import Any
 
 from fastmcp import FastMCP
-from mcp.shared.exceptions import McpError as SdkMcpError
+from mcp.shared.exceptions import MCPError as SdkMcpError
 from mcp.types import ErrorData
 
 from mcp_documentation import __version__
