@@ -166,12 +166,12 @@ def get_volume_mounts(namespace: str | None = None) -> list[dict[str, Any]]:
 
 
 def _pv_source(pv: Any) -> str:
-    if pv.spec.persistent_volume_source.host_path:
-        return f"hostPath:{pv.spec.persistent_volume_source.host_path.path}"
-    if pv.spec.persistent_volume_source.nfs:
-        return f"nfs:{pv.spec.persistent_volume_source.nfs.server}:{pv.spec.persistent_volume_source.nfs.path}"
-    if pv.spec.persistent_volume_source.local:
-        return f"local:{pv.spec.persistent_volume_source.local.path}"
+    if pv.spec.host_path:
+        return f"hostPath:{pv.spec.host_path.path}"
+    if pv.spec.nfs:
+        return f"nfs:{pv.spec.nfs.server}:{pv.spec.nfs.path}"
+    if pv.spec.local:
+        return f"local:{pv.spec.local.path}"
     if pv.spec.csi:
         return f"csi:{pv.spec.csi.driver}"
     return "unknown"

@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "MCP server for safe SQL database inspection and queries"
 requires-python = ">=3.11"
 dependencies = [
-    "fastmcp>=2.3",
+    "fastmcp>=3.4.7",
     "mcp-shared",
     "pydantic>=2.7",
     "pydantic-settings>=2.3",
