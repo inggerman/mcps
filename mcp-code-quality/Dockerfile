@@ -34,8 +34,9 @@ COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 COPY mcp-code-quality/src/ ./src/
 
-RUN useradd --system --uid 1001 --shell /bin/false --no-create-home mcpuser \
-    && chown -R mcpuser:mcpuser /app
+RUN useradd --system --uid 1001 --shell /bin/false --create-home mcpuser \
+    && mkdir -p /home/mcpuser/.cache/uv \
+    && chown -R mcpuser:mcpuser /app /home/mcpuser
 
 USER mcpuser
 

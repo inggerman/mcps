@@ -26,6 +26,11 @@ def load_spec(source: str, allowed_root: Path, timeout_seconds: float = 30) -> d
             raise ValidationError(
                 field="spec", message="El spec está fuera de OPENAPI_ALLOWED_ROOT."
             )
+        if not path.exists():
+            raise ValidationError(
+                field="spec",
+                message=f"Spec no encontrado: {path}. Configura OPENAPI_SPEC con la ruta a un archivo OpenAPI válido.",
+            )
         raw = path.read_text(encoding="utf-8")
     parsed = json.loads(raw) if raw.lstrip().startswith(("{", "[")) else yaml.safe_load(raw)
     if not isinstance(parsed, dict) or "paths" not in parsed:

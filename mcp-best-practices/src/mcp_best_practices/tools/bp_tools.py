@@ -520,6 +520,16 @@ def list_project_files(project_path: Path, pattern: str = "*.py") -> list[dict[s
 
 def get_project_summary(project_path: Path) -> dict[str, Any]:
     """Genera un resumen rapido del proyecto."""
+    if not project_path.exists() or not project_path.is_dir():
+        return {
+            "total_servers": 0,
+            "servers": [],
+            "total_lines_of_code": 0,
+            "total_files": 0,
+            "average_health": 0,
+            "error": f"Project path no existe o no es directorio: {project_path}",
+            "timestamp": datetime.now().isoformat(),
+        }
     servers = sorted([d.name for d in project_path.iterdir() if d.is_dir() and d.name.startswith("mcp-")])
     loc_result = count_lines_of_code(project_path)
     health_result = generate_health_report(project_path)

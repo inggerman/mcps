@@ -54,7 +54,10 @@ class BaseClient:
             cached = self._get_cached(cache_key)
             if cached is not None:
                 return cached
-        url = f"{self.base_url}/{path.lstrip('/')}"
+        if path.startswith(("http://", "https://")):
+            url = path
+        else:
+            url = f"{self.base_url}/{path.lstrip('/')}"
         for attempt in range(settings.max_retries):
             try:
                 resp = self._client.get(url, params=params)
@@ -71,7 +74,10 @@ class BaseClient:
         return {"error": "max retries exceeded", "status": "failed"}
 
     def post(self, path: str, data: dict | None = None) -> Any:
-        url = f"{self.base_url}/{path.lstrip('/')}"
+        if path.startswith(("http://", "https://")):
+            url = path
+        else:
+            url = f"{self.base_url}/{path.lstrip('/')}"
         for attempt in range(settings.max_retries):
             try:
                 resp = self._client.post(url, json=data)

@@ -165,7 +165,10 @@ def agent_run_batch(project_path: Path, scripts: list[str], args: str = "") -> d
 def agent_health_check(base_url: str) -> dict[str, Any]:
     """Verifica salud del servicio de agentes (n8n)."""
     try:
-        response = httpx.get(f"{base_url.rstrip('/')}/healthz", timeout=10)
+        health_url = base_url.rstrip("/")
+        if health_url.endswith("/webhook"):
+            health_url = health_url[: -len("/webhook")]
+        response = httpx.get(f"{health_url}/healthz", timeout=10)
         return {"status_code": response.status_code, "healthy": response.status_code == 200}
     except Exception as exc:
         return {"status_code": 0, "healthy": False, "error": str(exc)[:100]}
