@@ -19,7 +19,7 @@ class GiteaSettings(BaseMcpSettings):
     )
 
     api_url: str = Field(
-        default="http://gitea-http.gitea.svc.cluster.local:3000/api/v1",
+        default="http://gitea-http.gitea.svc.cluster.local/api/v1",
         description="URL de la API de Gitea. Variable: GITEA_API_URL.",
     )
     api_token: str = Field(

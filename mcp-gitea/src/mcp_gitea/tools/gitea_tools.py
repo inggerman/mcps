@@ -151,23 +151,32 @@ def create_issue(owner: str, repo: str, title: str, body: str = "") -> dict[str,
 
 
 def get_workflow_runs(owner: str, repo: str, limit: int = 20) -> list[dict[str, Any]]:
-    """Lista las ejecuciones de Gitea Actions de un repositorio."""
+    """Lista las ejecuciones de Gitea Actions de un repositorio.
+
+    Gitea 1.22 usa /actions/tasks (no /actions/runs, que es Gitea Enterprise 26+).
+    El endpoint retorna ActionTaskResponse con 'workflow_runs' y 'total_count'.
+    """
     try:
         with _client() as client:
-            resp = client.get(f"/repos/{owner}/{repo}/actions/runs", params={"limit": limit})
+            resp = client.get(f"/repos/{owner}/{repo}/actions/tasks", params={"limit": limit})
             resp.raise_for_status()
             data = resp.json()
-            runs = data.get("workflow_runs", data) if isinstance(data, dict) else data
+            runs = data.get("workflow_runs", []) if isinstance(data, dict) else data
             return [
                 {
                     "id": r.get("id"),
                     "name": r.get("name", ""),
                     "status": r.get("status", ""),
-                    "conclusion": r.get("conclusion", ""),
                     "event": r.get("event", ""),
                     "head_branch": r.get("head_branch", ""),
+                    "head_sha": r.get("head_sha", ""),
+                    "run_number": r.get("run_number", ""),
+                    "display_title": r.get("display_title", ""),
+                    "workflow_id": r.get("workflow_id", ""),
+                    "url": r.get("url", ""),
                     "created_at": r.get("created_at", ""),
-                    "html_url": r.get("html_url", ""),
+                    "updated_at": r.get("updated_at", ""),
+                    "run_started_at": r.get("run_started_at", ""),
                 }
                 for r in runs
             ]
@@ -180,17 +189,32 @@ def get_workflow_runs(owner: str, repo: str, limit: int = 20) -> list[dict[str, 
 
 
 def get_run_logs(owner: str, repo: str, run_id: int) -> dict[str, Any]:
-    """Obtiene los logs de una ejecución de Gitea Actions."""
+    """Obtiene los logs de una ejecucion de Gitea Actions.
+
+    Gitea 1.22 no expone un endpoint de logs via API.
+    Los logs estan disponibles en la UI web: {gitea_url}/{owner}/{repo}/actions/runs/{run_id}.
+    Se intenta el endpoint de logs por si Gitea lo soporta en versiones futuras.
+    """
     try:
         with _client() as client:
-            resp = client.get(f"/repos/{owner}/{repo}/actions/runs/{run_id}/logs")
+            resp = client.get(f"/repos/{owner}/{repo}/actions/tasks/{run_id}/logs")
             if resp.status_code == 200 and "text" in resp.headers.get("content-type", ""):
                 return {"run_id": run_id, "logs": resp.text[:5000]}
+            if resp.status_code == 404:
+                return {
+                    "run_id": run_id,
+                    "logs": "",
+                    "note": f"Gitea 1.22 no expone logs via API. Ver UI web: {settings.api_url.rsplit('/api/v1', 1)[0]}/{owner}/{repo}/actions/runs/{run_id}",
+                }
             resp.raise_for_status()
             return {"run_id": run_id, "data": resp.json()}
     except httpx.HTTPStatusError as exc:
         if exc.response.status_code == 404:
-            raise NotFoundError(resource="workflow run", identifier=str(run_id)) from exc
+            return {
+                "run_id": run_id,
+                "logs": "",
+                "note": f"Gitea 1.22 no expone logs via API. Ver UI web: {settings.api_url.rsplit('/api/v1', 1)[0]}/{owner}/{repo}/actions/runs/{run_id}",
+            }
         raise McpError(f"Gitea API error: {exc.response.status_code}") from exc
     except httpx.RequestError as exc:
         raise McpError(f"Error de red: {exc}") from exc
