@@ -1,3 +1,8 @@
+# DEPRECATED 2026-09-11: este manifest está desactualizado vs el runtime.
+# - Namespace `mcps` vs runtime `mcp-services`
+# - ~35 deployments vs 57 deployments reales en runtime
+# - No usar como fuente de verdad. Ver docs/projects/mcps/STATE.md para el inventario real.
+# Para regenerar: kubectl get deployments -n mcp-services -o yaml > all-mcps.yaml
 apiVersion: v1
 kind: Namespace
 metadata:
