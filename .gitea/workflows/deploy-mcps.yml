@@ -16,7 +16,8 @@ env:
   HARBOR_REGISTRY: harbor-core.harbor.svc.cluster.local:80
   HARBOR_PROJECT: ghl
   IMAGE_TAG: ${{ github.sha }}
-  DOCKER_HOST: tcp://127.0.0.1:2375
+  # Runner mounts /var/run/docker.sock from host; use the unix socket, not a TCP daemon.
+  DOCKER_HOST: unix:///var/run/docker.sock
   DOCKER_BUILDKIT: "0"
 
 jobs:
