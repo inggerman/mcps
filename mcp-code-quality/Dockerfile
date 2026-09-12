@@ -1,5 +1,6 @@
 # =============================================================================
 # mcp-code-quality — Dockerfile multi-stage, non-root, production-ready
+# Re-trigger: rebuild with fixed uv cache permissions
 # =============================================================================
 
 FROM python:3.12-slim AS builder
