@@ -1,3 +1,4 @@
+# rebuild-trigger: 2026-09-12T01:47:39.0419366-06:00
 # =============================================================================
 # mcp-tabular — Dockerfile multi-stage, non-root, production-ready
 # Updated: CI/CD trigger test
