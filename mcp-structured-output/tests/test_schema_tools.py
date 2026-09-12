@@ -7,6 +7,7 @@ from mcp_shared.errors import ValidationError
 from mcp_structured_output.tools.schema_tools import (
     generate_schema,
     sanitize_schema,
+    validate_json_against_schema,
     validate_schema,
 )
 
@@ -354,3 +355,39 @@ class TestSanitizeSchema:
     def test_invalid_input_raises(self) -> None:
         with pytest.raises(ValidationError):
             sanitize_schema("not a dict")  # type: ignore[arg-type]
+
+
+# ---------------------------------------------------------------------------
+# validate_json_against_schema
+# ---------------------------------------------------------------------------
+
+
+class TestValidateJsonAgainstSchema:
+    """Tests for validate_json_against_schema — covers the bug where the function
+    returned an internal error because `jsonschema` was not imported."""
+
+    def test_trivial_valid_instance(self) -> None:
+        """The case that was broken: {"a":1} against {"type":"object"}."""
+        result = validate_json_against_schema({"a": 1}, {"type": "object"})
+        assert result["valid"] is True
+        assert result["errors"] == []
+
+    def test_invalid_instance_missing_required(self) -> None:
+        schema = {"type": "object", "properties": {"name": {"type": "string"}}, "required": ["name"]}
+        result = validate_json_against_schema({}, schema)
+        assert result["valid"] is False
+        assert len(result["errors"]) > 0
+
+    def test_invalid_instance_wrong_type(self) -> None:
+        schema = {"type": "object"}
+        result = validate_json_against_schema("not an object", schema)
+        assert result["valid"] is False
+
+    def test_schema_error(self) -> None:
+        """A malformed schema should return a schema error, not crash."""
+        result = validate_json_against_schema({"a": 1}, {"type": "invalid_type"})
+        assert result["valid"] is False
+
+    def test_invalid_schema_raises(self) -> None:
+        with pytest.raises(ValidationError):
+            validate_json_against_schema({"a": 1}, "not a dict")  # type: ignore[arg-type]

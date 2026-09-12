@@ -6,7 +6,10 @@ Sin llamadas a APIs externas — 100% procesamiento local.
 from __future__ import annotations
 
 import copy
+import json
 from typing import Any
+
+import jsonschema
 
 from mcp_shared.errors import ValidationError
 
