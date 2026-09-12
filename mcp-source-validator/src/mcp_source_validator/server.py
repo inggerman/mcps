@@ -70,10 +70,10 @@ def tool_validate_url(url: str) -> dict[str, Any]:
         logger.info("validate_url completado", url=url, valid=result["valid"])
         return result
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en validate_url", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(
@@ -91,10 +91,10 @@ def tool_validate_content(url: str, content: str = "") -> dict[str, Any]:
         logger.info("validate_content completado", url=url, valid=result["valid"])
         return result
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en validate_content", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(

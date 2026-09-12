@@ -55,10 +55,10 @@ def tool_list_deployments(namespace: str | None = None) -> list[dict[str, Any]]:
     try:
         return list_deployments(namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_deployments", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_deployment_status", description="Obtiene estado detallado de un Deployment. Parámetros: name (str), namespace (str opcional). Retorna: {name, replicas, ready, conditions, all_ready}.")
@@ -67,10 +67,10 @@ def tool_get_deployment_status(name: str, namespace: str | None = None) -> dict[
     try:
         return get_deployment_status(name=name, namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_deployment_status", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_rollout_status", description="Obtiene estado del rollout. Parámetros: name (str), namespace (str opcional). Retorna: {rollout_status, message, desired, updated, available, complete}.")
@@ -79,10 +79,10 @@ def tool_get_rollout_status(name: str, namespace: str | None = None) -> dict[str
     try:
         return get_rollout_status(name=name, namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_rollout_status", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_replica_set_history", description="Obtiene historial de ReplicaSets de un Deployment. Parámetros: name (str), namespace (str opcional). Retorna: lista de {name, revision, change_cause, image}.")
@@ -91,10 +91,10 @@ def tool_get_replica_set_history(name: str, namespace: str | None = None) -> lis
     try:
         return get_replica_set_history(name=name, namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_replica_set_history", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 if __name__ == "__main__":

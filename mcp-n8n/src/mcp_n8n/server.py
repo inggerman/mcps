@@ -58,10 +58,10 @@ def tool_list_workflows() -> list[dict[str, Any]]:
     try:
         return list_workflows()
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_workflows", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_workflow", description="Obtiene detalles de un workflow. Parámetros: workflow_id (str). Retorna: id, name, active, nodes, connections, settings.")
@@ -70,10 +70,10 @@ def tool_get_workflow(workflow_id: str) -> dict[str, Any]:
     try:
         return get_workflow(workflow_id=workflow_id)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_workflow", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="trigger_webhook", description="Dispara un webhook de n8n. Parámetros: webhook_id (str), data (dict opcional). Retorna: {webhook_id, status_code, response}.")
@@ -82,10 +82,10 @@ def tool_trigger_webhook(webhook_id: str, data: dict[str, Any] | None = None) ->
     try:
         return trigger_webhook(webhook_id=webhook_id, data=data)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en trigger_webhook", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="list_executions", description="Lista ejecuciones recientes de n8n. Parámetros: limit (int, default 20). Retorna: lista de {id, workflow_id, status, mode, started_at, stopped_at, finished}.")
@@ -94,10 +94,10 @@ def tool_list_executions(limit: int = 20) -> list[dict[str, Any]]:
     try:
         return list_executions(limit=limit)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_executions", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_execution_detail", description="Obtiene detalles de una ejecución. Parámetros: execution_id (str). Retorna: id, workflow_id, status, data, error.")
@@ -106,10 +106,10 @@ def tool_get_execution_detail(execution_id: str) -> dict[str, Any]:
     try:
         return get_execution_detail(execution_id=execution_id)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_execution_detail", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="activate_workflow", description="Activa/desactiva un workflow. Requiere N8N_ALLOW_ACTIVATE=true. Parámetros: workflow_id (str), active (bool, default true).")
@@ -118,10 +118,10 @@ def tool_activate_workflow(workflow_id: str, active: bool = True) -> dict[str, A
     try:
         return activate_workflow(workflow_id=workflow_id, active=active)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en activate_workflow", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 if __name__ == "__main__":

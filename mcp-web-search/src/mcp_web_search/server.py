@@ -95,10 +95,10 @@ def tool_search_web(
         )
         return result
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en search_web", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(
@@ -125,10 +125,10 @@ def tool_search_docs(
         )
         return result
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en search_docs", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(
@@ -146,10 +146,10 @@ def tool_search_github(query: str, max_results: int | None = None) -> dict[str, 
         logger.info("search_github completado", query=query, results=len(result["results"]))
         return result
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en search_github", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(
@@ -167,10 +167,10 @@ def tool_search_stackoverflow(query: str, max_results: int | None = None) -> dic
         logger.info("search_stackoverflow completado", query=query, results=len(result["results"]))
         return result
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en search_stackoverflow", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(

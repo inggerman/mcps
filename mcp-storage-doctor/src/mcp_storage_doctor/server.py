@@ -56,10 +56,10 @@ def tool_list_persistent_volumes() -> list[dict[str, Any]]:
     try:
         return list_persistent_volumes()
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_persistent_volumes", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="list_pvcs", description="Lista PersistentVolumeClaims. Parámetros: namespace (str opcional). Retorna: lista de {name, namespace, phase, capacity, storage_class}.")
@@ -68,10 +68,10 @@ def tool_list_pvcs(namespace: str | None = None) -> list[dict[str, Any]]:
     try:
         return list_pvcs(namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_pvcs", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_pvc_status", description="Obtiene estado detallado de un PVC. Parámetros: name (str), namespace (str). Retorna: {name, phase, capacity, bound, storage_class}.")
@@ -80,10 +80,10 @@ def tool_get_pvc_status(name: str, namespace: str) -> dict[str, Any]:
     try:
         return get_pvc_status(name=name, namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_pvc_status", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="list_storage_classes", description="Lista StorageClasses disponibles. Retorna: lista de {name, provisioner, reclaim_policy, is_default, parameters}.")
@@ -92,10 +92,10 @@ def tool_list_storage_classes() -> list[dict[str, Any]]:
     try:
         return list_storage_classes()
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_storage_classes", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_volume_mounts", description="Obtiene volume mounts de pods. Parámetros: namespace (str opcional). Retorna: lista de {pod, namespace, mounts[]}.")
@@ -104,10 +104,10 @@ def tool_get_volume_mounts(namespace: str | None = None) -> list[dict[str, Any]]
     try:
         return get_volume_mounts(namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_volume_mounts", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 if __name__ == "__main__":

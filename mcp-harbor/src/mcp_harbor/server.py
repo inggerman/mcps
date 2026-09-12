@@ -77,10 +77,10 @@ def tool_list_projects() -> list[dict[str, Any]]:
     try:
         return list_projects()
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_projects", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(
@@ -92,10 +92,10 @@ def tool_list_repositories(project_name: str) -> list[dict[str, Any]]:
     try:
         return list_repositories(project_name=project_name)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_repositories", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(
@@ -107,10 +107,10 @@ def tool_list_tags(project_name: str, repo_name: str) -> list[dict[str, Any]]:
     try:
         return list_tags(project_name=project_name, repo_name=repo_name)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_tags", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(
@@ -122,10 +122,10 @@ def tool_get_scan_report(project_name: str, repo_name: str, tag: str) -> dict[st
     try:
         return get_scan_report(project_name=project_name, repo_name=repo_name, tag=tag)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_scan_report", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(
@@ -137,10 +137,10 @@ def tool_image_exists(project_name: str, repo_name: str, tag: str = "latest") ->
     try:
         return image_exists(project_name=project_name, repo_name=repo_name, tag=tag)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en image_exists", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(
@@ -152,10 +152,10 @@ def tool_delete_tag(project_name: str, repo_name: str, tag: str) -> dict[str, An
     try:
         return delete_tag(project_name=project_name, repo_name=repo_name, tag=tag)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en delete_tag", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 # ---------------------------------------------------------------------------

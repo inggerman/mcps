@@ -53,10 +53,10 @@ def tool_send_email(to: str, subject: str, body: str, html: bool = False) -> dic
     try:
         return send_email(to=to, subject=subject, body=body, html=html)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en send_email", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="send_telegram_message", description="Envía un mensaje vía Telegram Bot API. Parámetros: chat_id (str), text (str). Retorna: {chat_id, message_id, status}.")
@@ -65,10 +65,10 @@ def tool_send_telegram_message(chat_id: str, text: str) -> dict[str, Any]:
     try:
         return send_telegram_message(chat_id=chat_id, text=text)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en send_telegram_message", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 if __name__ == "__main__":

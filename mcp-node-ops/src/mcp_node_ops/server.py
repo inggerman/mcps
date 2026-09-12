@@ -59,10 +59,10 @@ def tool_list_nodes() -> list[dict[str, Any]]:
     try:
         return list_nodes()
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_nodes", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_node_details", description="Obtiene detalles completos de un nodo. Parámetros: node_name (str). Retorna: labels, taints, conditions, capacity, allocatable, node_info.")
@@ -71,10 +71,10 @@ def tool_get_node_details(node_name: str) -> dict[str, Any]:
     try:
         return get_node_details(node_name=node_name)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_node_details", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="cordon_node", description="Marca un nodo como no programable. Requiere NODE_OPS_ALLOW_WRITE=true. Parámetros: node_name (str).")
@@ -83,10 +83,10 @@ def tool_cordon_node(node_name: str) -> dict[str, Any]:
     try:
         return cordon_node(node_name=node_name)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en cordon_node", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="uncordon_node", description="Marca un nodo como programable. Requiere NODE_OPS_ALLOW_WRITE=true. Parámetros: node_name (str).")
@@ -95,10 +95,10 @@ def tool_uncordon_node(node_name: str) -> dict[str, Any]:
     try:
         return uncordon_node(node_name=node_name)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en uncordon_node", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="drain_node", description="Drena un nodo (evict pods). Requiere NODE_OPS_ALLOW_WRITE=true. Parámetros: node_name, force (bool), ignore_daemonsets (bool). Retorna: {node, evicted, skipped}.")
@@ -107,10 +107,10 @@ def tool_drain_node(node_name: str, force: bool = False, ignore_daemonsets: bool
     try:
         return drain_node(node_name=node_name, force=force, ignore_daemonsets=ignore_daemonsets)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en drain_node", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_node_taints", description="Obtiene los taints de un nodo. Parámetros: node_name (str). Retorna: lista de {key, value, effect}.")
@@ -119,10 +119,10 @@ def tool_get_node_taints(node_name: str) -> list[dict[str, Any]]:
     try:
         return get_node_taints(node_name=node_name)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_node_taints", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="set_node_label", description="Establece un label en un nodo. Requiere NODE_OPS_ALLOW_WRITE=true. Parámetros: node_name, key, value. Retorna: {node, label, value, status}.")
@@ -131,10 +131,10 @@ def tool_set_node_label(node_name: str, key: str, value: str) -> dict[str, Any]:
     try:
         return set_node_label(node_name=node_name, key=key, value=value)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en set_node_label", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 if __name__ == "__main__":

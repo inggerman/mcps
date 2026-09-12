@@ -56,10 +56,10 @@ def tool_list_repositories(project: str | None = None) -> list[dict[str, Any]]:
     try:
         return list_repositories(project=project)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_repositories", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="list_tags", description="Lista tags/artifacts de un repositorio. Parámetros: repo_name (str), project (str opcional). Retorna: lista de {digest, type, size, tags, push_time}.")
@@ -68,10 +68,10 @@ def tool_list_tags(repo_name: str, project: str | None = None) -> list[dict[str,
     try:
         return list_tags(repo_name=repo_name, project=project)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_tags", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="inspect_image", description="Inspecciona un artifact por tag o digest. Parámetros: repo_name, tag_or_digest, project. Retorna: digest, type, size, tags, labels, extra_attrs.")
@@ -80,10 +80,10 @@ def tool_inspect_image(repo_name: str, tag_or_digest: str, project: str | None =
     try:
         return inspect_image(repo_name=repo_name, tag_or_digest=tag_or_digest, project=project)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en inspect_image", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_image_scan", description="Obtiene el estado del scan de un artifact. Parámetros: repo_name, tag_or_digest, project. Retorna: {status, scan_time, scanner}.")
@@ -92,10 +92,10 @@ def tool_get_image_scan(repo_name: str, tag_or_digest: str, project: str | None 
     try:
         return get_image_scan(repo_name=repo_name, tag_or_digest=tag_or_digest, project=project)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_image_scan", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_image_vulnerabilities", description="Obtiene vulnerabilidades de un artifact. Parámetros: repo_name, tag_or_digest, project. Retorna: {summary {critical, high, medium, low, total}, vulnerabilities[].}")
@@ -104,10 +104,10 @@ def tool_get_image_vulnerabilities(repo_name: str, tag_or_digest: str, project: 
     try:
         return get_image_vulnerabilities(repo_name=repo_name, tag_or_digest=tag_or_digest, project=project)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_image_vulnerabilities", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 if __name__ == "__main__":

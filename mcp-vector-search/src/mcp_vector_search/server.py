@@ -58,10 +58,10 @@ def tool_list_collections() -> list[dict[str, Any]]:
     try:
         return list_collections()
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_collections", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="create_collection", description="Crea una colección en Qdrant. Requiere VECTOR_SEARCH_ALLOW_WRITE=true. Parámetros: collection_name (str), vector_dim (int opcional). Retorna: {collection, vector_dim, status}.")
@@ -70,10 +70,10 @@ def tool_create_collection(collection_name: str, vector_dim: int | None = None) 
     try:
         return create_collection(collection_name=collection_name, vector_dim=vector_dim)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en create_collection", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="delete_collection", description="Elimina una colección de Qdrant. Requiere VECTOR_SEARCH_ALLOW_WRITE=true. Parámetros: collection_name (str). Retorna: {collection, status}.")
@@ -82,10 +82,10 @@ def tool_delete_collection(collection_name: str) -> dict[str, Any]:
     try:
         return delete_collection(collection_name=collection_name)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en delete_collection", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="upsert_points", description="Inserta puntos con embeddings generados vía LM Studio. Requiere VECTOR_SEARCH_ALLOW_WRITE=true. Parámetros: collection_name (str), points (list de {id, text, metadata?}). Retorna: {collection, points_upserted}.")
@@ -94,10 +94,10 @@ def tool_upsert_points(collection_name: str, points: list[dict[str, Any]]) -> di
     try:
         return upsert_points(collection_name=collection_name, points=points)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en upsert_points", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="search_similar", description="Busca puntos similares por texto. Parámetros: collection_name (str), query (str), limit (int, default 5). Retorna: lista de {id, score, payload}.")
@@ -106,10 +106,10 @@ def tool_search_similar(collection_name: str, query: str, limit: int = 5) -> lis
     try:
         return search_similar(collection_name=collection_name, query=query, limit=limit)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en search_similar", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 if __name__ == "__main__":

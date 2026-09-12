@@ -59,10 +59,10 @@ def tool_list_repos(limit: int = 50) -> list[dict[str, Any]]:
     try:
         return list_repos(limit=limit)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_repos", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="list_prs", description="Lista PRs de un repo. Parámetros: owner, repo, state (open/closed/all, default open). Retorna: lista de {number, title, state, user, merged, mergeable, head, base}.")
@@ -71,10 +71,10 @@ def tool_list_prs(owner: str, repo: str, state: str = "open") -> list[dict[str, 
     try:
         return list_prs(owner=owner, repo=repo, state=state)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_prs", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="create_pr", description="Crea un PR. Requiere GITEA_ALLOW_WRITE=true. Parámetros: owner, repo, title, head, base, body. Retorna: {number, title, state, url}.")
@@ -83,10 +83,10 @@ def tool_create_pr(owner: str, repo: str, title: str, head: str, base: str, body
     try:
         return create_pr(owner=owner, repo=repo, title=title, head=head, base=base, body=body)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en create_pr", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="list_issues", description="Lista issues de un repo. Parámetros: owner, repo, state (open/closed/all). Retorna: lista de {number, title, state, user, labels, assignee}.")
@@ -95,10 +95,10 @@ def tool_list_issues(owner: str, repo: str, state: str = "open") -> list[dict[st
     try:
         return list_issues(owner=owner, repo=repo, state=state)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_issues", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="create_issue", description="Crea un issue. Requiere GITEA_ALLOW_WRITE=true. Parámetros: owner, repo, title, body. Retorna: {number, title, state, url}.")
@@ -107,10 +107,10 @@ def tool_create_issue(owner: str, repo: str, title: str, body: str = "") -> dict
     try:
         return create_issue(owner=owner, repo=repo, title=title, body=body)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en create_issue", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_workflow_runs", description="Lista ejecuciones de Gitea Actions. Parámetros: owner, repo, limit (default 20). Retorna: lista de {id, name, status, conclusion, event, head_branch}.")
@@ -119,10 +119,10 @@ def tool_get_workflow_runs(owner: str, repo: str, limit: int = 20) -> list[dict[
     try:
         return get_workflow_runs(owner=owner, repo=repo, limit=limit)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_workflow_runs", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_run_logs", description="Obtiene logs de una ejecución de Gitea Actions. Parámetros: owner, repo, run_id. Retorna: {run_id, logs}.")
@@ -131,10 +131,10 @@ def tool_get_run_logs(owner: str, repo: str, run_id: int) -> dict[str, Any]:
     try:
         return get_run_logs(owner=owner, repo=repo, run_id=run_id)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_run_logs", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 if __name__ == "__main__":

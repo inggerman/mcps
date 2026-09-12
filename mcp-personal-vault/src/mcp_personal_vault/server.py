@@ -58,10 +58,10 @@ def _handle(fn: Any, *args: Any, **kwargs: Any) -> Any:
     try:
         return fn(*args, **kwargs)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado", tool=fn.__name__)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="personal_vault_status")
@@ -159,7 +159,7 @@ def tool_import(entries_json: str) -> dict[str, Any]:
     try:
         entries = _json.loads(entries_json)
     except Exception as exc:
-        raise SdkMcpError(ErrorData(code=-32602, message="Invalid JSON")) from exc
+        raise SdkMcpError(code=-32602, message="Invalid JSON") from exc
     return _handle(import_entries, settings.database_path, _FERNET, entries, settings.allow_write, settings.allow_secrets)
 
 

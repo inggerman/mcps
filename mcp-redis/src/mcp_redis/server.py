@@ -58,10 +58,10 @@ def tool_redis_info() -> dict[str, Any]:
     try:
         return redis_info()
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en redis_info", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="list_keys", description="Lista claves que coinciden con un patrón. Parámetros: pattern (str, default '*'), limit (int, default 100). Retorna: lista de keys.")
@@ -70,10 +70,10 @@ def tool_list_keys(pattern: str = "*", limit: int = 100) -> list[str]:
     try:
         return list_keys(pattern=pattern, limit=limit)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_keys", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_key", description="Obtiene el valor de una clave. Parámetros: key (str). Retorna: {key, type, value}.")
@@ -82,10 +82,10 @@ def tool_get_key(key: str) -> dict[str, Any]:
     try:
         return get_key(key=key)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_key", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="set_key", description="Establece una clave string. Requiere REDIS_ALLOW_WRITE=true. Parámetros: key, value, ttl (int opcional). Retorna: {key, value, ttl, status}.")
@@ -94,10 +94,10 @@ def tool_set_key(key: str, value: str, ttl: int | None = None) -> dict[str, Any]
     try:
         return set_key(key=key, value=value, ttl=ttl)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en set_key", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_ttl", description="Obtiene el TTL de una clave. Parámetros: key (str). Retorna: {key, ttl_seconds}.")
@@ -106,10 +106,10 @@ def tool_get_ttl(key: str) -> dict[str, Any]:
     try:
         return get_ttl(key=key)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_ttl", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_key_type", description="Obtiene el tipo de una clave. Parámetros: key (str). Retorna: {key, type}.")
@@ -118,10 +118,10 @@ def tool_get_key_type(key: str) -> dict[str, Any]:
     try:
         return get_key_type(key=key)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_key_type", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="delete_key", description="Elimina una clave. Requiere REDIS_ALLOW_WRITE=true. Parámetros: key (str). Retorna: {key, deleted}.")
@@ -130,10 +130,10 @@ def tool_delete_key(key: str) -> dict[str, Any]:
     try:
         return delete_key(key=key)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en delete_key", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 if __name__ == "__main__":

@@ -55,10 +55,10 @@ def tool_get_pod_logs(pod_name: str, namespace: str | None = None, container: st
     try:
         return get_pod_logs(pod_name=pod_name, namespace=namespace, container=container, tail_lines=tail_lines, previous=previous)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_pod_logs", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="tail_pod_logs", description="Obtiene las últimas N líneas de logs. Parámetros: pod_name, namespace, container, lines (int, default 50). Retorna: {pod, namespace, container, line_count, logs}.")
@@ -67,10 +67,10 @@ def tool_tail_pod_logs(pod_name: str, namespace: str | None = None, container: s
     try:
         return tail_pod_logs(pod_name=pod_name, namespace=namespace, container=container, lines=lines)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en tail_pod_logs", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="search_logs_across_pods", description="Busca un patrón en logs de múltiples pods. Parámetros: namespace, pattern (str), label_selector (str), tail_lines (int). Retorna: lista de {pod, container, matches, lines}.")
@@ -79,10 +79,10 @@ def tool_search_logs_across_pods(namespace: str | None = None, pattern: str = ""
     try:
         return search_logs_across_pods(namespace=namespace, pattern=pattern, label_selector=label_selector, tail_lines=tail_lines)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en search_logs_across_pods", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 if __name__ == "__main__":

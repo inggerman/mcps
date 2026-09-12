@@ -56,10 +56,10 @@ def tool_get_overview() -> dict[str, Any]:
     try:
         return get_overview()
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_overview", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="list_queues", description="Lista las colas de un vhost. Parámetros: vhost (str, default '/'). Retorna: lista de {name, vhost, durable, messages, consumers, state}.")
@@ -68,10 +68,10 @@ def tool_list_queues(vhost: str = "/") -> list[dict[str, Any]]:
     try:
         return list_queues(vhost=vhost)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_queues", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_queue_details", description="Obtiene detalles de una cola. Parámetros: queue_name (str), vhost (str, default '/'). Retorna: name, messages, consumers, state, arguments, message_stats.")
@@ -80,10 +80,10 @@ def tool_get_queue_details(queue_name: str, vhost: str = "/") -> dict[str, Any]:
     try:
         return get_queue_details(queue_name=queue_name, vhost=vhost)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_queue_details", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="list_exchanges", description="Lista los exchanges de un vhost. Parámetros: vhost (str, default '/'). Retorna: lista de {name, type, durable, internal, auto_delete}.")
@@ -92,10 +92,10 @@ def tool_list_exchanges(vhost: str = "/") -> list[dict[str, Any]]:
     try:
         return list_exchanges(vhost=vhost)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_exchanges", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="publish_message", description="Publica un mensaje en un exchange. Requiere RABBITMQ_ALLOW_PUBLISH=true. Parámetros: exchange, routing_key, payload, vhost, properties. Retorna: resultado de la publicación.")
@@ -104,10 +104,10 @@ def tool_publish_message(exchange: str, routing_key: str, payload: str, vhost: s
     try:
         return publish_message(exchange=exchange, routing_key=routing_key, payload=payload, vhost=vhost, properties=properties)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en publish_message", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 if __name__ == "__main__":

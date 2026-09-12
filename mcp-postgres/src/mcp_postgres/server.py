@@ -56,10 +56,10 @@ def tool_list_databases() -> list[dict[str, Any]]:
     try:
         return list_databases()
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_databases", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="list_tables", description="Lista las tablas de una base de datos. Parámetros: database (str opcional). Retorna: lista de {name, schema, size}.")
@@ -68,10 +68,10 @@ def tool_list_tables(database: str | None = None) -> list[dict[str, Any]]:
     try:
         return list_tables(database=database)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_tables", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="describe_table", description="Describe la estructura de una tabla. Parámetros: table_name (str, formato schema.table), database (str opcional). Retorna: lista de {column, type, nullable, default, max_length}.")
@@ -80,10 +80,10 @@ def tool_describe_table(table_name: str, database: str | None = None) -> list[di
     try:
         return describe_table(table_name=table_name, database=database)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en describe_table", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="execute_query", description="Ejecuta una query SQL. Read-only por defecto (POSTGRES_ALLOW_WRITE=true para escritura). Parámetros: sql (str), database (str opcional). Retorna: {columns, rows, row_count, truncated}.")
@@ -92,10 +92,10 @@ def tool_execute_query(sql: str, database: str | None = None) -> dict[str, Any]:
     try:
         return execute_query(sql=sql, database=database)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en execute_query", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 if __name__ == "__main__":

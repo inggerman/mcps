@@ -58,10 +58,10 @@ def tool_vault_status() -> dict[str, Any]:
     try:
         return vault_status()
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en vault_status", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="list_mounts", description="Lista los secret mounts de Vault. Retorna: dict de mount_path → {type, version}.")
@@ -70,10 +70,10 @@ def tool_list_mounts() -> dict[str, Any]:
     try:
         return list_mounts()
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_mounts", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="list_secrets", description="Lista claves en un path KV-v2. Parámetros: path (str). Respeta VAULT_ALLOWED_PATHS. Retorna: lista de keys.")
@@ -82,10 +82,10 @@ def tool_list_secrets(path: str) -> list[str]:
     try:
         return list_secrets(path=path)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_secrets", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="read_secret", description="Lee un secreto KV-v2. Parámetros: path (str), version (int opcional). Respeta VAULT_ALLOWED_PATHS. Retorna: {path, data, metadata, version}.")
@@ -94,10 +94,10 @@ def tool_read_secret(path: str, version: int | None = None) -> dict[str, Any]:
     try:
         return read_secret(path=path, version=version)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en read_secret", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_secret_metadata", description="Obtiene metadatos de un secreto KV-v2. Parámetros: path (str). Retorna: versiones, timestamps, current_version.")
@@ -106,10 +106,10 @@ def tool_get_secret_metadata(path: str) -> dict[str, Any]:
     try:
         return get_secret_metadata(path=path)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_secret_metadata", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 if __name__ == "__main__":

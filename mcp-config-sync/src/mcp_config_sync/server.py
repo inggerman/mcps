@@ -57,10 +57,10 @@ def tool_list_configmaps(namespace: str) -> list[dict[str, Any]]:
     try:
         return list_configmaps(namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_configmaps", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_configmap", description="Obtiene el contenido de un ConfigMap. Parámetros: name (str), namespace (str). Retorna: {name, data, labels, annotations}.")
@@ -69,10 +69,10 @@ def tool_get_configmap(name: str, namespace: str) -> dict[str, Any]:
     try:
         return get_configmap(name=name, namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_configmap", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="list_secrets", description="Lista Secrets en un namespace (sin exponer valores). Parámetros: namespace (str). Retorna: lista de {name, type, key_count, data_keys}.")
@@ -81,10 +81,10 @@ def tool_list_secrets(namespace: str) -> list[dict[str, Any]]:
     try:
         return list_secrets(namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_secrets", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="compare_configmaps", description="Compara un ConfigMap entre dos namespaces. Parámetros: name, namespace_a, namespace_b. Retorna: {only_in_a, only_in_b, different_values, identical}.")
@@ -93,10 +93,10 @@ def tool_compare_configmaps(name: str, namespace_a: str, namespace_b: str) -> di
     try:
         return compare_configmaps(name=name, namespace_a=namespace_a, namespace_b=namespace_b)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en compare_configmaps", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="sync_configmap", description="Copia un ConfigMap entre namespaces. Requiere CONFIG_SYNC_ALLOW_WRITE=true. Parámetros: name, source_namespace, target_namespace. Retorna: {configmap, source, target, action}.")
@@ -105,10 +105,10 @@ def tool_sync_configmap(name: str, source_namespace: str, target_namespace: str)
     try:
         return sync_configmap(name=name, source_namespace=source_namespace, target_namespace=target_namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en sync_configmap", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 if __name__ == "__main__":

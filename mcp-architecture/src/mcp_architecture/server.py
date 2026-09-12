@@ -88,10 +88,10 @@ def _handle(fn: Any, *args: Any, **kwargs: Any) -> Any:
     try:
         return fn(*args, **kwargs)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado", tool=fn.__name__, error=str(exc))
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno de arquitectura.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno de arquitectura.") from exc
 
 
 # ---------------------------------------------------------------------------

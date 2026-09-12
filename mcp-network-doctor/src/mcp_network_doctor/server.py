@@ -55,10 +55,10 @@ def tool_list_services(namespace: str) -> list[dict[str, Any]]:
     try:
         return list_services(namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_services", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_service_endpoints", description="Obtiene endpoints de un Service. Parámetros: namespace (str), service_name (str). Retorna: {service, type, cluster_ip, ready_endpoints, has_endpoints}.")
@@ -67,10 +67,10 @@ def tool_get_service_endpoints(namespace: str, service_name: str) -> dict[str, A
     try:
         return get_service_endpoints(namespace=namespace, service_name=service_name)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_service_endpoints", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_ingress_status", description="Obtiene estado de Ingress. Parámetros: namespace (str opcional). Retorna: lista de {name, rules, tls_hosts, ingress_class, load_balancer}.")
@@ -79,10 +79,10 @@ def tool_get_ingress_status(namespace: str | None = None) -> list[dict[str, Any]
     try:
         return get_ingress_status(namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_ingress_status", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_network_policies", description="Obtiene NetworkPolicies. Parámetros: namespace (str opcional). Retorna: lista de {name, pod_selector, policy_types, ingress_rules, egress_rules}.")
@@ -91,10 +91,10 @@ def tool_get_network_policies(namespace: str | None = None) -> list[dict[str, An
     try:
         return get_network_policies(namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_network_policies", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 if __name__ == "__main__":

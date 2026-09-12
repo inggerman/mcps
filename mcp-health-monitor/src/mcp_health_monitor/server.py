@@ -57,10 +57,10 @@ def tool_get_probe_status(namespace: str | None = None) -> list[dict[str, Any]]:
     try:
         return get_probe_status(namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_probe_status", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_hpa_status", description="Obtiene estado de HorizontalPodAutoscalers. Parámetros: namespace (str opcional). Retorna: lista de {name, target, min/max/current/desired replicas, metrics}.")
@@ -69,10 +69,10 @@ def tool_get_hpa_status(namespace: str | None = None) -> list[dict[str, Any]]:
     try:
         return get_hpa_status(namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_hpa_status", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="check_endpoint_health", description="Verifica salud de Endpoints en un namespace. Parámetros: namespace (str). Retorna: lista de {name, ready_addresses, not_ready_addresses, healthy}.")
@@ -81,10 +81,10 @@ def tool_check_endpoint_health(namespace: str) -> list[dict[str, Any]]:
     try:
         return check_endpoint_health(namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en check_endpoint_health", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 @mcp.tool(name="get_unhealthy_pods", description="Obtiene pods con problemas (no Running, restarts altos, containers not ready). Parámetros: namespace (str opcional). Retorna: lista de {pod, phase, restarts, not_ready_containers}.")
@@ -93,10 +93,10 @@ def tool_get_unhealthy_pods(namespace: str | None = None) -> list[dict[str, Any]
     try:
         return get_unhealthy_pods(namespace=namespace)
     except McpError as exc:
-        raise SdkMcpError(ErrorData(code=-32000, message=str(exc))) from exc
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_unhealthy_pods", exc_info=exc)
-        raise SdkMcpError(ErrorData(code=-32603, message="Error interno del servidor.")) from exc
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
 if __name__ == "__main__":
