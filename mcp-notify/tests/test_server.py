@@ -7,7 +7,7 @@ import asyncio
 from fastmcp import FastMCP
 from mcp_notify.server import mcp
 
-_EXPECTED_TOOLS = {"send_email", "send_telegram_message"}
+_EXPECTED_TOOLS = {"send_email", "send_telegram_message", "send_slack_message"}
 
 
 class TestServer:
@@ -24,4 +24,4 @@ class TestServer:
 
     def test_tool_count(self) -> None:
         tools = asyncio.run(mcp.list_tools())
-        assert len(tools) == 2
+        assert len(tools) == 3

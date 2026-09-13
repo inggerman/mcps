@@ -50,7 +50,14 @@ MCPS = [
     {"name": "mcp-redis", "port": 8042, "env": {"REDIS_ALLOW_WRITE": "false"}, "volumes": []},
     {"name": "mcp-rabbitmq", "port": 8043, "env": {"RABBITMQ_ALLOW_PUBLISH": "false"}, "volumes": []},
     {"name": "mcp-vector-search", "port": 8044, "env": {"QDRANT_URL": "http://qdrant.qdrant.svc.cluster.local:6333", "VECTOR_SEARCH_EMBEDDING_URL": "http://host.docker.internal:1234/v1", "VECTOR_SEARCH_ALLOW_WRITE": "false"}, "volumes": []},
-    {"name": "mcp-notify", "port": 8045, "env": {}, "volumes": []},
+    {"name": "mcp-notify", "port": 8045, "env": {
+        "NOTIFY_SMTP_HOST": "smtp.gmail.com",
+        "NOTIFY_SMTP_PORT": "587",
+        "NOTIFY_SMTP_USE_TLS": "true",
+        # Secrets via envFrom Secret: NOTIFY_SMTP_USER, NOTIFY_SMTP_PASSWORD,
+        # NOTIFY_SMTP_FROM, NOTIFY_TELEGRAM_BOT_TOKEN, NOTIFY_TELEGRAM_CHAT_ID,
+        # NOTIFY_SLACK_WEBHOOK_URL, NOTIFY_SLACK_CHANNEL
+    }, "volumes": [], "envFrom": [{"name": "mcp-notify-secrets", "prefix": ""}]},
     # Fase 10 — Infra MCPs (script-derived, 8046-8054)
     {"name": "mcp-cluster-doctor", "port": 8046, "env": {}, "volumes": []},
     {"name": "mcp-image-builder", "port": 8047, "env": {"IMAGE_BUILDER_VERIFY_SSL": "false", "IMAGE_BUILDER_HARBOR_PROJECT": "ghl"}, "volumes": []},
@@ -63,6 +70,24 @@ MCPS = [
     {"name": "mcp-node-ops", "port": 8054, "env": {"NODE_OPS_ALLOW_WRITE": "false"}, "volumes": []},
     # Fase 11 — Documentation MCP
     {"name": "mcp-documentation", "port": 8055, "env": {"DOC_ROOT_PATH": "/data/mcp-doc", "DOC_AUTO_CLASSIFY": "true"}, "volumes": [{"name": "mcp-documentation", "mountPath": "/data", "readOnly": False}]},
+    # Fase 12 — Credential broker (local stdio + server HTTP dual-mode)
+    {"name": "mcp-credential-broker", "port": 8056, "env": {
+        "BROKER_KEYCHAIN_ENABLED": "false",
+        "BROKER_HITL_AUTO_DENY": "true",
+        "BROKER_SSH_HOSTS": "windows:100.73.65.63,wsl:100.115.230.9",
+        "BROKER_SSH_KEY_REF": "vault:secret/credential-broker/ssh-key#private",
+        "BROKER_LMSTUDIO_URL": "http://host.docker.internal:1234/v1",
+        "BROKER_LMSTUDIO_MODEL": "qwen3-8b",
+        "BROKER_VAULT_URL": "https://vault.mrrobot.fs",
+    }, "volumes": []},
+    # Fase 13 — Engineering knowledge base MCP
+    {"name": "mcp-engineering-knowledge", "port": 8057, "env": {
+        "KB_DOCS_PATH": "/repo/docs",
+        "KB_QDRANT_URL": "http://qdrant.qdrant.svc.cluster.local:6333",
+        "KB_EMBEDDING_BASE_URL": "http://host.docker.internal:1234/v1",
+        "KB_ALLOW_WRITE": "false",
+        "KB_TRUST_THRESHOLD": "0.8",
+    }, "volumes": []},
 ]
 
 NAMESPACE = "mcps"
@@ -82,6 +107,7 @@ def generate_deployment(mcp):
     volumes = mcp.get("volumes", [])
     privileged = mcp.get("privileged", False)
     host_path = mcp.get("hostPath")
+    env_from = mcp.get("envFrom", [])
     
     env_list = [
         {"name": "MCP_TRANSPORT", "value": "streamable-http"},
@@ -112,6 +138,9 @@ def generate_deployment(mcp):
             "periodSeconds": 10,
         },
     }
+    
+    if env_from:
+        container["envFrom"] = env_from
     
     if privileged:
         container["securityContext"] = {"privileged": True}

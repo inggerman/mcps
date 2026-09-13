@@ -16,6 +16,7 @@ from mcp_shared.logging import get_logger, setup_logging
 from mcp_notify.config import settings
 from mcp_notify.tools import (
     send_email,
+    send_slack_message,
     send_telegram_message,
 )
 
@@ -40,8 +41,9 @@ mcp = FastMCP(
     name="mcp-notify",
     instructions=(
         "Servidor MCP para notificaciones. "
-        "Herramientas: send_email (SMTP), send_telegram_message (Telegram Bot API). "
-        "Requiere configurar NOTIFY_SMTP_* o NOTIFY_TELEGRAM_BOT_TOKEN."
+        "Herramientas: send_email (SMTP), send_telegram_message (Telegram Bot API), "
+        "send_slack_message (Slack Incoming Webhook). "
+        "Requiere configurar NOTIFY_SMTP_*, NOTIFY_TELEGRAM_BOT_TOKEN o NOTIFY_SLACK_WEBHOOK_URL."
     ),
     lifespan=lifespan,
 )
@@ -68,6 +70,18 @@ def tool_send_telegram_message(chat_id: str, text: str) -> dict[str, Any]:
         raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en send_telegram_message", exc_info=exc)
+        raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
+
+
+@mcp.tool(name="send_slack_message", description="Envía un mensaje vía Slack Incoming Webhook. Parámetros: text (str), channel (str, opcional), blocks (list, opcional Block Kit). Retorna: {status, response}.")
+def tool_send_slack_message(text: str, channel: str = "", blocks: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    logger.info("send_slack_message llamado", channel=channel or "(default)")
+    try:
+        return send_slack_message(text=text, channel=channel, blocks=blocks)
+    except McpError as exc:
+        raise SdkMcpError(code=-32000, message=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Error inesperado en send_slack_message", exc_info=exc)
         raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 

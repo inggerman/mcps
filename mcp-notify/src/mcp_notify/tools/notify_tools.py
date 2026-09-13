@@ -70,3 +70,41 @@ def send_telegram_message(chat_id: str, text: str) -> dict[str, Any]:
         raise McpError(f"Telegram API error: {exc.response.status_code} - {exc.response.text[:200]}") from exc
     except httpx.RequestError as exc:
         raise McpError(f"Error de red: {exc}") from exc
+
+
+def send_slack_message(
+    text: str,
+    channel: str = "",
+    blocks: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Envía un mensaje vía Slack Incoming Webhook.
+
+    Args:
+        text: Texto del mensaje (plain text o Markdown de Slack).
+        channel: Canal override (opcional, si no se usa el del webhook).
+        blocks: Bloques estructurados de Slack (opcional, formato Block Kit).
+    """
+    if not settings.slack_webhook_url:
+        raise ValidationError(
+            field="slack_webhook_url",
+            message="Slack no configurado. Establece NOTIFY_SLACK_WEBHOOK_URL.",
+        )
+    try:
+        payload: dict[str, Any] = {"text": text}
+        if channel or settings.slack_channel:
+            payload["channel"] = channel or settings.slack_channel
+        if blocks:
+            payload["blocks"] = blocks
+
+        with httpx.Client(timeout=settings.default_timeout) as client:
+            resp = client.post(settings.slack_webhook_url, json=payload)
+            resp.raise_for_status()
+            # Slack webhook responde con "ok" o un JSON de error
+            if resp.text.strip() == "ok":
+                return {"status": "sent", "response": "ok"}
+            data = resp.json()
+            return {"status": "sent" if data.get("ok", True) else "failed", "response": data}
+    except httpx.HTTPStatusError as exc:
+        raise McpError(f"Slack API error: {exc.response.status_code} - {exc.response.text[:200]}") from exc
+    except httpx.RequestError as exc:
+        raise McpError(f"Error de red: {exc}") from exc

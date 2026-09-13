@@ -48,6 +48,18 @@ class NotifySettings(BaseMcpSettings):
         default="",
         description="Token del bot de Telegram. Variable: NOTIFY_TELEGRAM_BOT_TOKEN.",
     )
+    telegram_chat_id: str = Field(
+        default="",
+        description="Chat ID por defecto de Telegram (opcional). Variable: NOTIFY_TELEGRAM_CHAT_ID.",
+    )
+    slack_webhook_url: str = Field(
+        default="",
+        description="Webhook URL de Slack (Incoming Webhook). Variable: NOTIFY_SLACK_WEBHOOK_URL.",
+    )
+    slack_channel: str = Field(
+        default="",
+        description="Canal de Slack por defecto (opcional, override del webhook). Variable: NOTIFY_SLACK_CHANNEL.",
+    )
     default_timeout: float = Field(
         default=30.0,
         ge=1.0,
@@ -60,6 +72,7 @@ class NotifySettings(BaseMcpSettings):
         base["smtp_host"] = self.smtp_host
         base["smtp_from"] = self.smtp_from
         base["telegram_configured"] = bool(self.telegram_bot_token)
+        base["slack_configured"] = bool(self.slack_webhook_url)
         return base
 
 
