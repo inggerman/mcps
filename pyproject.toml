@@ -71,6 +71,8 @@ members = [
     "mcp-storage-doctor",
     "mcp-deploy-tracker",
     "mcp-node-ops",
+    # Fase 11 — Credential broker local
+    "mcp-credential-broker",
 ]
 
 [tool.ruff]

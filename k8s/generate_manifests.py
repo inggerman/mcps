@@ -63,6 +63,16 @@ MCPS = [
     {"name": "mcp-node-ops", "port": 8054, "env": {"NODE_OPS_ALLOW_WRITE": "false"}, "volumes": []},
     # Fase 11 — Documentation MCP
     {"name": "mcp-documentation", "port": 8055, "env": {"DOC_ROOT_PATH": "/data/mcp-doc", "DOC_AUTO_CLASSIFY": "true"}, "volumes": [{"name": "mcp-documentation", "mountPath": "/data", "readOnly": False}]},
+    # Fase 12 — Credential broker (local stdio + server HTTP dual-mode)
+    {"name": "mcp-credential-broker", "port": 8056, "env": {
+        "BROKER_KEYCHAIN_ENABLED": "false",
+        "BROKER_HITL_AUTO_DENY": "true",
+        "BROKER_SSH_HOSTS": "windows:100.73.65.63,wsl:100.115.230.9",
+        "BROKER_SSH_KEY_REF": "vault:secret/credential-broker/ssh-key#private",
+        "BROKER_LMSTUDIO_URL": "http://host.docker.internal:1234/v1",
+        "BROKER_LMSTUDIO_MODEL": "qwen3-8b",
+        "BROKER_VAULT_URL": "https://vault.mrrobot.fs",
+    }, "volumes": []},
 ]
 
 NAMESPACE = "mcps"

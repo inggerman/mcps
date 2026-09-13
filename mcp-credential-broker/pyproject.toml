@@ -1,0 +1,28 @@
+[project]
+name = "mcp-credential-broker"
+version = "1.0.0"
+description = "MCP broker for credentials: run commands with secrets injected locally, reveal with HITL, never expose values to the LLM"
+requires-python = ">=3.11"
+dependencies = [
+    "fastmcp>=2.3",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "structlog>=24.1",
+    "rich>=13.7",
+    "mcp-shared",
+    "httpx>=0.27",
+    "paramiko>=3.4",
+]
+
+[project.optional-dependencies]
+keychain = ["keyring>=25.0"]
+
+[tool.uv.sources]
+mcp-shared = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_credential_broker"]
