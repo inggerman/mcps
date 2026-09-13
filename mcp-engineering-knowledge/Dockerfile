@@ -58,3 +58,5 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
     CMD python -c "import mcp_engineering_knowledge; print('ok')" || exit 1
 
 CMD ["python", "-m", "mcp_engineering_knowledge.server"]
+
+# rebuild trigger 2026-09-12T20:44:08.6671586-06:00
