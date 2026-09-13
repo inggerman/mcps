@@ -27,8 +27,8 @@ RUN uv pip install --system --no-cache /workspace/shared
 FROM python:3.12-slim AS runtime
 
 LABEL org.opencontainers.image.title="mcp-notify" \
-      org.opencontainers.image.description="MCP server for notifications: email and Telegram" \
-      org.opencontainers.image.version="1.0.0" \
+      org.opencontainers.image.description="MCP server for notifications: email, Telegram and Slack" \
+      org.opencontainers.image.version="1.1.0" \
       org.opencontainers.image.licenses="MIT"
 
 RUN groupadd --gid 1001 mcpgroup && \
@@ -39,6 +39,8 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 
 WORKDIR /app
 
+# Cache bust: forces fresh COPY of source on every build
+ARG CACHE_BUST=1
 COPY --chown=mcpuser:mcpgroup mcp-notify/src/ ./src/
 
 ENV PYTHONUNBUFFERED=1 \
