@@ -18,7 +18,8 @@ RUN uv pip install --system --no-cache /workspace/shared && \
     "pydantic-settings>=2.3" \
     "structlog>=24.1" \
     "httpx>=0.27" \
-    "rich>=13.7"
+    "rich>=13.7" \
+    "defusedxml>=0.7"
 
 FROM python:3.12-slim AS runtime
 
