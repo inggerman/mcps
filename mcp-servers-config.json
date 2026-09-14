@@ -223,6 +223,16 @@
     "mcp-smart-home": {
       "url": "http://mcp-smart-home.mrrobot.fs/mcp",
       "transport": "streamable-http"
+    },
+    "mcp-credential-broker": {
+      "transport": "stdio",
+      "command": "uv",
+      "args": ["run", "--directory", "C:\\Users\\germa\\Documents\\engineering\\mcps", "python", "-m", "mcp_credential_broker.server"],
+      "env": {
+        "MCP_TRANSPORT": "stdio",
+        "BROKER_KEYCHAIN_ENABLED": "true",
+        "BROKER_HITL_AUTO_DENY": "false"
+      }
     }
   }
 }
