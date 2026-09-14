@@ -9,6 +9,7 @@ from typing import Any
 import structlog
 from fastmcp import FastMCP
 from mcp.shared.exceptions import MCPError as SdkMcpError
+from mcp_shared import capture_exception, init_error_tracking, shutdown_error_tracking
 from mcp_shared.errors import McpError
 from mcp_shared.logging import get_logger, setup_logging
 
@@ -47,9 +48,11 @@ logger = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(server: FastMCP) -> AsyncIterator[None]:
     structlog.contextvars.bind_contextvars(server_name="mcp-comfyui")
+    init_error_tracking(server_name="mcp-comfyui")
     logger.info("Servidor iniciando", **settings.to_log_context())
     yield
     logger.info("Servidor detenido")
+    shutdown_error_tracking()
     structlog.contextvars.clear_contextvars()
 
 
@@ -100,6 +103,7 @@ def tool_get_system_stats() -> dict[str, Any]:
         raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_system_stats", exc_info=exc)
+        capture_exception(exc, tool="get_system_stats")
         raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
@@ -121,6 +125,7 @@ def tool_list_models() -> dict[str, Any]:
         raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en list_models", exc_info=exc)
+        capture_exception(exc, tool="list_models")
         raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
@@ -190,6 +195,7 @@ def tool_queue_prompt(
         raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en queue_prompt", exc_info=exc)
+        capture_exception(exc, tool="queue_prompt")
         raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 
@@ -243,6 +249,7 @@ def tool_get_prompt_result(
         raise SdkMcpError(code=-32000, message=str(exc)) from exc
     except Exception as exc:
         logger.exception("Error inesperado en get_prompt_result", exc_info=exc)
+        capture_exception(exc, tool="get_prompt_result")
         raise SdkMcpError(code=-32603, message="Error interno del servidor.") from exc
 
 

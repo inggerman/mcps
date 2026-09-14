@@ -19,7 +19,8 @@ RUN uv pip install --system --no-cache \
     "pydantic-settings>=2.3" \
     "structlog>=24.1" \
     "rich>=13.7" \
-    "httpx>=0.27"
+    "httpx>=0.27" \
+    "sentry-sdk>=2.0"
 
 RUN uv pip install --system --no-cache /workspace/shared
 

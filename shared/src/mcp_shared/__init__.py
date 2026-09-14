@@ -22,6 +22,11 @@ Uso típico en un servidor MCP:
 """
 
 from mcp_shared.config import BaseMcpSettings
+from mcp_shared.error_tracking import (
+    capture_exception,
+    init_error_tracking,
+    shutdown_error_tracking,
+)
 from mcp_shared.errors import (
     ApiAuthenticationError,
     ApiError,
@@ -88,6 +93,10 @@ __all__ = [
     # Logging
     "setup_logging",
     "get_logger",
+    # Error tracking (GlitchTip/Sentry)
+    "init_error_tracking",
+    "capture_exception",
+    "shutdown_error_tracking",
     # Modelos — Respuestas estándar
     "StandardResponse",
     "TableRecord",
