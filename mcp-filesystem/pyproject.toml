@@ -20,3 +20,5 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mcp_filesystem"]
+
+# Trigger rebuild for fastmcp 3.4.4 fix

@@ -23,3 +23,5 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mcp_fetch"]
+
+# Trigger rebuild for fastmcp 3.4.4 fix
