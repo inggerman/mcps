@@ -11,20 +11,33 @@ on:
       - "k8s/**"
       - ".gitea/workflows/deploy-mcps.yml"
   workflow_dispatch:
+    inputs:
+      mcps:
+        description: "MCPs a reconstruir, separados por espacios (vacio = todos)"
+        required: false
+        default: ""
 
 env:
   HARBOR_REGISTRY: harbor-core.harbor.svc.cluster.local:80
   HARBOR_PROJECT: ghl
   IMAGE_TAG: ${{ github.sha }}
-  # Runner mounts /var/run/docker.sock from host; use the unix socket, not a TCP daemon.
-  DOCKER_HOST: unix:///var/run/docker.sock
+  # El runner corre docker:dind como sidecar en TCP 2375 y los jobs comparten la
+  # red del pod: no hay socket unix. Con unix:///var/run/docker.sock los builds
+  # no llegaban al daemon (mismo fallo que paios-brain, tareas 370-383).
+  DOCKER_HOST: tcp://localhost:2375
   DOCKER_BUILDKIT: "0"
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
+      # Sin historial, `git diff before..after` fallaba en silencio, la lista de
+      # cambios salia vacia y el paso de deteccion reconstruia los 60 MCP en cada
+      # push (asi constaba en las ejecuciones 404-412). fetch-depth 0 trae el
+      # commit `before` para que el diff funcione.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Docker CLI + crane
         run: |
@@ -45,9 +58,21 @@ jobs:
       - name: Detect changed MCPs
         id: detect
         run: |
+          # Lanzado a mano con una lista: se reconstruye exactamente eso.
+          REQUESTED="${{ github.event.inputs.mcps }}"
+          if [ -n "$REQUESTED" ]; then
+            echo "changed=$REQUESTED" >> $GITHUB_OUTPUT
+            echo "  Requested MCPs: $REQUESTED"
+            exit 0
+          fi
+
           # Get changed files from push
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} 2>/dev/null || echo "")
-          
+          BEFORE="${{ github.event.before }}"
+          CHANGED_FILES=""
+          if [ -n "$BEFORE" ] && [ "$BEFORE" != "0000000000000000000000000000000000000000" ]; then
+            CHANGED_FILES=$(git diff --name-only "$BEFORE" "${{ github.event.after }}" 2>/dev/null || echo "")
+          fi
+
           if [ -z "$CHANGED_FILES" ]; then
             # First push or force push — build all
             MCPS=$(find . -maxdepth 1 -type d -name "mcp-*" -printf '%f\n' | sort | tr '\n' ' ')
