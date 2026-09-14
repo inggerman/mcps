@@ -5,11 +5,20 @@ from __future__ import annotations
 from typing import Any
 
 import psycopg
-
-from mcp_postgres.config import settings
 from mcp_shared.errors import McpError, ValidationError
 
-_WRITE_KEYWORDS = {"insert", "update", "delete", "drop", "create", "alter", "truncate", "grant", "revoke"}
+from mcp_postgres.config import settings
+
+#: Primera palabra de sentencias que no deben llegar al servidor en modo lectura.
+#: Es una primera barrera con un mensaje claro, no la proteccion: `WITH d AS
+#: (DELETE ... RETURNING *) SELECT ...` empieza por WITH y la pasaria. Lo que
+#: impide escribir es la transaccion read-only de `execute_query`.
+_WRITE_KEYWORDS = {
+    "insert", "update", "delete", "drop", "create", "alter", "truncate", "grant", "revoke",
+    # COPY ... TO PROGRAM ejecuta comandos en el servidor si el rol es superusuario.
+    "copy", "call", "do", "merge", "vacuum", "reindex", "cluster", "lock", "import",
+    "refresh", "security", "comment", "set", "reset",
+}
 
 
 def _check_read_only(sql: str) -> None:
@@ -110,8 +119,20 @@ def execute_query(sql: str, database: str | None = None) -> dict[str, Any]:
         if database:
             conn_str = conn_str.replace(f"dbname={settings.database}", f"dbname={database}")
         with psycopg.connect(conn_str) as conn:
-            conn.set_session(timeout=settings.query_timeout)
+            # `set_session` es API de psycopg2: con psycopg 3 lanzaba
+            # AttributeError y ninguna consulta llegaba a ejecutarse.
+            #
+            # En modo lectura la transaccion es read-only en el servidor, que es
+            # lo que de verdad impide escribir (la lista de palabras de arriba
+            # solo mira la primera). El timeout es local a la transaccion, asi
+            # que no sobrevive a la conexion.
+            if not settings.allow_write:
+                conn.read_only = True
             with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT set_config('statement_timeout', %s, true)",
+                    (str(int(settings.query_timeout * 1000)),),
+                )
                 cur.execute(sql)
                 columns = [desc[0] for desc in cur.description] if cur.description else []
                 rows = cur.fetchmany(settings.max_rows)
