@@ -73,6 +73,10 @@ members = [
     "mcp-node-ops",
     # Fase 11 — Credential broker local
     "mcp-credential-broker",
+    # Multimedia
+    "mcp-comfyui",
+    # COVAF data
+    "mcp-covaf-data",
 ]
 
 [tool.ruff]

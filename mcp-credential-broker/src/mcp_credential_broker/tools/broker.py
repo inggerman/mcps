@@ -294,7 +294,13 @@ def process_with_local_llm(
             context={"url": settings.lmstudio_url},
         ) from exc
 
-    response_text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+    choice = data.get("choices", [{}])[0]
+    message = choice.get("message", {})
+    response_text = message.get("content", "")
+    # qwen3-8b en modo thinking deja content="" y pone el output en reasoning_content.
+    # Si content está vacío, usar reasoning_content como fallback.
+    if not response_text:
+        response_text = message.get("reasoning_content", "")
 
     return {
         "response": response_text,

@@ -126,6 +126,29 @@ class TestProcessWithLocalLLM:
         # El valor sensible NO esta en el resultado que ve el LLM
         assert "super-secret-123" not in str(result)
 
+    def test_process_reasoning_content_fallback(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """qwen3-8b en modo thinking deja content="" y pone el output en reasoning_content."""
+        monkeypatch.setenv("BROKER_TEST_SECRET", "super-secret-123")
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "choices": [{"message": {
+                "content": "",
+                "reasoning_content": "Analizado via reasoning: el token es valido"
+            }}]
+        }
+        mock_response.raise_for_status.return_value = None
+        mock_client = MagicMock()
+        mock_client.__enter__.return_value = mock_client
+        mock_client.post.return_value = mock_response
+
+        with patch("mcp_credential_broker.tools.broker.httpx.Client", return_value=mock_client):
+            result = process_with_local_llm(
+                prompt="Analiza este token",
+                credential_ref="env:BROKER_TEST_SECRET",
+            )
+        assert "Analizado via reasoning" in result["response"]
+        assert "super-secret-123" not in str(result)
+
     def test_process_lmstudio_down_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("BROKER_TEST_SECRET", "val")
         import httpx

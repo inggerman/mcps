@@ -92,6 +92,15 @@ MCPS = [
 
 NAMESPACE = "mcps"
 HARBOR_REGISTRY = "harbor.mrrobot.fs/ghl"
+#: Hosts aceptados por la validacion de Host de fastmcp (JSON, lo lee pydantic).
+ALLOWED_HOSTS = json.dumps([
+    "*.svc.cluster.local",
+    "*.mcp-services.svc",
+    "*.mcp-services",
+    f"*.{NAMESPACE}.svc",
+    f"*.{NAMESPACE}",
+    "*.mrrobot.fs",
+])
 
 def generate_namespace():
     return {
@@ -113,6 +122,11 @@ def generate_deployment(mcp):
         {"name": "MCP_TRANSPORT", "value": "streamable-http"},
         {"name": "MCP_HOST", "value": "0.0.0.0"},
         {"name": "MCP_PORT", "value": str(port)},
+        # fastmcp >= 3.4 valida la cabecera Host (proteccion contra DNS
+        # rebinding) y, sin lista, solo acepta localhost: todo cliente del
+        # cluster recibe 421 Misdirected Request. Se permiten los nombres del
+        # cluster y del ingress; un Host ajeno sigue rechazado.
+        {"name": "FASTMCP_HTTP_ALLOWED_HOSTS", "value": ALLOWED_HOSTS},
     ]
     for k, v in env.items():
         env_list.append({"name": k, "value": v})
