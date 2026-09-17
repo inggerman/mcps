@@ -9,9 +9,9 @@ from __future__ import annotations
 from typing import Any
 
 import httpx
+from mcp_shared.errors import ApiAuthenticationError, McpError, NotFoundError
 
 from mcp_plane.config import settings
-from mcp_shared.errors import ApiAuthenticationError, McpError, NotFoundError
 
 
 def _client() -> httpx.Client:
@@ -22,7 +22,7 @@ def _client() -> httpx.Client:
         base_url=settings.api_url,
         headers=headers,
         timeout=settings.default_timeout,
-        verify=False,
+        verify=False,  # noqa: S501 - internal cluster CA, no public TLS
     )
 
 
@@ -367,13 +367,13 @@ def list_labels(project_id: str) -> list[dict[str, Any]]:
             labels = data if isinstance(data, list) else data.get("results", [])
             return [
                 {
-                    "id": l.get("id"),
-                    "name": l.get("name", ""),
-                    "color": l.get("color", ""),
-                    "parent": l.get("parent", ""),
-                    "sequence": l.get("sequence"),
+                    "id": label.get("id"),
+                    "name": label.get("name", ""),
+                    "color": label.get("color", ""),
+                    "parent": label.get("parent", ""),
+                    "sequence": label.get("sequence"),
                 }
-                for l in labels
+                for label in labels
             ]
     except httpx.HTTPStatusError as exc:
         if exc.response.status_code == 404:

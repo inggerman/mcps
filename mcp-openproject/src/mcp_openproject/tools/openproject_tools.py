@@ -10,9 +10,9 @@ from __future__ import annotations
 from typing import Any
 
 import httpx
+from mcp_shared.errors import ApiAuthenticationError, McpError, NotFoundError
 
 from mcp_openproject.config import settings
-from mcp_shared.errors import ApiAuthenticationError, McpError, NotFoundError
 
 
 def _client() -> httpx.Client:
@@ -26,7 +26,7 @@ def _client() -> httpx.Client:
         base_url=settings.api_url,
         headers=headers,
         timeout=settings.default_timeout,
-        verify=False,
+        verify=False,  # noqa: S501 - internal cluster CA, no public TLS
     )
 
 
