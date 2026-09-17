@@ -43,6 +43,9 @@ class _Cursor:
     def fetchmany(self, n):
         return [(1,)]
 
+    def fetchall(self):
+        return []
+
 
 class _Connection:
     def __init__(self):
@@ -143,3 +146,11 @@ def test_real_server_refuses_a_writing_cte(real_server):
             "WITH d AS (DELETE FROM mcp_readonly_probe RETURNING *) SELECT count(*) FROM d"
         )
     assert _rows_left() == 1
+
+
+def test_listing_tools_also_run_read_only(fake_connection, monkeypatch):
+    # They used to open an unrestricted connection of their own.
+    monkeypatch.setattr(settings, "allow_write", False)
+    postgres_tools.list_databases()
+    assert fake_connection.read_only is True
+    assert "statement_timeout" in fake_connection.log[0][0]

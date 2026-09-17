@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+from contextlib import contextmanager
 from typing import Any
 
 import psycopg
@@ -34,10 +36,29 @@ def _check_read_only(sql: str) -> None:
         )
 
 
+@contextmanager
+def _connect(conn_str: str) -> Iterator[psycopg.Connection]:
+    """Una conexion cuya transaccion es read-only en el servidor salvo con allow_write.
+
+    Todas las tools pasan por aqui: las de listado y descripcion tambien corrian
+    con la conexion del servidor sin ninguna restriccion. El timeout es local a
+    la transaccion, asi que no se queda en la conexion.
+    """
+    with psycopg.connect(conn_str) as conn:
+        if not settings.allow_write:
+            conn.read_only = True
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT set_config('statement_timeout', %s, true)",
+                (str(int(settings.query_timeout * 1000)),),
+            )
+        yield conn
+
+
 def list_databases() -> list[dict[str, Any]]:
     """Lista las bases de datos de PostgreSQL."""
     try:
-        with psycopg.connect(settings.connection_string) as conn:
+        with _connect(settings.connection_string) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT datname, pg_encoding_to_char(encoding), "
@@ -59,7 +80,7 @@ def list_tables(database: str | None = None) -> list[dict[str, Any]]:
         conn_str = settings.connection_string
         if database:
             conn_str = conn_str.replace(f"dbname={settings.database}", f"dbname={database}")
-        with psycopg.connect(conn_str) as conn:
+        with _connect(conn_str) as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "SELECT table_name, table_schema, "
@@ -83,7 +104,7 @@ def describe_table(table_name: str, database: str | None = None) -> list[dict[st
         conn_str = settings.connection_string
         if database:
             conn_str = conn_str.replace(f"dbname={settings.database}", f"dbname={database}")
-        with psycopg.connect(conn_str) as conn:
+        with _connect(conn_str) as conn:
             with conn.cursor() as cur:
                 schema, table = table_name.split(".", 1) if "." in table_name else ("public", table_name)
                 cur.execute(
@@ -118,21 +139,12 @@ def execute_query(sql: str, database: str | None = None) -> dict[str, Any]:
         conn_str = settings.connection_string
         if database:
             conn_str = conn_str.replace(f"dbname={settings.database}", f"dbname={database}")
-        with psycopg.connect(conn_str) as conn:
-            # `set_session` es API de psycopg2: con psycopg 3 lanzaba
-            # AttributeError y ninguna consulta llegaba a ejecutarse.
-            #
-            # En modo lectura la transaccion es read-only en el servidor, que es
-            # lo que de verdad impide escribir (la lista de palabras de arriba
-            # solo mira la primera). El timeout es local a la transaccion, asi
-            # que no sobrevive a la conexion.
-            if not settings.allow_write:
-                conn.read_only = True
+        # `set_session` era API de psycopg2: con psycopg 3 lanzaba
+        # AttributeError y ninguna consulta llegaba a ejecutarse. La transaccion
+        # read-only de `_connect` es lo que de verdad impide escribir (la lista
+        # de palabras de arriba solo mira la primera).
+        with _connect(conn_str) as conn:
             with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT set_config('statement_timeout', %s, true)",
-                    (str(int(settings.query_timeout * 1000)),),
-                )
                 cur.execute(sql)
                 columns = [desc[0] for desc in cur.description] if cur.description else []
                 rows = cur.fetchmany(settings.max_rows)
