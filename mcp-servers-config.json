@@ -248,6 +248,10 @@
     "mcp-engineering-knowledge": {
       "url": "http://mcp-engineering-knowledge.mrrobot.fs/mcp",
       "transport": "streamable-http"
+    },
+    "mcp-openproject": {
+      "url": "http://mcp-openproject.mrrobot.fs/mcp",
+      "transport": "streamable-http"
     }
   }
 }
