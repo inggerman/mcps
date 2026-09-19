@@ -1,0 +1,66 @@
+# workspace-sync — mantiene los clones del PVC compartido `mcp-workspace`
+# (paios-brain, mcps, platform-repo) al HEAD de main de Gitea.
+#
+# Aplicado imperativamente con `kubectl apply -f k8s/workspace-sync.yaml`
+# (mcp-services no tiene app ArgoCD propia aún — backlog: enganchar a GitOps).
+#
+# El `chown -R 1001:999` al final es obligatorio: git corre como root en este
+# pod y recrea archivos root-owned, pero mcp-filesystem (uid 1001) debe poder
+# escribirlos — portal-updater falló con PermissionError sin esto (2026-09-19).
+# Va DENTRO del script del `command`, nunca en `args`: con ambos campos
+# presentes Kubernetes ejecuta `command` y args se vuelve $0 (bug observado:
+# el chown en args jamás se ejecutó).
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: workspace-sync
+  namespace: mcp-services
+  labels:
+    app.kubernetes.io/name: workspace-sync
+    app.kubernetes.io/part-of: mcp-services
+spec:
+  schedule: "*/10 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: git-sync
+              image: alpine/git:2.45.2
+              workingDir: /workspace
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  git config --global --add safe.directory '*'
+                  cd /workspace
+                  for repo_dir in paios-brain mcps platform-repo; do
+                    if [ -d "$repo_dir/.git" ]; then
+                      echo "Syncing $repo_dir..."
+                      cd "$repo_dir"
+                      git fetch origin
+                      git reset --hard origin/main
+                      cd /workspace
+                    fi
+                  done
+                  chown -R 1001:999 /workspace 2>/dev/null || true
+                  echo "Workspace sync complete"
+              env:
+                - name: GIT_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: ci-runner-creds
+                      key: password
+                      optional: true
+              volumeMounts:
+                - name: mcp-workspace
+                  mountPath: /workspace
+          volumes:
+            - name: mcp-workspace
+              persistentVolumeClaim:
+                claimName: mcp-workspace
